@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar Perfil</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Link para o arquivo CSS externo -->
+    <link rel="stylesheet" href="../css/edit.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">EDITAR PERFIL</div>
+      <div class="screen">
+        <!-- Status Bar e Notch -->
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+        <div class="notch"></div>
+
+        <!-- Header -->
+        <div class="header">
+          <div class="header-left">
+            <button id="go-back" class="back-button">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="header-title">Editar Perfil</h1>
+          </div>
+          <button class="save-button" onclick="saveProfile()">
+            <i class="fas fa-check"></i>
+          </button>
+        </div>
+
+        <!-- Conteúdo Principal com Formulário -->
+        <div class="content">
+          <div class="main-content">
+            <!-- Seção de Foto de Perfil -->
+            <div class="profile-photo-card">
+              <img
+                id="profile-image"
+                src="https://placehold.co/120x120/00d4ff/ffffff?text=User"
+                alt="User Profile Photo"
+              />
+              <input
+                type="file"
+                id="photo-input"
+                class="hidden-input"
+                accept="image/*"
+              />
+              <button
+                class="change-photo-btn"
+                onclick="document.getElementById('photo-input').click()"
+              >
+                Trocar Foto
+              </button>
+            </div>
+
+            <!-- Seção de Informações Principais -->
+            <div class="section" style="animation-delay: 0.2s">
+              <div class="section-subtitle">Informações Principais</div>
+
+              <div class="form-group">
+                <label for="name">Nome Completo</label>
+                <input
+                  type="text"
+                  id="name"
+                  value="Jane Doe"
+                  placeholder="Digite seu nome completo"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value="jane.doe@example.com"
+                  placeholder="Digite seu email"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Telefone</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  value="+55 (11) 98765-4321"
+                  placeholder="Digite seu telefone"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Botão de Salvar no rodapé do conteúdo -->
+          <button
+            class="save-content-btn"
+            onclick="saveProfile()"
+            style="margin-top: 24px"
+          >
+            Salvar Informações
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="message-box" class="success-message">
+      Perfil salvo com sucesso!
+    </div>
+
+    <!-- Link para o arquivo JavaScript externo -->
+    <script src="../js/edit.js"></script>
+  </body>
+</html>

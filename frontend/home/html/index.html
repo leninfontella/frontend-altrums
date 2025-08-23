@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - Living Coins</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      /* Estilos específicos para integração com backend */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          #0a0a0a 0%,
+          #1a1a1a 50%,
+          #2a2a2a 100%
+        );
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+      }
+
+      .loading-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(0, 212, 255, 0.2);
+        border-top: 3px solid #00d4ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .loading-text {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Badge de nível do usuário */
+      .user-level-badge {
+        margin-top: 8px;
+      }
+
+      .level-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .level-info:hover {
+        transform: scale(1.02);
+      }
+
+      .level-progress {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 6px;
+        overflow: hidden;
+      }
+
+      .level-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #00d4ff, #0099cc);
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 2px;
+      }
+
+      /* Animações de entrada melhoradas */
+      .fade-in {
+        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* Estados de carregamento para cards */
+      .coin-card.loading,
+      .award-item.loading {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.03) 0%,
+          rgba(255, 255, 255, 0.06) 50%,
+          rgba(255, 255, 255, 0.03) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      /* Melhorias no balance card */
+      .balance-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .balance-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 212, 255, 0.1),
+          transparent
+        );
+        transition: left 0.6s ease;
+      }
+
+      .balance-card:hover::before {
+        left: 100%;
+      }
+
+      .balance-updated {
+        animation: balanceUpdatePulse 0.4s ease;
+      }
+
+      @keyframes balanceUpdatePulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Status de conexão */
+      .connection-status {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .connection-status.online {
+        background: linear-gradient(135deg, #10b981, #059669);
+        opacity: 1;
+      }
+
+      .connection-status.offline {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        opacity: 1;
+      }
+
+      /* Aprimoramento do botão principal */
+      .action-button.primary {
+        background: linear-gradient(
+          135deg,
+          #00d4ff 0%,
+          #0099cc 30%,
+          #7b2cbf 100%
+        );
+        position: relative;
+        overflow: hidden;
+      }
+
+      .action-button.primary::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.1) 50%,
+          transparent 100%
+        );
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+      }
+
+      .action-button.primary:hover::after {
+        transform: translateX(100%);
+      }
+
+      /* Erro/sucesso estados */
+      .error-state {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        margin: 8px 0;
+        font-size: 14px;
+      }
+
+      .success-state {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        margin: 8px 0;
+        font-size: 14px;
+      }
+
+      /* Placeholder para dados não carregados */
+      .data-placeholder {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        height: 20px;
+        animation: pulse 1.5s ease-in-out infinite alternate;
+      }
+
+      @keyframes pulse {
+        from {
+          opacity: 0.5;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="connection-status" class="connection-status">
+      <i class="fas fa-wifi"></i> <span id="connection-text">Conectado</span>
+    </div>
+
+    <div class="phone-container">
+      <div class="design-label">LIVING COINS APP</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span id="status-time">9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="profile-section">
+            <div class="profile-pic" id="user-avatar">
+              <i class="fas fa-user-astronaut"></i>
+            </div>
+            <div class="greeting">
+              <h2 id="user-greeting">Olá, Usuário!</h2>
+              <p>Pronto para impactar o futuro?</p>
+            </div>
+          </div>
+
+          <div class="balance-card" id="balance-card">
+            <div class="balance-label">Saldo Digital</div>
+            <div class="balance-amount">
+              <div class="coin-icon">💰</div>
+              <span id="user-balance">
+                <div
+                  class="data-placeholder"
+                  style="width: 80px; display: inline-block"
+                ></div>
+              </span>
+            </div>
+            <div id="balance-error" class="error-state" style="display: none">
+              Erro ao carregar saldo
+            </div>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="actions-grid">
+            <button
+              class="action-button primary unified"
+              id="search-donate-btn"
+              disabled
+            >
+              <div class="action-icon">
+                <i class="fas fa-search-dollar"></i>
+              </div>
+              <h3>Procurar e Doar</h3>
+              <p>Conecte-se e impacte</p>
+            </button>
+          </div>
+
+          <div class="section">
+            <div class="section-header">
+              <h3 class="section-title">Meus Altrums</h3>
+            </div>
+            <div class="coins-grid">
+              <div class="coin-card loading" id="earned-coins-card">
+                <div class="coin-type">Ganhos</div>
+                <div class="coin-amount">
+                  <div class="small-coin-icon">💰</div>
+                  <span
+                    ><div class="data-placeholder" style="width: 40px"></div
+                  ></span>
+                </div>
+              </div>
+              <div class="coin-card loading" id="donated-coins-card">
+                <div class="coin-type">Doados</div>
+                <div class="coin-amount">
+                  <div class="small-coin-icon">💰</div>
+                  <span
+                    ><div class="data-placeholder" style="width: 40px"></div
+                  ></span>
+                </div>
+              </div>
+            </div>
+            <div id="coins-error" class="error-state" style="display: none">
+              Erro ao carregar estatísticas de moedas
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header">
+              <h3 class="section-title">Prêmios</h3>
+              <a class="view-all" id="view-all">Ver Tudo</a>
+            </div>
+            <div class="awards-list">
+              <div class="award-item">
+                <div class="award-icon gold">
+                  <i class="fas fa-crown"></i>
+                </div>
+                <div class="award-info">
+                  <div class="award-name">1º iPhone 16</div>
+                  <div class="award-description">Maior impacto mensal</div>
+                </div>
+                <div class="award-date">Agosto</div>
+              </div>
+
+              <div class="award-item">
+                <div class="award-icon silver">
+                  <i class="fas fa-handshake"></i>
+                </div>
+                <div class="award-info">
+                  <div class="award-name">2º PS 5</div>
+                  <div class="award-description">100+ conexões feitas</div>
+                </div>
+                <div class="award-date">Setembro</div>
+              </div>
+
+              <div class="award-item">
+                <div class="award-icon bronze">
+                  <i class="fas fa-seedling"></i>
+                </div>
+                <div class="award-info">
+                  <div class="award-name">3º TV LED 4K</div>
+                  <div class="award-description">Primeiro projeto apoiado</div>
+                </div>
+                <div class="award-date">Outubro</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active" data-tab="home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </div>
+          <div id="go-timeline" class="nav-item" data-tab="timeline">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </div>
+          <div id="ranks" class="nav-item" data-tab="ranks">
+            <i class="fas fa-trophy"></i>
+            <span>Ranks</span>
+          </div>
+          <div id="profile" class="nav-item" data-tab="profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/auth.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/script.js"></script>
+
+    <script>
+      // Script de inicialização específico da página
+      document.addEventListener("DOMContentLoaded", function () {
+        // Atualizar horário na status bar
+        function updateStatusTime() {
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, "0");
+          const minutes = now.getMinutes().toString().padStart(2, "0");
+          document.getElementById(
+            "status-time"
+          ).textContent = `${hours}:${minutes}`;
+        }
+
+        updateStatusTime();
+        setInterval(updateStatusTime, 60000);
+
+        // Gerenciar estados de conexão
+        function updateConnectionStatus(online) {
+          const statusEl = document.getElementById("connection-status");
+          const textEl = document.getElementById("connection-text");
+
+          if (online) {
+            statusEl.className = "connection-status online";
+            textEl.innerHTML = '<i class="fas fa-wifi"></i> Conectado';
+            setTimeout(() => (statusEl.style.opacity = "0"), 2000);
+          } else {
+            statusEl.className = "connection-status offline";
+            textEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Sem conexão';
+            statusEl.style.opacity = "1";
+          }
+        }
+
+        // Event listeners de conectividade
+        window.addEventListener("online", () => updateConnectionStatus(true));
+        window.addEventListener("offline", () => updateConnectionStatus(false));
+
+        // Verificar conectividade inicial
+        if (navigator.onLine) {
+          updateConnectionStatus(true);
+        } else {
+          updateConnectionStatus(false);
+        }
+
+        // Ocultar loading após carregar scripts
+        setTimeout(() => {
+          const loadingOverlay = document.getElementById("loading-overlay");
+          if (loadingOverlay) {
+            loadingOverlay.classList.add("hidden");
+            setTimeout(() => loadingOverlay.remove(), 500);
+          }
+        }, 1000);
+      });
+
+      // Função global para mostrar estados de erro
+      window.showErrorState = function (containerId, message) {
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.style.display = "block";
+          container.textContent = message;
+        }
+      };
+
+      // Função global para ocultar estados de erro
+      window.hideErrorState = function (containerId) {
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.style.display = "none";
+        }
+      };
+
+      // Função para remover loading dos cards
+      window.removeCardLoading = function (cardId) {
+        const card = document.getElementById(cardId);
+        if (card) {
+          card.classList.remove("loading");
+        }
+      };
+
+      // Função para atualizar dados dos cards
+      window.updateCardData = function (cardId, value) {
+        const card = document.getElementById(cardId);
+        if (card) {
+          const span = card.querySelector(".coin-amount span");
+          if (span) {
+            span.textContent = value.toLocaleString();
+            card.classList.remove("loading");
+            card.classList.add("fade-in");
+          }
+        }
+      };
+
+      // Função para animação de atualização do saldo
+      window.animateBalanceUpdate = function (newBalance) {
+        const balanceCard = document.getElementById("balance-card");
+        const balanceSpan = document.getElementById("user-balance");
+
+        if (balanceCard && balanceSpan) {
+          balanceCard.classList.add("balance-updated");
+          balanceSpan.textContent = newBalance.toLocaleString();
+
+          setTimeout(() => {
+            balanceCard.classList.remove("balance-updated");
+          }, 400);
+        }
+      };
+
+      // Função para habilitar botão de doação
+      window.enableDonationButton = function () {
+        const button = document.getElementById("search-donate-btn");
+        if (button) {
+          button.disabled = false;
+          button.style.opacity = "1";
+          button.style.cursor = "pointer";
+        }
+      };
+
+      // Função para criar badge de nível
+      window.createLevelBadge = function (levelInfo) {
+        const profileSection = document.querySelector(".profile-section");
+        if (!profileSection) return;
+
+        let levelBadge = profileSection.querySelector(".user-level-badge");
+
+        if (!levelBadge) {
+          levelBadge = document.createElement("div");
+          levelBadge.className = "user-level-badge";
+          profileSection.appendChild(levelBadge);
+        }
+
+        const progressWidth = levelInfo.progress || 0;
+
+        levelBadge.innerHTML = `
+        <div class="level-info" style="
+          background: linear-gradient(135deg, ${levelInfo.color}20, ${
+          levelInfo.color
+        }40);
+          border: 1px solid ${levelInfo.color}60;
+          border-radius: 12px;
+          padding: 8px 12px;
+          margin-top: 8px;
+        ">
+          <div style="
+            color: ${levelInfo.color}; 
+            font-size: 14px; 
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+          ">
+            <span style="font-size: 16px;">${levelInfo.icon || "🏅"}</span>
+            ${levelInfo.name}
+          </div>
+          <div style="
+            color: #888; 
+            font-size: 11px;
+            text-align: center;
+            margin-top: 4px;
+          ">
+            Nível ${levelInfo.level} • ${Math.round(progressWidth)}%
+          </div>
+          <div class="level-progress">
+            <div class="level-progress-bar" style="width: ${progressWidth}%;"></div>
+          </div>
+        </div>
+      `;
+
+        levelBadge.classList.add("fade-in");
+      };
+
+      // Log de inicialização
+      console.log("🏠 Página Home carregada com integração backend");
+      console.log("🔧 Funcionalidades: Perfil, Saldo, Stats, Doações, Níveis");
+    </script>
+  </body>
+</html>

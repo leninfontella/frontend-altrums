@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minhas moedas - 1lenin1dev</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/myCoins/css/styles.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">MY COINS</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="header-top">
+            <div class="page-title">
+              <div class="title-icon">
+               <i class="fa-solid fa-coins"></i>
+              </div>
+              Minhas Moedas
+            </div>
+            <button id="go-settings"
+              class="settings-btn"           
+            >
+              <i class="fa-solid fa-house"></i>
+            </button>
+          </div>
+
+          <div class="balance-showcase">
+            <div class="main-balance">
+              <div class="balance-label">Saldo Total</div>
+              <div class="balance-display">
+                <div class="coin-icon-large">$</div>
+                <div class="balance-info">
+                  <span class="balance-value" id="mainBalance">2.547</span>
+                  <span class="balance-usd" id="balanceUSD">≈ $3,821.50</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="balance-trend">
+              <div class="trend-indicator positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+12.5%</span>
+              </div>
+              <span class="trend-label">24h</span>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <button class="quick-btn send" onclick="navigateToSend()">
+              <i class="fas fa-paper-plane"></i>
+              <span>Enviar</span>
+            </button>
+            <button class="quick-btn receive" onclick="navigateToReceive()">
+              <i class="fas fa-qrcode"></i>
+              <span>Receber</span>
+            </button>
+            <button class="quick-btn buy" onclick="navigateToBuy()">
+              <i class="fas fa-plus"></i>
+              <span>Comprar</span>
+            </button>
+            <button class="quick-btn stake" onclick="navigateToStake()">
+              <i class="fas fa-seedling"></i>
+              <span>Stake</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="portfolio-section">
+            <div class="section-header">
+              <h3 class="section-title">Portfólio Neural</h3>
+              <button class="view-all" onclick="togglePortfolioView()">
+                Ver gráfico
+              </button>
+            </div>
+
+            <div class="portfolio-grid">
+              <div class="portfolio-item main-coin">
+                <div class="coin-info">
+                  <div class="coin-avatar">
+                    <div class="coin-icon">Ð</div>
+                  </div>
+                  <div class="coin-details">
+                    <h4>Neural Coin</h4>
+                    <p>NRC</p>
+                  </div>
+                </div>
+                <div class="coin-stats">
+                  <div class="coin-amount">2.547</div>
+                  <div class="coin-value">$3,821.50</div>
+                  <div class="coin-change positive">+12.5%</div>
+                </div>
+              </div>
+
+              <div class="portfolio-item">
+                <div class="coin-info">
+                  <div class="coin-avatar alt">
+                    <div class="coin-icon">Ξ</div>
+                  </div>
+                  <div class="coin-details">
+                    <h4>Ethereum</h4>
+                    <p>ETH</p>
+                  </div>
+                </div>
+                <div class="coin-stats">
+                  <div class="coin-amount">0.75</div>
+                  <div class="coin-value">$1,245.00</div>
+                  <div class="coin-change negative">-2.1%</div>
+                </div>
+              </div>
+
+              <div class="portfolio-item">
+                <div class="coin-info">
+                  <div class="coin-avatar alt2">
+                    <div class="coin-icon">₿</div>
+                  </div>
+                  <div class="coin-details">
+                    <h4>Bitcoin</h4>
+                    <p>BTC</p>
+                  </div>
+                </div>
+                <div class="coin-stats">
+                  <div class="coin-amount">0.05</div>
+                  <div class="coin-value">$2,150.00</div>
+                  <div class="coin-change positive">+8.2%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="achievements-section">
+            <div class="section-header">
+              <h3 class="section-title">Conquistas Neural</h3>
+              <span class="achievement-count">3/12</span>
+            </div>
+
+            <div class="achievements-grid">
+              <div class="achievement-card unlocked">
+                <div class="achievement-icon">
+                  <i class="fas fa-rocket"></i>
+                </div>
+                <div class="achievement-info">
+                  <h4>Primeiro Voo</h4>
+                  <p>Primeira doação realizada</p>
+                  <span class="reward">+50 NRC</span>
+                </div>
+              </div>
+
+              <div class="achievement-card unlocked">
+                <div class="achievement-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="achievement-info">
+                  <h4>Conectado</h4>
+                  <p>10 conexões estabelecidas</p>
+                  <span class="reward">+100 NRC</span>
+                </div>
+              </div>
+
+              <div class="achievement-card unlocked">
+                <div class="achievement-icon">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="achievement-info">
+                  <h4>Influenciador</h4>
+                  <p>1000 moedas doadas</p>
+                  <span class="reward">+200 NRC</span>
+                </div>
+              </div>
+
+              <div class="achievement-card locked">
+                <div class="achievement-icon">
+                  <i class="fas fa-crown"></i>
+                </div>
+                <div class="achievement-info">
+                  <h4>Mestre Neural</h4>
+                  <p>10.000 moedas doadas</p>
+                  <span class="reward">+500 NRC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-section">
+            <div class="section-header">
+              <h3 class="section-title">Analytics Neural</h3>
+              <select
+                class="period-selector"
+                onchange="changePeriod(this.value)"
+              >
+                <option value="7d">7 dias</option>
+                <option value="30d">30 dias</option>
+                <option value="90d">90 dias</option>
+                <option value="1y">1 ano</option>
+              </select>
+            </div>
+
+            <div class="analytics-grid">
+              <div class="metric-card">
+                <div class="metric-icon">
+                  <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="metric-info">
+                  <span class="metric-value" id="totalSent">847</span>
+                  <span class="metric-label">Enviadas</span>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon received">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="metric-info">
+                  <span class="metric-value" id="totalReceived">1,243</span>
+                  <span class="metric-label">Recebidas</span>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon impact">
+                  <i class="fas fa-heart"></i>
+                </div>
+                <div class="metric-info">
+                  <span class="metric-value" id="totalImpact">2.1k</span>
+                  <span class="metric-label">Impacto</span>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon network">
+                  <i class="fas fa-network-wired"></i>
+                </div>
+                <div class="metric-info">
+                  <span class="metric-value" id="networkSize">127</span>
+                  <span class="metric-label">Rede</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div id="go-home" class="bottom-nav">
+          <div class="nav-item" data-tab="home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </div>
+          <div id="go-timeline" class="nav-item active">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </div>
+          <div id="go-ranks" class="nav-item">
+            <i class="fas fa-trophy"></i>
+            <span>Ranks</span>
+          </div>
+          <div id="go-profile" class="nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </div>
+        </div>
+      </div> -->
+
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+    </div>
+
+    <script src="/myCoins/js/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configurações - App Doação de Moedas</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">SETTINGS SCREEN</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="floating-particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+        </div>
+
+        <div class="header">
+          <div class="header-left">
+            <div id="go-home" class="back-button">
+              <i class="fas fa-arrow-left"></i>
+            </div>
+            <h1 class="header-title">Configurações</h1>
+          </div>
+          <div id="go-profile" class="profile-button">
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+
+        <div class="content">
+          <!-- Card do usuário -->
+          <div class="user-card">
+            <div class="user-avatar">
+              <i class="fas fa-rocket"></i>
+            </div>
+            <div class="user-info">
+              <h3>João Silva</h3>
+              <p>joao.silva@coinfuture.com</p>
+            </div>
+          </div>
+
+          <!-- Configurações da Conta -->
+          <div class="settings-section">
+            <h2 class="section-title">Conta</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-user-edit"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div id="go-edit" class="setting-title">Editar Perfil</div>
+                    <div class="setting-subtitle">
+                      Nome, foto e informações pessoais
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-shield-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Segurança</div>
+                    <div class="setting-subtitle">
+                      Senha, 2FA e verificação biométrica
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-wallet"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Carteira Digital</div>
+                    <div class="setting-subtitle">
+                      Métodos de pagamento e histórico
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configurações de Notificação -->
+          <div class="settings-section">
+            <h2 class="section-title">Notificações</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-bell"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Push Notifications</div>
+                    <div class="setting-subtitle">
+                      Receber alertas de doações
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">E-mail</div>
+                    <div class="setting-subtitle">
+                      Newsletter e relatórios mensais
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">SMS</div>
+                    <div class="setting-subtitle">
+                      Alertas críticos por mensagem
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configurações de Privacidade -->
+          <div class="settings-section">
+            <h2 class="section-title">Privacidade</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-eye-slash"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Doações Anônimas</div>
+                    <div class="setting-subtitle">
+                      Ocultar identidade nas doações
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-chart-line"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Analytics</div>
+                    <div class="setting-subtitle">
+                      Compartilhar dados de uso
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configurações do App -->
+          <div class="settings-section">
+            <h2 class="section-title">Aplicativo</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-palette"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Tema</div>
+                    <div class="setting-subtitle">
+                      Escuro, claro ou automático
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-globe"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Idioma</div>
+                    <div class="setting-subtitle">Português (Brasil)</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-download"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Auto-sync</div>
+                    <div class="setting-subtitle">Sincronização automática</div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suporte -->
+          <div class="settings-section">
+            <h2 class="section-title">Suporte</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-question-circle"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Central de Ajuda</div>
+                    <div class="setting-subtitle">FAQ e tutoriais</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-headset"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Falar com Suporte</div>
+                    <div class="setting-subtitle">Chat ao vivo 24/7</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Avaliar App</div>
+                    <div class="setting-subtitle">
+                      Deixe sua opinião na loja
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-file-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Termos de Uso</div>
+                    <div class="setting-subtitle">Política de privacidade</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recursos Avançados -->
+          <div class="settings-section">
+            <h2 class="section-title">Recursos Avançados</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-robot"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">IA de Doações</div>
+                    <div class="setting-subtitle">
+                      Sugestões inteligentes de causas
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-coins"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Doação Automática</div>
+                    <div class="setting-subtitle">
+                      Valor fixo mensal para causas
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-leaf"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Impacto Carbono</div>
+                    <div class="setting-subtitle">
+                      Compensação automática CO²
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dados e Backup -->
+          <div class="settings-section">
+            <h2 class="section-title">Dados e Backup</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Backup na Nuvem</div>
+                    <div class="setting-subtitle">
+                      Última sincronização: hoje às 14:32
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-download"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Exportar Dados</div>
+                    <div class="setting-subtitle">
+                      Download do histórico completo
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-trash-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Limpar Cache</div>
+                    <div class="setting-subtitle">Liberar 125MB de espaço</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acessibilidade -->
+          <div class="settings-section">
+            <h2 class="section-title">Acessibilidade</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-text-height"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Tamanho da Fonte</div>
+                    <div class="setting-subtitle">
+                      Padrão • Pequeno • Médio • Grande
+                    </div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-volume-up"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Audio Feedback</div>
+                    <div class="setting-subtitle">Sons de confirmação</div>
+                  </div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Vibração</div>
+                    <div class="setting-subtitle">Feedback tátil nas ações</div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Beta e Desenvolvimento -->
+          <div class="settings-section">
+            <h2 class="section-title">Beta Features</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-flask"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Recursos Beta</div>
+                    <div class="setting-subtitle">
+                      Testar novas funcionalidades
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div class="setting-icon">
+                    <i class="fas fa-bug"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title">Relatório de Bugs</div>
+                    <div class="setting-subtitle">
+                      Enviar logs automaticamente
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                  <div class="toggle-slider"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ações da Conta -->
+          <div class="settings-section">
+            <h2 class="section-title">Conta</h2>
+
+            <div class="setting-item">
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div
+                    class="setting-icon"
+                    style="
+                      background: linear-gradient(
+                        135deg,
+                        #f59e0b 0%,
+                        #d97706 100%
+                      );
+                    "
+                  >
+                    <i class="fas fa-user-times"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title" style="color: #f59e0b">
+                      Desativar Conta
+                    </div>
+                    <div class="setting-subtitle">Pausar temporariamente</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+
+            <div
+              id="logout-item"
+              class="setting-item"
+              style="border-color: rgba(239, 68, 68, 0.3); margin-bottom: 24px"
+            >
+              <div class="setting-content">
+                <div class="setting-left">
+                  <div
+                    class="setting-icon"
+                    style="
+                      background: linear-gradient(
+                        135deg,
+                        #ef4444 0%,
+                        #dc2626 100%
+                      );
+                    "
+                  >
+                    <i class="fas fa-sign-out-alt"></i>
+                  </div>
+                  <div class="setting-text">
+                    <div class="setting-title" style="color: #ef4444">
+                      Sair da Conta
+                    </div>
+                    <div class="setting-subtitle">Desconectar dispositivo</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer com estatísticas
+          <div class="stats-footer">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">R$ 2.847,50</div>
+                <div class="stat-label">Total Doado</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">47</div>
+                <div class="stat-label">Causas Apoiadas</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">156</div>
+                <div class="stat-label">Vidas Impactadas</div>
+              </div>
+            </div>
+            <div class="impact-badge">
+              <i class="fas fa-heart"></i>
+              <span>Você é um Doador Platinum!</span>
+            </div>
+          </div>
+          -->
+
+          <div class="version-info">
+            <div class="version-text">CoinFuture versão</div>
+            <div class="app-version">2.1.0 (Build 421)</div>
+            <div class="copyright">
+              © 2025 CoinFuture. Todos os direitos reservados.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/auth.js"></script>
+    <script src="../../login/js/config.js"></script>
+    <script src="../../configuracao/js/script.js"></script>
+  </body>
+</html>

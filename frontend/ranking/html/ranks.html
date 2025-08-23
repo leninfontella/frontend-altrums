@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ranks - Sistema de Moedas</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/ranks.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="status-icons">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-three-quarters"></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <button class="back-button" id="back-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="header-title">Ranking de Moedas</div>
+          <div class="header-space"></div>
+        </div>
+
+        <div class="main-content">
+          <!-- Posição do usuário atual -->
+          <div class="current-user-card">
+            <div class="user-rank-badge" id="user-position">8</div>
+            <div class="user-info">
+              <h3 id="user-name">Usuário</h3>
+              <div class="user-balance">
+                <div class="coin-icon">₿</div>
+                <span id="user-balance">2.050</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pódium -->
+          <div class="section-title">
+            <i class="fas fa-crown"></i>
+            Top 3
+          </div>
+
+          <div class="podium-container">
+            <!-- 2º Lugar -->
+            <div class="podium-item second">
+              <div class="podium-rank">2</div>
+              <div class="podium-avatar silver">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="podium-name">Ana Silva</div>
+              <div class="podium-balance">
+                <div class="coin-icon">₿</div>
+                <span>3.240</span>
+              </div>
+            </div>
+
+            <!-- 1º Lugar -->
+            <div class="podium-item first">
+              <div class="podium-rank">1</div>
+              <div class="podium-crown">
+                <i class="fas fa-crown"></i>
+              </div>
+              <div class="podium-avatar gold">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="podium-name">João Santos</div>
+              <div class="podium-balance">
+                <div class="coin-icon">₿</div>
+                <span>4.890</span>
+              </div>
+            </div>
+
+            <!-- 3º Lugar -->
+            <div class="podium-item third">
+              <div class="podium-rank">3</div>
+              <div class="podium-avatar bronze">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="podium-name">Maria Costa</div>
+              <div class="podium-balance">
+                <div class="coin-icon">₿</div>
+                <span>2.850</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ranking Completo -->
+          <div class="section-title">
+            <i class="fas fa-list-ol"></i>
+            Ranking Completo
+          </div>
+
+          <div class="total-users">156 usuários</div>
+
+          <!-- Lista de ranking será preenchida via JavaScript -->
+          <div class="ranking-list">
+            <!-- Os itens serão inseridos dinamicamente -->
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" id="nav-home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </div>
+          <div class="nav-item" id="nav-timeline">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </div>
+          <div class="nav-item active">
+            <i class="fas fa-trophy"></i>
+            <span>Ranks</span>
+          </div>
+          <div class="nav-item" id="nav-profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/ranks.js"></script>
+  </body>
+</html>

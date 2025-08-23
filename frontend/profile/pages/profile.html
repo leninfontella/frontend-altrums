@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile - 1lênin1dev</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/profile.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">FIGMA DESIGN</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <button id="go-back" class="back-button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <div id="go-settings" class="header-title">Profile</div>
+          <button id="go-settings-button" class="settings-button">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+
+        <div class="main-content">
+          <div class="profile-card">
+            <div class="profile-avatar">
+              <i class="fas fa-user-astronaut"></i>
+            </div>
+            <!-- Aqui com IDs para atualizar dinamicamente -->
+            <div id="profile-name" class="profile-name">Lênin Fontella</div>
+            <div id="profile-email" class="profile-username">@lenin_sci</div>
+
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">2.547</div>
+                <div class="stat-label">Moedas</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">45</div>
+                <div class="stat-label">Doações</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">12</div>
+                <div class="stat-label">Conexões</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="achievement-section">
+            <h3 class="section-title">
+              <i class="fas fa-trophy" style="color: #ffaa00"></i>
+              Conquistas
+            </h3>
+            <div class="achievement-grid">
+              <div class="achievement-card unlocked">
+                <div class="achievement-icon">
+                  <i class="fas fa-rocket"></i>
+                </div>
+                <div class="achievement-title">Pioneiro Digital</div>
+                <div class="achievement-desc">Primeira doação</div>
+              </div>
+              <div class="achievement-card unlocked">
+                <div class="achievement-icon">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="achievement-title">Influenciador</div>
+                <div class="achievement-desc">10+ doações</div>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">
+                  <i class="fas fa-crown"></i>
+                </div>
+                <div class="achievement-title">Rei Neural</div>
+                <div class="achievement-desc">100+ doações</div>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">
+                  <i class="fas fa-globe"></i>
+                </div>
+                <div class="achievement-title">Conectado</div>
+                <div class="achievement-desc">50+ conexões</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-section">
+            <button class="menu-item">
+              <div class="menu-icon transactions">
+                <i class="fas fa-history"></i>
+              </div>
+              <div class="menu-text">
+                <div class="menu-title">Histórico</div>
+                <div class="menu-subtitle">Ver todas as transações</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+
+            <button class="menu-item">
+              <div class="menu-icon wallet">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div class="menu-text">
+                <div class="menu-title">Carteira Digital</div>
+                <div class="menu-subtitle">Gerenciar fundos</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+
+            <button class="menu-item">
+              <div class="menu-icon security">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="menu-text">
+                <div class="menu-title">Segurança</div>
+                <div class="menu-subtitle">Configurações de privacidade</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+
+            <button class="menu-item">
+              <div class="menu-icon help">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <div id="go-support" class="menu-text">
+                <div class="menu-title">Suporte</div>
+                <div class="menu-subtitle">Ajuda e contato</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div id="go-home" class="nav-item" data-tab="home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </div>
+          <div id="go-timeline" class="nav-item" data-tab="timeline">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </div>
+          <div id="go-ranks" class="nav-item" data-tab="ranks">
+            <i class="fas fa-trophy"></i>
+            <span>Ranks</span>
+          </div>
+          <div class="nav-item active" data-tab="profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/auth.js"></script>
+    <script src="../js/profile.js"></script>
+  </body>
+</html>

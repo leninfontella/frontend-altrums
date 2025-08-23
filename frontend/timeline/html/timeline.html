@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timeline - App Doação de Moedas</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/timeline.css" />
+    <link rel="stylesheet" href="../css/timeline-api.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">TIMELINE</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="header-top">
+            <div class="page-title">
+              <div class="title-icon">
+                <i class="fas fa-history"></i>
+              </div>
+              <div class="header-title">Timeline Altrums</div>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-value" id="totalTransactions">--</div>
+              <div class="stat-label">Transações</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="todayActivity">--</div>
+              <div class="stat-label">Hoje</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="timeline-controls">
+            <div class="timeline-actions"></div>
+          </div>
+
+          <div class="timeline-container" id="timelineContainer">
+            <div class="timeline-line"></div>
+          </div>
+
+          <div
+            class="load-more-container"
+            id="loadMoreContainer"
+            style="display: none"
+          >
+            <button class="load-more-btn" id="loadMoreBtn">
+              <i class="fas fa-chevron-down"></i>
+              Carregar mais transações
+            </button>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <a href="../../home/html/index.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="#" class="nav-item active">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </a>
+          <a href="../../ranking/html/ranks.html" class="nav-item">
+            <i class="fas fa-trophy"></i>
+            <span>Ranks</span>
+          </a>
+          <a href="../../profile/pages/profile.html" class="nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="donationModal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Nova Doação</h3>
+          <button class="modal-close" id="closeDonationModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="recipientSearch">Buscar destinatário:</label>
+            <input
+              type="text"
+              id="recipientSearch"
+              placeholder="Digite o nome ou username..."
+              class="form-input"
+            />
+            <div class="search-results" id="searchResults"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="donationAmount">Quantidade:</label>
+            <input
+              type="number"
+              id="donationAmount"
+              min="1"
+              max="10000"
+              placeholder="Quantidade de moedas"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="donationMessage">Mensagem (opcional):</label>
+            <textarea
+              id="donationMessage"
+              placeholder="Sua mensagem..."
+              maxlength="500"
+              class="form-textarea"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="cancelDonationBtn">Cancelar</button>
+          <button class="btn-primary" id="confirmDonationBtn">Doar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/timeline-api-connected.js"></script>
+    <script src="../js/timeline.js"></script>
+
+    <script>
+      // Configurações específicas do ambiente
+      window.APP_CONFIG = {
+        API_BASE_URL: "http://localhost:3000/api",
+        ENABLE_REAL_TIME: true,
+        UPDATE_INTERVAL: 30000,
+        MAX_TIMELINE_ITEMS: 50,
+      };
+
+      // Event listeners adicionais
+      document.addEventListener("DOMContentLoaded", function () {
+        // Controles de filtro
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            // Remover active de todos
+            document
+              .querySelectorAll(".filter-btn")
+              .forEach((b) => b.classList.remove("active"));
+            // Adicionar active ao clicado
+            this.classList.add("active");
+
+            // Filtrar timeline
+            const filter = this.dataset.filter;
+            if (window.timelineAPI) {
+              window.timelineAPI.filterTimeline(filter);
+            }
+          });
+        });
+
+        // Botão de refresh
+        document
+          .getElementById("refreshBtn")
+          .addEventListener("click", async function () {
+            this.style.transform = "rotate(360deg)";
+            this.style.transition = "transform 0.5s ease";
+
+            if (window.timelineAPI) {
+              await window.timelineAPI.loadRealTimelineData();
+            }
+
+            setTimeout(() => {
+              this.style.transform = "rotate(0deg)";
+            }, 500);
+          });
+
+        // Modal controls
+        document
+          .getElementById("closeDonationModal")
+          .addEventListener("click", closeDonationModal);
+        document
+          .getElementById("cancelDonationBtn")
+          .addEventListener("click", closeDonationModal);
+
+        // Fechar modal clicando no overlay
+        document
+          .getElementById("donationModal")
+          .addEventListener("click", function (e) {
+            if (e.target === this) {
+              closeDonationModal();
+            }
+          });
+
+        // Busca de usuários no modal
+        let searchTimeout;
+        document
+          .getElementById("recipientSearch")
+          .addEventListener("input", function () {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length >= 2) {
+              searchTimeout = setTimeout(async () => {
+                if (window.timelineAPI && window.timelineAPI.DonationService) {
+                  const results =
+                    await window.timelineAPI.DonationService.searchUsers(
+                      query,
+                      1,
+                      5
+                    );
+                  displaySearchResults(results);
+                }
+              }, 300);
+            } else {
+              document.getElementById("searchResults").innerHTML = "";
+            }
+          });
+
+        // Confirmar doação
+        document
+          .getElementById("confirmDonationBtn")
+          .addEventListener("click", processDonation);
+
+        // Carregar mais
+        document
+          .getElementById("loadMoreBtn")
+          .addEventListener("click", loadMoreTransactions);
+      });
+
+      function closeDonationModal() {
+        document.getElementById("donationModal").style.display = "none";
+        // Limpar formulário
+        document.getElementById("recipientSearch").value = "";
+        document.getElementById("donationAmount").value = "";
+        document.getElementById("donationMessage").value = "";
+        document.getElementById("searchResults").innerHTML = "";
+      }
+
+      function displaySearchResults(results) {
+        const container = document.getElementById("searchResults");
+
+        if (!results || !results.users || results.users.length === 0) {
+          container.innerHTML =
+            '<div class="no-results">Nenhum usuário encontrado</div>';
+          return;
+        }
+
+        container.innerHTML = results.users
+          .map(
+            (user) => `
+          <div class="search-result-item" data-user-id="${
+            user._id
+          }" onclick="selectRecipient('${user._id}', '${user.name}')">
+            <div class="user-avatar-small">
+              ${user.avatar || "👤"}
+            </div>
+            <div class="user-info-small">
+              <div class="user-name">${user.name}</div>
+              <div class="user-details">${
+                user.username ? "@" + user.username : ""
+              } ${user.institution || ""}</div>
+            </div>
+            <div class="user-coins">
+              ${user.coins} Æ
+            </div>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      let selectedRecipientId = null;
+      function selectRecipient(userId, userName) {
+        selectedRecipientId = userId;
+        document.getElementById("recipientSearch").value = userName;
+        document.getElementById("searchResults").innerHTML = "";
+      }
+
+      async function processDonation() {
+        if (!selectedRecipientId) {
+          alert("Selecione um destinatário");
+          return;
+        }
+
+        const amount = parseInt(
+          document.getElementById("donationAmount").value
+        );
+        const message = document.getElementById("donationMessage").value;
+
+        if (!amount || amount <= 0) {
+          alert("Insira uma quantidade válida");
+          return;
+        }
+
+        try {
+          const btn = document.getElementById("confirmDonationBtn");
+          btn.disabled = true;
+          btn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+          if (window.timelineAPI && window.timelineAPI.DonationService) {
+            const result =
+              await window.timelineAPI.DonationService.createDonation(
+                selectedRecipientId,
+                amount,
+                message
+              );
+
+            if (result && result.success) {
+              closeDonationModal();
+              // Recarregar timeline
+              await window.timelineAPI.loadRealTimelineData();
+              // Mostrar notificação de sucesso
+              if (window.showNotification) {
+                window.showNotification(
+                  "Doação realizada com sucesso!",
+                  "success"
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao processar doação:", error);
+          alert("Erro ao processar doação. Tente novamente.");
+        } finally {
+          const btn = document.getElementById("confirmDonationBtn");
+          btn.disabled = false;
+          btn.innerHTML = "Doar";
+        }
+      }
+
+      async function loadMoreTransactions() {
+        if (window.timelineAPI) {
+          // Implementar paginação
+          console.log("Carregando mais transações...");
+        }
+      }
+    </script>
+
+    <style>
+      /* Estilos específicos para controles da timeline */
+      .timeline-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .timeline-filters {
+        display: flex;
+        gap: 8px;
+      }
+
+      .filter-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #888;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: center;
+      }
+
+      .filter-btn.active {
+        background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+        color: white;
+        border-color: #00d4ff;
+      }
+
+      .filter-btn:hover {
+        border-color: #00d4ff;
+        color: #00d4ff;
+      }
+
+      .timeline-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #888;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .action-btn:hover {
+        background: rgba(0, 212, 255, 0.1);
+        border-color: #00d4ff;
+        color: #00d4ff;
+      }
+
+      /* Modal styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+      }
+
+      .modal-content {
+        background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 400px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+
+      .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-header h3 {
+        color: #fff;
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 16px;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .modal-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .form-group label {
+        display: block;
+        color: #ccc;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .form-input,
+      .form-textarea {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: #00d4ff;
+        box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+      }
+
+      .search-result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .search-result-item:hover {
+        background: rgba(0, 212, 255, 0.1);
+      }
+
+      .user-avatar-small {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
+      .user-info-small {
+        flex: 1;
+      }
+
+      .user-name {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .user-details {
+        color: #888;
+        font-size: 12px;
+      }
+
+      .user-coins {
+        color: #00d4ff;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .no-results {
+        padding: 12px;
+        text-align: center;
+        color: #888;
+        font-size: 12px;
+      }
+
+      .modal-footer {
+        padding: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ccc;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+
+      .load-more-container {
+        text-align: center;
+        padding: 30px;
+      }
+
+      .load-more-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #888;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 auto;
+      }
+
+      .load-more-btn:hover {
+        background: rgba(0, 212, 255, 0.1);
+        border-color: #00d4ff;
+        color: #00d4ff;
+      }
+    </style>
+  </body>
+</html>

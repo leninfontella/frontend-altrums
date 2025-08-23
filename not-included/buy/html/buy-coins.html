@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buy Coins - 1lenin1dev</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/buy-coins.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">BUY COINS</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="header-nav">
+            <button id="go-back" class="back-btn">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title">Comprar Moedas</div>
+            <div style="width: 40px"></div>
+          </div>
+
+          <div class="balance-card">
+            <div class="balance-label">Saldo Digital Atual</div>
+            <div class="balance-amount">
+              <div class="coin-icon">Ð</div>
+              <span class="coins-amount">1,247</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="packages-section">
+            <div class="section-header">
+              <h3 class="section-title">Pacotes Neurais</h3>
+              <span class="view-all">Energia Digital</span>
+            </div>
+
+            <div
+              class="package-card starter"
+              onclick="selectPackage(this, '100', '2.99')"
+            >
+              <div class="package-header">
+                <div class="package-coins">
+                  <div class="coin-icon">Ð</div>
+                  <span class="coins-count">100</span>
+                </div>
+                <div class="package-price">R$ 2,99</div>
+              </div>
+              <div class="package-value">R$ 0,03 por moeda</div>
+              <div class="package-label">STARTER</div>
+            </div>
+
+            <div
+              class="package-card popular"
+              onclick="selectPackage(this, '500', '12.99')"
+            >
+              <div class="popular-badge">
+                <i class="fas fa-star"></i>
+                POPULAR
+              </div>
+              <div class="package-header">
+                <div class="package-coins">
+                  <div class="coin-icon">Ð</div>
+                  <span class="coins-count">500</span>
+                </div>
+                <div class="package-price">R$ 12,99</div>
+              </div>
+              <div class="package-bonus">+50 moedas bônus!</div>
+              <div class="package-value">R$ 0,024 por moeda</div>
+              <div class="package-label">BOOST</div>
+            </div>
+
+            <div
+              class="package-card pro"
+              onclick="selectPackage(this, '1000', '19.99')"
+            >
+              <div class="package-header">
+                <div class="package-coins">
+                  <div class="coin-icon">Ð</div>
+                  <span class="coins-count">1000</span>
+                </div>
+                <div class="package-price">R$ 19,99</div>
+              </div>
+              <div class="package-bonus">+100 moedas bônus!</div>
+              <div class="package-value">R$ 0,018 por moeda</div>
+              <div class="package-label">PRO</div>
+            </div>
+
+            <div
+              class="package-card elite"
+              onclick="selectPackage(this, '2500', '39.99')"
+            >
+              <div class="package-header">
+                <div class="package-coins">
+                  <div class="coin-icon">Ð</div>
+                  <span class="coins-count">2500</span>
+                </div>
+                <div class="package-price">R$ 39,99</div>
+              </div>
+              <div class="package-bonus">+300 moedas bônus!</div>
+              <div class="package-value">R$ 0,014 por moeda</div>
+              <div class="package-label">ELITE</div>
+            </div>
+
+            <div
+              class="package-card quantum"
+              onclick="selectPackage(this, '5000', '69.99')"
+            >
+              <div class="package-header">
+                <div class="package-coins">
+                  <div class="coin-icon">Ð</div>
+                  <span class="coins-count">5000</span>
+                </div>
+                <div class="package-price">R$ 69,99</div>
+              </div>
+              <div class="package-bonus">+750 moedas bônus!</div>
+              <div class="package-value">R$ 0,012 por moeda</div>
+              <div class="package-label">QUANTUM</div>
+            </div>
+          </div>
+
+          <div class="payment-section">
+            <div class="section-header">
+              <h3 class="section-title">Sistema de Pagamento</h3>
+              <span class="view-all">Neural Pay</span>
+            </div>
+            <div class="payment-grid">
+              <button class="payment-btn" onclick="selectPayment('pix')">
+                <div class="payment-icon">
+                  <i class="fas fa-qrcode"></i>
+                </div>
+                <span>PIX</span>
+              </button>
+              <button class="payment-btn" onclick="selectPayment('card')">
+                <div class="payment-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                <span>Cartão</span>
+              </button>
+              <button class="payment-btn" onclick="selectPayment('paypal')">
+                <div class="payment-icon">
+                  <i class="fab fa-paypal"></i>
+                </div>
+                <span>PayPal</span>
+              </button>
+              <button class="payment-btn" onclick="selectPayment('crypto')">
+                <div class="payment-icon">
+                  <i class="fab fa-bitcoin"></i>
+                </div>
+                <span>Crypto</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="floating-message">⚡ Sistema neural ativo!</div>
+    </div> -->
+
+    <script src="../js/buy-coins.js"></script>
+  </body>
+</html>
