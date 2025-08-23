@@ -34,6 +34,11 @@ class UserProfileService {
         score: userData.score || 2050,
         coins: userData.coins || 0,
         donations: userData.totalDonated || 0,
+        monthlyDonated: userData.monthlyDonated || 0,
+        monthlyReceived: userData.monthlyReceived || 0,
+        lastDonationAmount: userData.lastDonationAmount || 50,
+        lastDonationDate: userData.lastDonationDate || "há 2 dias",
+        donationGoal: userData.donationGoal || 100,
       };
     } else {
       console.warn(
@@ -52,7 +57,28 @@ class UserProfileService {
         score: 2050,
         coins: 1250,
         donations: 15,
+        monthlyDonated: 15,
+        monthlyReceived: 8,
+        lastDonationAmount: 50,
+        lastDonationDate: "há 2 dias",
+        donationGoal: 100,
       };
+    }
+  }
+
+  // Salva dados atualizados do usuário
+  static saveUserData(userData) {
+    try {
+      const currentData = Auth.getUserData() || {};
+      const updatedData = { ...currentData, ...userData };
+
+      // Usar sessionStorage como o módulo Auth
+      sessionStorage.setItem("currentUser", JSON.stringify(updatedData));
+      console.log("✅ Dados do usuário salvos:", updatedData);
+      return true;
+    } catch (error) {
+      console.error("❌ Erro ao salvar dados do usuário:", error);
+      return false;
     }
   }
 
@@ -64,6 +90,108 @@ class UserProfileService {
       const value = localStorage.getItem(key);
       console.log(`  ${key}:`, value);
     }
+
+    console.log("🔧 DEBUG - SessionStorage:");
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      const value = sessionStorage.getItem(key);
+      console.log(`  ${key}:`, value);
+    }
+  }
+}
+
+// ========== GERENCIADOR DE METAS ==========
+class GoalManager {
+  static getGoalData() {
+    const userData = UserProfileService.getUserData();
+    const currentDonated = userData.monthlyDonated || 0;
+    const goalAmount = userData.donationGoal || 100;
+    const progress = Math.min((currentDonated / goalAmount) * 100, 100);
+
+    return {
+      current: currentDonated,
+      goal: goalAmount,
+      progress: progress,
+    };
+  }
+
+  static updateGoal(newGoalAmount) {
+    const success = UserProfileService.saveUserData({
+      donationGoal: newGoalAmount,
+    });
+
+    if (success) {
+      this.updateGoalDisplay();
+      return true;
+    }
+    return false;
+  }
+
+  static updateGoalDisplay() {
+    const goalData = this.getGoalData();
+    const progressText = document.getElementById("goal-progress-text");
+    const progressBar = document.getElementById("goal-progress-bar");
+
+    if (progressText) {
+      progressText.textContent = `${goalData.current}/${goalData.goal}`;
+    }
+
+    if (progressBar) {
+      progressBar.style.width = `${goalData.progress}%`;
+    }
+  }
+}
+
+// ========== GERENCIADOR DE DASHBOARD ==========
+class DashboardManager {
+  static updateDashboard(userData) {
+    // Atualizar última doação
+    const lastAmountEl = document.getElementById("last-donation-amount");
+    const lastDateEl = document.getElementById("last-donation-date");
+
+    if (lastAmountEl) {
+      lastAmountEl.textContent = `${userData.lastDonationAmount} moedas`;
+    }
+
+    if (lastDateEl) {
+      lastDateEl.textContent = userData.lastDonationDate;
+    }
+
+    // Atualizar gráfico de doações
+    this.updateDonationChart(userData);
+  }
+
+  static updateDonationChart(userData) {
+    const donatedCount = document.getElementById("donated-count");
+    const receivedCount = document.getElementById("received-count");
+    const donatedBar = document.getElementById("donated-bar");
+    const receivedBar = document.getElementById("received-bar");
+
+    const donated = userData.monthlyDonated || 0;
+    const received = userData.monthlyReceived || 0;
+    const total = donated + received;
+
+    if (donatedCount) {
+      donatedCount.textContent = `Doadas: ${donated}`;
+    }
+
+    if (receivedCount) {
+      receivedCount.textContent = `Recebidas: ${received}`;
+    }
+
+    // Calcular alturas das barras baseado na proporção
+    if (total > 0) {
+      const donatedHeight = (donated / total) * 100;
+      const receivedHeight = (received / total) * 100;
+
+      if (donatedBar) {
+        donatedBar.style.height = `${Math.max(donatedHeight, 10)}%`;
+      }
+
+      if (receivedBar) {
+        receivedBar.style.height = `${Math.max(receivedHeight, 10)}%`;
+      }
+    }
   }
 }
 
@@ -71,13 +199,13 @@ class UserProfileService {
 function loadAndDisplayUserData() {
   console.log("📄 Carregando e exibindo dados do usuário...");
 
-  // Debug para ver o que tem no localStorage
+  // Debug para ver o que tem no localStorage/sessionStorage
   UserProfileService.debugLocalStorage();
 
   const userData = UserProfileService.getUserData();
 
   if (!userData) {
-    console.error("❌ Falha ao carregar dados do usuário");
+    console.error("⌐ Falha ao carregar dados do usuário");
     return;
   }
 
@@ -101,10 +229,14 @@ function loadAndDisplayUserData() {
     console.warn("⚠️ Elemento 'profile-email' não encontrado");
   }
 
-  // Atualizar estatísticas se existirem
-  if (userData.coins !== undefined) {
-    updateStats(userData.coins, userData.donations);
-  }
+  // Atualizar estatísticas
+  updateStats(userData);
+
+  // Atualizar dashboard
+  DashboardManager.updateDashboard(userData);
+
+  // Atualizar metas
+  GoalManager.updateGoalDisplay();
 
   // Procurar por outros elementos que possam precisar do nome
   updateAllNameElements(userData);
@@ -163,9 +295,64 @@ function initializeProfile() {
   setupMenuInteractions();
   setupNavigationInteractions();
   setupHeaderButtons();
+  setupGoalModal();
   animateDashboard();
 
   console.log("✅ Perfil inicializado com sucesso!");
+}
+
+// ========== CONFIGURAÇÃO DO MODAL DE METAS ==========
+function setupGoalModal() {
+  const editBtn = document.getElementById("edit-goal-btn");
+  const modal = document.getElementById("goal-modal");
+  const closeBtn = document.getElementById("close-modal");
+  const saveBtn = document.getElementById("save-goal");
+  const goalSelect = document.getElementById("goal-amount");
+
+  if (editBtn && modal) {
+    editBtn.addEventListener("click", () => {
+      modal.classList.add("show");
+
+      // Definir valor atual no select
+      const currentGoal = GoalManager.getGoalData().goal;
+      if (goalSelect) {
+        goalSelect.value = currentGoal;
+      }
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("show");
+    });
+  }
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("show");
+      }
+    });
+  }
+
+  if (saveBtn && goalSelect && modal) {
+    saveBtn.addEventListener("click", () => {
+      const newGoal = parseInt(goalSelect.value);
+      if (newGoal && GoalManager.updateGoal(newGoal)) {
+        modal.classList.remove("show");
+
+        // Mostrar feedback visual
+        saveBtn.textContent = "Salvo!";
+        saveBtn.style.background = "linear-gradient(135deg, #00ff88, #00cc66)";
+
+        setTimeout(() => {
+          saveBtn.textContent = "Salvar Meta";
+          saveBtn.style.background =
+            "linear-gradient(135deg, #00d4ff, #0099cc)";
+        }, 2000);
+      }
+    });
+  }
 }
 
 // ========== FUNÇÕES DE CONFIGURAÇÃO ==========
@@ -356,24 +543,20 @@ function animateDashboard() {
   }, 800);
 }
 
-function updateStats(coins, donations) {
-  const statValues = document.querySelectorAll(".stat-value");
+function updateStats(userData) {
+  const userCoins = document.getElementById("user-coins");
+  const userDonations = document.getElementById("user-donations");
 
-  if (statValues.length >= 2) {
-    animateNumber(
-      statValues[0],
-      parseInt(statValues[0].textContent.replace(".", "")) || 0,
-      coins
-    );
-    animateNumber(
-      statValues[1],
-      parseInt(statValues[1].textContent) || 0,
-      donations
-    );
+  if (userCoins) {
+    animateNumber(userCoins, 0, userData.coins, true);
+  }
+
+  if (userDonations) {
+    animateNumber(userDonations, 0, userData.donations, false);
   }
 }
 
-function animateNumber(element, from, to) {
+function animateNumber(element, from, to, isCoins = false) {
   const duration = 1000;
   const start = Date.now();
   const difference = to - from;
@@ -383,10 +566,7 @@ function animateNumber(element, from, to) {
     const progress = Math.min(elapsed / duration, 1);
     const current = Math.floor(from + difference * progress);
 
-    if (
-      element.parentElement.querySelector(".stat-label").textContent ===
-      "MOEDAS"
-    ) {
+    if (isCoins) {
       element.textContent = current.toLocaleString("pt-BR");
     } else {
       element.textContent = current;
@@ -400,7 +580,7 @@ function animateNumber(element, from, to) {
   requestAnimationFrame(update);
 }
 
-// ========== FUNÇÕES DE DEBUG ==========
+// ========== FUNÇÕES DE DEBUG E TESTE ==========
 function testProfileUpdate() {
   const mockUser = {
     name: "João Silva Santos",
@@ -411,28 +591,61 @@ function testProfileUpdate() {
     maxXp: 1000,
     coins: 2500,
     donations: 25,
+    monthlyDonated: 20,
+    monthlyReceived: 12,
+    lastDonationAmount: 75,
+    lastDonationDate: "ontem",
+    donationGoal: 200,
   };
 
-  localStorage.setItem("currentUser", JSON.stringify(mockUser));
+  sessionStorage.setItem("currentUser", JSON.stringify(mockUser));
   console.log("🧪 Dados de teste salvos:", mockUser);
 
   // Recarrega os dados
   loadAndDisplayUserData();
 }
 
+function simulateDonation(amount) {
+  const userData = UserProfileService.getUserData();
+  const newCoins = Math.max(0, userData.coins - amount);
+  const newMonthlyDonated = userData.monthlyDonated + amount;
+  const newTotalDonations = userData.donations + 1;
+
+  const updatedData = {
+    coins: newCoins,
+    monthlyDonated: newMonthlyDonated,
+    donations: newTotalDonations,
+    lastDonationAmount: amount,
+    lastDonationDate: "agora mesmo",
+  };
+
+  if (UserProfileService.saveUserData(updatedData)) {
+    console.log(`💰 Doação simulada: ${amount} moedas`);
+    loadAndDisplayUserData();
+    return true;
+  }
+  return false;
+}
+
 function debugProfile() {
   console.log("🔧 DEBUG - Estado atual do perfil:");
-  console.log("LocalStorage keys:", Object.keys(localStorage));
-  console.log("currentUser:", localStorage.getItem("currentUser"));
+  console.log("SessionStorage keys:", Object.keys(sessionStorage));
+  console.log("currentUser:", sessionStorage.getItem("currentUser"));
 
   const userData = UserProfileService.getUserData();
   console.log("Dados processados:", userData);
+
+  const goalData = GoalManager.getGoalData();
+  console.log("Dados da meta:", goalData);
 }
 
 // ========== EXPOSIÇÃO GLOBAL PARA DEBUG ==========
 if (typeof window !== "undefined") {
   window.UserProfileService = UserProfileService;
+  window.GoalManager = GoalManager;
+  window.DashboardManager = DashboardManager;
   window.testProfileUpdate = testProfileUpdate;
+  window.simulateDonation = simulateDonation;
   window.debugProfile = debugProfile;
   window.loadAndDisplayUserData = loadAndDisplayUserData;
 }
@@ -443,12 +656,17 @@ if (typeof module !== "undefined" && module.exports) {
     updateStats,
     handleTabNavigation,
     loadAndDisplayUserData,
+    GoalManager,
+    DashboardManager,
   };
 }
 
 console.log(`
 🎮 Sistema de Perfil Atualizado!
-📱 Dados salvos em: localStorage.currentUser
+📱 Dados salvos em: sessionStorage.currentUser
 🛠️ Debug: debugProfile(), testProfileUpdate()
 📄 Reload: loadAndDisplayUserData()
+💰 Simular doação: simulateDonation(50)
+🎯 Gerenciar metas: GoalManager
+📊 Dashboard: DashboardManager
 `);

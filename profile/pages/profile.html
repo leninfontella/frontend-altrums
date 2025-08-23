@@ -33,7 +33,7 @@
             <i class="fas fa-chevron-left"></i>
           </button>
 
-          <div id="go-settings" class="header-title">Profile</div>
+          <div id="go-settings" class="header-title">Meu perfil</div>
           <button id="go-settings-button" class="settings-button">
             <i class="fas fa-cog"></i>
           </button>
@@ -45,16 +45,16 @@
               <i class="fas fa-user-astronaut"></i>
             </div>
             <!-- Aqui com IDs para atualizar dinamicamente -->
-            <div id="profile-name" class="profile-name">Lênin Fontella</div>
+            <div id="profile-name" class="profile-name">LÃªnin Fontella</div>
             <div id="profile-email" class="profile-username">@lenin_sci</div>
 
             <div class="stats-grid">
               <div class="stat-item">
-                <div class="stat-value">2.547</div>
+                <div id="user-coins" class="stat-value">2.547</div>
                 <div class="stat-label">Moedas</div>
               </div>
               <div class="stat-item">
-                <div class="stat-value">45</div>
+                <div id="user-donations" class="stat-value">45</div>
                 <div class="stat-label">Doações</div>
               </div>
             </div>
@@ -68,12 +68,16 @@
 
             <div class="highlight-card">
               <div class="highlight-icon">
-                <i class="fas fa-user-friends"></i>
+                <i class="fas fa-coins"></i>
               </div>
               <div class="highlight-text">
-                <div class="highlight-title">Top Interação</div>
-                <div class="highlight-name">Ana Silva</div>
-                <div class="highlight-desc">24 interações este mês</div>
+                <div class="highlight-title">Última Doação</div>
+                <div id="last-donation-amount" class="highlight-name">
+                  50 moedas
+                </div>
+                <div id="last-donation-date" class="highlight-desc">
+                  há 2 dias
+                </div>
               </div>
             </div>
 
@@ -85,16 +89,24 @@
                 <div class="chart-legend">
                   <div class="legend-item">
                     <div class="legend-color donated"></div>
-                    <span>Doadas: 15</span>
+                    <span id="donated-count">Doadas: 15</span>
                   </div>
                   <div class="legend-item">
                     <div class="legend-color received"></div>
-                    <span>Recebidas: 8</span>
+                    <span id="received-count">Recebidas: 8</span>
                   </div>
                 </div>
                 <div class="mini-chart">
-                  <div class="chart-bar donated" style="height: 65%"></div>
-                  <div class="chart-bar received" style="height: 35%"></div>
+                  <div
+                    id="donated-bar"
+                    class="chart-bar donated"
+                    style="height: 65%"
+                  ></div>
+                  <div
+                    id="received-bar"
+                    class="chart-bar received"
+                    style="height: 35%"
+                  ></div>
                 </div>
               </div>
             </div>
@@ -107,29 +119,61 @@
             </h3>
             <div class="goals-container">
               <div class="goal-item">
-                <div class="goal-info">
-                  <div class="goal-title">Doar 100 moedas este mês</div>
-                  <div class="goal-progress-text">45/100</div>
+                <div class="goal-header">
+                  <div class="goal-info">
+                    <div class="goal-title">Doar moedas este mês</div>
+                    <div id="goal-progress-text" class="goal-progress-text">
+                      45/100
+                    </div>
+                  </div>
+                  <button
+                    id="edit-goal-btn"
+                    class="edit-goal-btn"
+                    type="button"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
                 </div>
                 <div class="goal-progress">
-                  <div class="progress-bar" style="width: 45%"></div>
-                </div>
-              </div>
-
-              <div class="goal-item">
-                <div class="goal-info">
-                  <div class="goal-title">Fazer 20 novas conexões</div>
-                  <div class="goal-progress-text">12/20</div>
-                </div>
-                <div class="goal-progress">
-                  <div class="progress-bar" style="width: 60%"></div>
+                  <div
+                    id="goal-progress-bar"
+                    class="progress-bar"
+                    style="width: 45%"
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Modal para definir meta - movido para fora da section -->
+          <div id="goal-modal" class="goal-modal">
+            <div class="goal-modal-content">
+              <div class="modal-header">
+                <h4>Definir Meta de Doação</h4>
+                <button id="close-modal" class="close-modal" type="button">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="modal-body">
+                <label for="goal-amount">Valor da meta (moedas):</label>
+                <select id="goal-amount" class="goal-select">
+                  <option value="50">50 moedas</option>
+                  <option value="100" selected="selected">100 moedas</option>
+                  <option value="200">200 moedas</option>
+                  <option value="500">500 moedas</option>
+                  <option value="1000">1000 moedas</option>
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button id="save-goal" class="save-goal-btn" type="button">
+                  Salvar Meta
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="menu-section">
-            <button class="menu-item">
+            <button class="menu-item" type="button">
               <div class="menu-icon transactions">
                 <i class="fas fa-history"></i>
               </div>
@@ -140,7 +184,7 @@
               <i class="fas fa-chevron-right menu-arrow"></i>
             </button>
 
-            <button class="menu-item">
+            <button class="menu-item" type="button">
               <div class="menu-icon security">
                 <i class="fas fa-shield-alt"></i>
               </div>
@@ -151,7 +195,7 @@
               <i class="fas fa-chevron-right menu-arrow"></i>
             </button>
 
-            <button class="menu-item">
+            <button class="menu-item" type="button">
               <div class="menu-icon help">
                 <i class="fas fa-question-circle"></i>
               </div>
@@ -167,7 +211,7 @@
         <div class="bottom-nav">
           <div id="go-home" class="nav-item" data-tab="home">
             <i class="fas fa-home"></i>
-            <span>Home</span>
+            <span>Início</span>
           </div>
           <div id="go-timeline" class="nav-item" data-tab="timeline">
             <i class="fas fa-history"></i>
@@ -175,11 +219,11 @@
           </div>
           <div id="go-ranks" class="nav-item" data-tab="ranks">
             <i class="fas fa-trophy"></i>
-            <span>Ranks</span>
+            <span>Ranking</span>
           </div>
           <div class="nav-item active" data-tab="profile">
             <i class="fas fa-user-circle"></i>
-            <span>Profile</span>
+            <span>Perfil</span>
           </div>
         </div>
       </div>
