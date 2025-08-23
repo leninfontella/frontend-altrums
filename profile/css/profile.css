@@ -201,7 +201,7 @@ body {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-top: 20px;
 }
@@ -224,7 +224,7 @@ body {
   letter-spacing: 1px;
 }
 
-.achievement-section {
+.dashboard-section {
   margin-bottom: 25px;
 }
 
@@ -238,54 +238,172 @@ body {
   gap: 10px;
 }
 
-.achievement-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-}
-
-.achievement-card {
+.highlight-card {
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   border-radius: 16px;
   padding: 20px;
-  text-align: center;
-  position: relative;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
-.achievement-card.unlocked {
-  border-color: #00ff88;
-  box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2);
+.highlight-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
 }
 
-.achievement-card:hover {
-  transform: translateY(-2px);
+.highlight-text {
+  flex: 1;
 }
 
-.achievement-icon {
-  font-size: 30px;
+.highlight-title {
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+
+.highlight-name {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.highlight-desc {
+  color: #00d4ff;
+  font-size: 13px;
+}
+
+.chart-card {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-header h4 {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.chart-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-color.donated {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+}
+
+.legend-color.received {
+  background: linear-gradient(135deg, #ff00d4, #cc0099);
+}
+
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 60px;
+  flex: 1;
+}
+
+.chart-bar {
+  width: 20px;
+  border-radius: 4px 4px 0 0;
+  min-height: 10px;
+}
+
+.chart-bar.donated {
+  background: linear-gradient(180deg, #00ff88, #00cc66);
+}
+
+.chart-bar.received {
+  background: linear-gradient(180deg, #ff00d4, #cc0099);
+}
+
+.goals-section {
+  margin-bottom: 25px;
+}
+
+.goals-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.goal-item {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.goal-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
 }
 
-.achievement-card.unlocked .achievement-icon {
-  color: #00ff88;
-}
-
-.achievement-card:not(.unlocked) .achievement-icon {
-  color: #666;
-}
-
-.achievement-title {
+.goal-title {
   color: #fff;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 5px;
 }
 
-.achievement-desc {
-  color: #888;
-  font-size: 12px;
+.goal-progress-text {
+  color: #00ff88;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.goal-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00cc66);
+  border-radius: 3px;
+  transition: width 0.5s ease;
 }
 
 .menu-section {
@@ -324,9 +442,6 @@ body {
 
 .menu-icon.transactions {
   background: linear-gradient(135deg, #00d4ff, #0099cc);
-}
-.menu-icon.wallet {
-  background: linear-gradient(135deg, #ff00d4, #cc0099);
 }
 .menu-icon.security {
   background: linear-gradient(135deg, #00ff88, #00cc66);

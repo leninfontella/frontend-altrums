@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ========== SERVIÇO DE USUÁRIO MELHORADO ==========
-// ========== SERVIÇO DE USUÁRIO MELHORADO ==========
 class UserProfileService {
   // Função para extrair primeiro nome
   static getFirstName(fullName) {
@@ -29,13 +28,12 @@ class UserProfileService {
         email: userData.email || "email@exemplo.com",
         phone: userData.phone || "",
         level: userData.level || "Explorador",
-        xp: userData.xp || 650, // Adicione essas propriedades se o backend fornecer
+        xp: userData.xp || 650,
         maxXp: userData.maxXp || 1000,
         rank: userData.rank || 8,
         score: userData.score || 2050,
         coins: userData.coins || 0,
         donations: userData.totalDonated || 0,
-        connections: 42, // Exemplo
       };
     } else {
       console.warn(
@@ -54,7 +52,6 @@ class UserProfileService {
         score: 2050,
         coins: 1250,
         donations: 15,
-        connections: 42,
       };
     }
   }
@@ -72,7 +69,7 @@ class UserProfileService {
 
 // ========== FUNÇÃO PRINCIPAL PARA CARREGAR DADOS DO USUÁRIO ==========
 function loadAndDisplayUserData() {
-  console.log("🔄 Carregando e exibindo dados do usuário...");
+  console.log("📄 Carregando e exibindo dados do usuário...");
 
   // Debug para ver o que tem no localStorage
   UserProfileService.debugLocalStorage();
@@ -106,7 +103,7 @@ function loadAndDisplayUserData() {
 
   // Atualizar estatísticas se existirem
   if (userData.coins !== undefined) {
-    updateStats(userData.coins, userData.donations, userData.connections);
+    updateStats(userData.coins, userData.donations);
   }
 
   // Procurar por outros elementos que possam precisar do nome
@@ -166,12 +163,12 @@ function initializeProfile() {
   setupMenuInteractions();
   setupNavigationInteractions();
   setupHeaderButtons();
-  animateAchievements();
+  animateDashboard();
 
   console.log("✅ Perfil inicializado com sucesso!");
 }
 
-// ========== FUNÇÕES DE CONFIGURAÇÃO (mantidas do código original) ==========
+// ========== FUNÇÕES DE CONFIGURAÇÃO ==========
 function setupMenuInteractions() {
   const menuItems = document.querySelectorAll(".menu-item");
 
@@ -208,9 +205,6 @@ function handleMenuAction(menuTitle) {
     case "Histórico":
       console.log("Navegando para histórico de transações");
       break;
-    case "Carteira Digital":
-      console.log("Abrindo carteira digital");
-      break;
     case "Segurança":
       console.log("Abrindo configurações de segurança");
       break;
@@ -234,7 +228,7 @@ if (goBackButton) {
   });
 }
 
-// Outros botões de navegação (mantidos do código original)
+// Outros botões de navegação
 const navigationButtons = {
   "go-ranks": "../../ranking/html/ranks.html",
   "go-timeline": "../../timeline/html/timeline.html",
@@ -333,10 +327,12 @@ function handleSettingsButton(button) {
   console.log("Abrindo configurações");
 }
 
-function animateAchievements() {
-  const achievementCards = document.querySelectorAll(".achievement-card");
+function animateDashboard() {
+  const dashboardCards = document.querySelectorAll(
+    ".highlight-card, .chart-card, .goal-item"
+  );
 
-  achievementCards.forEach((card, index) => {
+  dashboardCards.forEach((card, index) => {
     card.style.opacity = "0";
     card.style.transform = "translateY(20px)";
     card.style.transition = "all 0.5s ease";
@@ -344,26 +340,26 @@ function animateAchievements() {
     setTimeout(() => {
       card.style.opacity = "1";
       card.style.transform = "translateY(0)";
-    }, index * 100 + 500);
+    }, index * 100 + 300);
   });
 
-  achievementCards.forEach((card) => {
-    card.addEventListener("mouseenter", function () {
-      if (this.classList.contains("unlocked")) {
-        this.style.transform = "translateY(-5px) scale(1.02)";
-      }
+  // Animar barras de progresso
+  setTimeout(() => {
+    const progressBars = document.querySelectorAll(".progress-bar");
+    progressBars.forEach((bar) => {
+      const width = bar.style.width;
+      bar.style.width = "0%";
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 100);
     });
-
-    card.addEventListener("mouseleave", function () {
-      this.style.transform = "translateY(0) scale(1)";
-    });
-  });
+  }, 800);
 }
 
-function updateStats(coins, donations, connections) {
+function updateStats(coins, donations) {
   const statValues = document.querySelectorAll(".stat-value");
 
-  if (statValues.length >= 3) {
+  if (statValues.length >= 2) {
     animateNumber(
       statValues[0],
       parseInt(statValues[0].textContent.replace(".", "")) || 0,
@@ -373,11 +369,6 @@ function updateStats(coins, donations, connections) {
       statValues[1],
       parseInt(statValues[1].textContent) || 0,
       donations
-    );
-    animateNumber(
-      statValues[2],
-      parseInt(statValues[2].textContent) || 0,
-      connections
     );
   }
 }
@@ -409,25 +400,6 @@ function animateNumber(element, from, to) {
   requestAnimationFrame(update);
 }
 
-function unlockAchievement(achievementIndex) {
-  const achievements = document.querySelectorAll(".achievement-card");
-
-  if (
-    achievements[achievementIndex] &&
-    !achievements[achievementIndex].classList.contains("unlocked")
-  ) {
-    const achievement = achievements[achievementIndex];
-    achievement.classList.add("unlocked");
-    achievement.style.animation = "unlockPulse 0.6s ease-out";
-
-    setTimeout(() => {
-      achievement.style.animation = "";
-    }, 600);
-
-    console.log("Conquista desbloqueada!");
-  }
-}
-
 // ========== FUNÇÕES DE DEBUG ==========
 function testProfileUpdate() {
   const mockUser = {
@@ -439,7 +411,6 @@ function testProfileUpdate() {
     maxXp: 1000,
     coins: 2500,
     donations: 25,
-    connections: 68,
   };
 
   localStorage.setItem("currentUser", JSON.stringify(mockUser));
@@ -458,17 +429,6 @@ function debugProfile() {
   console.log("Dados processados:", userData);
 }
 
-// Adicionar animação CSS
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes unlockPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
-    100% { transform: scale(1); }
-  }
-`;
-document.head.appendChild(style);
-
 // ========== EXPOSIÇÃO GLOBAL PARA DEBUG ==========
 if (typeof window !== "undefined") {
   window.UserProfileService = UserProfileService;
@@ -481,15 +441,14 @@ if (typeof window !== "undefined") {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     updateStats,
-    unlockAchievement,
     handleTabNavigation,
     loadAndDisplayUserData,
   };
 }
 
 console.log(`
-🎮 Sistema de Perfil Corrigido!
+🎮 Sistema de Perfil Atualizado!
 📱 Dados salvos em: localStorage.currentUser
 🛠️ Debug: debugProfile(), testProfileUpdate()
-🔄 Reload: loadAndDisplayUserData()
+📄 Reload: loadAndDisplayUserData()
 `);
