@@ -39,6 +39,8 @@ class UserProfileService {
         lastDonationAmount: userData.lastDonationAmount || 50,
         lastDonationDate: userData.lastDonationDate || "há 2 dias",
         donationGoal: userData.donationGoal || 100,
+        topInteractingUser: userData.topInteractingUser || "Ana Silva",
+        topUserInteractions: userData.topUserInteractions || 12,
       };
     } else {
       console.warn(
@@ -62,6 +64,8 @@ class UserProfileService {
         lastDonationAmount: 50,
         lastDonationDate: "há 2 dias",
         donationGoal: 100,
+        topInteractingUser: "Ana Silva",
+        topUserInteractions: 12,
       };
     }
   }
@@ -140,11 +144,44 @@ class GoalManager {
       progressBar.style.width = `${goalData.progress}%`;
     }
   }
+
+  // Nova função para atualizar meta após doação
+  static updateAfterDonation(donationAmount) {
+    const userData = UserProfileService.getUserData();
+    const newMonthlyDonated = userData.monthlyDonated + donationAmount;
+
+    // Atualizar dados no storage
+    const success = UserProfileService.saveUserData({
+      monthlyDonated: newMonthlyDonated,
+      coins: Math.max(0, userData.coins - donationAmount),
+      donations: userData.donations + 1,
+      lastDonationAmount: donationAmount,
+      lastDonationDate: "agora mesmo",
+    });
+
+    if (success) {
+      this.updateGoalDisplay();
+      return true;
+    }
+    return false;
+  }
 }
 
 // ========== GERENCIADOR DE DASHBOARD ==========
 class DashboardManager {
   static updateDashboard(userData) {
+    // Atualizar usuário com maior interação
+    const topUserEl = document.getElementById("top-interacting-user");
+    const topInteractionsEl = document.getElementById("top-user-interactions");
+
+    if (topUserEl) {
+      topUserEl.textContent = userData.topInteractingUser;
+    }
+
+    if (topInteractionsEl) {
+      topInteractionsEl.textContent = `${userData.topUserInteractions} interações este mês`;
+    }
+
     // Atualizar última doação
     const lastAmountEl = document.getElementById("last-donation-amount");
     const lastDateEl = document.getElementById("last-donation-date");
@@ -205,7 +242,7 @@ function loadAndDisplayUserData() {
   const userData = UserProfileService.getUserData();
 
   if (!userData) {
-    console.error("⌐ Falha ao carregar dados do usuário");
+    console.error("❌ Falha ao carregar dados do usuário");
     return;
   }
 
@@ -596,6 +633,8 @@ function testProfileUpdate() {
     lastDonationAmount: 75,
     lastDonationDate: "ontem",
     donationGoal: 200,
+    topInteractingUser: "Maria Santos",
+    topUserInteractions: 18,
   };
 
   sessionStorage.setItem("currentUser", JSON.stringify(mockUser));
@@ -621,6 +660,11 @@ function simulateDonation(amount) {
 
   if (UserProfileService.saveUserData(updatedData)) {
     console.log(`💰 Doação simulada: ${amount} moedas`);
+
+    // Atualizar as metas também
+    GoalManager.updateGoalDisplay();
+
+    // Recarregar dados na tela
     loadAndDisplayUserData();
     return true;
   }

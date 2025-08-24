@@ -261,6 +261,21 @@ body {
   color: #fff;
 }
 
+/* Novo estilo para o ícone do usuário com maior interação */
+.highlight-icon.top-user {
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  animation: glow-crown 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow-crown {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+  }
+}
+
 .highlight-text {
   flex: 1;
 }
