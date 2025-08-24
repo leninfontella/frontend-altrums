@@ -140,8 +140,8 @@ function startRecoveryProcess() {
   // Update loading text based on selected method
   const loadingText = document.querySelector(".loading-text");
   const methodTexts = {
-    email: "Enviando link neural por email...",
-    sms: "Preparando SMS quântico...",
+    email: "Enviando link por email...",
+    sms: "Preparando SMS...",
     biometric: "Iniciando scan biométrico...",
   };
 

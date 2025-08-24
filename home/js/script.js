@@ -243,123 +243,123 @@ const UserSystem = {
 };
 
 // // Sistema de níveis baseado no saldo
-// const LevelSystem = {
-//   levels: {
-//     1: { min: 0, max: 99, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
-//     2: { min: 100, max: 499, name: "Explorador", color: "#06B6D4", icon: "🔍" },
-//     3: {
-//       min: 500,
-//       max: 999,
-//       name: "Aventureiro",
-//       color: "#10B981",
-//       icon: "🎒",
-//     },
-//     4: {
-//       min: 1000,
-//       max: 4999,
-//       name: "Benfeitor",
-//       color: "#F59E0B",
-//       icon: "🤝",
-//     },
-//     5: { min: 5000, max: 9999, name: "Generoso", color: "#EF4444", icon: "❤️" },
-//     6: {
-//       min: 10000,
-//       max: 49999,
-//       name: "Filantropo",
-//       color: "#EC4899",
-//       icon: "🏆",
-//     },
-//     7: {
-//       min: 50000,
-//       max: 99999,
-//       name: "Magnata",
-//       color: "#8B5CF6",
-//       icon: "💎",
-//     },
-//     8: {
-//       min: 100000,
-//       max: 499999,
-//       name: "Lenda",
-//       color: "#06B6D4",
-//       icon: "⭐",
-//     },
-//     9: { min: 500000, max: 999999, name: "Mito", color: "#F97316", icon: "🔥" },
-//     10: {
-//       min: 1000000,
-//       max: Infinity,
-//       name: "Divino",
-//       color: "#FFD700",
-//       icon: "👑",
-//     },
-//   },
+const LevelSystem = {
+  levels: {
+    1: { min: 0, max: 99, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
+    2: { min: 100, max: 499, name: "Explorador", color: "#06B6D4", icon: "🔍" },
+    3: {
+      min: 500,
+      max: 999,
+      name: "Aventureiro",
+      color: "#10B981",
+      icon: "🎒",
+    },
+    4: {
+      min: 1000,
+      max: 4999,
+      name: "Benfeitor",
+      color: "#F59E0B",
+      icon: "🤝",
+    },
+    5: { min: 5000, max: 9999, name: "Generoso", color: "#EF4444", icon: "❤️" },
+    6: {
+      min: 10000,
+      max: 49999,
+      name: "Filantropo",
+      color: "#EC4899",
+      icon: "🏆",
+    },
+    7: {
+      min: 50000,
+      max: 99999,
+      name: "Magnata",
+      color: "#8B5CF6",
+      icon: "💎",
+    },
+    8: {
+      min: 100000,
+      max: 499999,
+      name: "Lenda",
+      color: "#06B6D4",
+      icon: "⭐",
+    },
+    9: { min: 500000, max: 999999, name: "Mito", color: "#F97316", icon: "🔥" },
+    10: {
+      min: 1000000,
+      max: Infinity,
+      name: "Divino",
+      color: "#FFD700",
+      icon: "👑",
+    },
+  },
 
-//   calculateLevel(balance) {
-//     for (let level = 1; level <= 10; level++) {
-//       const levelInfo = this.levels[level];
-//       if (balance >= levelInfo.min && balance <= levelInfo.max) {
-//         return {
-//           level: level,
-//           ...levelInfo,
-//           progress: this.calculateProgress(balance, levelInfo),
-//         };
-//       }
-//     }
-//     return { level: 1, ...this.levels[1], progress: 0 };
-//   },
+  calculateLevel(balance) {
+    for (let level = 1; level <= 10; level++) {
+      const levelInfo = this.levels[level];
+      if (balance >= levelInfo.min && balance <= levelInfo.max) {
+        return {
+          level: level,
+          ...levelInfo,
+          progress: this.calculateProgress(balance, levelInfo),
+        };
+      }
+    }
+    return { level: 1, ...this.levels[1], progress: 0 };
+  },
 
-//   calculateProgress(balance, levelInfo) {
-//     if (levelInfo.max === Infinity) return 100;
-//     const range = levelInfo.max - levelInfo.min + 1;
-//     const current = balance - levelInfo.min;
-//     return Math.min(100, Math.max(0, (current / range) * 100));
-//   },
+  calculateProgress(balance, levelInfo) {
+    if (levelInfo.max === Infinity) return 100;
+    const range = levelInfo.max - levelInfo.min + 1;
+    const current = balance - levelInfo.min;
+    return Math.min(100, Math.max(0, (current / range) * 100));
+  },
 
-//   addLevelBadge(balance) {
-//     try {
-//       const levelInfo = this.calculateLevel(balance);
+  addLevelBadge(balance) {
+    try {
+      const levelInfo = this.calculateLevel(balance);
 
-//       // Procurar um local para adicionar o badge
-//       const profileSection = document.querySelector(
-//         ".profile-section, .user-info, .header"
-//       );
-//       if (profileSection) {
-//         let levelBadge = document.querySelector(".user-level-badge");
+      // Procurar um local para adicionar o badge
+      const profileSection = document.querySelector(
+        ".profile-section, .user-info, .header"
+      );
+      if (profileSection) {
+        let levelBadge = document.querySelector(".user-level-badge");
 
-//         if (!levelBadge) {
-//           levelBadge = document.createElement("div");
-//           levelBadge.className = "user-level-badge";
-//           profileSection.appendChild(levelBadge);
-//         }
+        if (!levelBadge) {
+          levelBadge = document.createElement("div");
+          levelBadge.className = "user-level-badge";
+          profileSection.appendChild(levelBadge);
+        }
 
-//         levelBadge.innerHTML = `
-//           <div class="level-info" style="
-//             background: linear-gradient(135deg, ${levelInfo.color}20, ${
-//           levelInfo.color
-//         }40);
-//             border: 1px solid ${levelInfo.color}60;
-//             border-radius: 12px;
-//             padding: 8px 12px;
-//             margin-top: 8px;
-//             text-align: center;
-//           ">
-//             <div style="color: ${
-//               levelInfo.color
-//             }; font-size: 14px; font-weight: 600;">
-//               ${levelInfo.icon} ${levelInfo.name}
-//             </div>
-//             <div style="color: #888; font-size: 11px;">
-//               Nivel ${levelInfo.level} • ${Math.round(levelInfo.progress)}%
-//             </div>
-//           </div>
-//         `;
+        levelBadge.innerHTML = `
+          <div class="level-info" style="
+            background: linear-gradient(135deg, ${levelInfo.color}20, ${
+          levelInfo.color
+        }40);
+            border: 1px solid ${levelInfo.color}60;
+            border-radius: 12px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            text-align: center;
+          ">
+            <div style="color: ${
+              levelInfo.color
+            }; font-size: 14px; font-weight: 600;">
+              ${levelInfo.icon} ${levelInfo.name}
+            </div>
+            <div style="color: #888; font-size: 11px;">
+              Nivel ${levelInfo.level} • ${Math.round(levelInfo.progress)}%
+            </div>
+          </div>
+        `;
 
-//         console.log("Badge de nivel adicionado:", levelInfo);
-//       }
-//     } catch (error) {
-//       console.error("Erro ao adicionar badge de nivel:", error);
-//     }
-//   },
-// };
+        console.log("Badge de nivel adicionado:", levelInfo);
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar badge de nivel:", error);
+    }
+  },
+};
 
 // ========== SISTEMA DE BUSCA E DOAÇÃO - INTEGRAÇÃO COM API ==========
 
@@ -551,9 +551,9 @@ function createDonationModal(user) {
               <h4>${user.name}</h4>
               <p class="username">${
                 user.username ||
-                `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
+                `${user.email.toLowerCase().replace(/\s+/g, "_")}`
               }</p>
-              <p class="institution">${user.institution || "Não informado"}</p>
+              <p class="institution">${user.institution || "Nível atual:"}</p>
               <div class="level-badge ${(user.level || "iniciante")
                 .toLowerCase()
                 .replace(" ", "-")}">${user.level || "Iniciante"}</div>
@@ -636,8 +636,7 @@ function renderSearchResults(users) {
         <h4>${user.name}</h4>
         <p class="username">${
           user.username || `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
-        }</p>
-        <p class="institution">${user.institution || "Não informado"}</p>
+        }</p>      
         <div class="user-stats">
           <span class="coins-count">${(
             user.coins || 0
@@ -647,7 +646,7 @@ function renderSearchResults(users) {
             .replace(" ", "-")}">${user.level || "Iniciante"}</span>
         </div>
       </div>
-      <div class="donate-icon">💝</div>
+      <div class="donate-icon">👐</div>
     </div>
   `
     )
@@ -823,11 +822,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Perfil carregado");
     }
 
-    // if (balanceData !== null) {
-    //   // Adicionar badge de nível baseado no saldo
-    //   LevelSystem.addLevelBadge(balanceData);
-    //   console.log("Saldo carregado e nivel calculado");
-    // }
+    if (balanceData !== null) {
+      // Adicionar badge de nível baseado no saldo
+      LevelSystem.addLevelBadge(balanceData);
+      console.log("Saldo carregado e nivel calculado");
+    }
 
     if (statsData) {
       console.log("Estatisticas carregadas");
