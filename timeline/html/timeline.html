@@ -175,20 +175,20 @@
         });
 
         // Botão de refresh
-        document
-          .getElementById("refreshBtn")
-          .addEventListener("click", async function () {
-            this.style.transform = "rotate(360deg)";
-            this.style.transition = "transform 0.5s ease";
+        // document
+        //   .getElementById("refreshBtn")
+        //   .addEventListener("click", async function () {
+        //     this.style.transform = "rotate(360deg)";
+        //     this.style.transition = "transform 0.5s ease";
 
-            if (window.timelineAPI) {
-              await window.timelineAPI.loadRealTimelineData();
-            }
+        //     if (window.timelineAPI) {
+        //       await window.timelineAPI.loadRealTimelineData();
+        //     }
 
-            setTimeout(() => {
-              this.style.transform = "rotate(0deg)";
-            }, 500);
-          });
+        //     setTimeout(() => {
+        //       this.style.transform = "rotate(0deg)";
+        //     }, 500);
+        //   });
 
         // Modal controls
         document

@@ -986,5 +986,5 @@ console.log(
 
 // Exportar funções globalmente se necessário
 window.UserSystem = UserSystem;
-window.LevelSystem = LevelSystem;
+// window.LevelSystem = LevelSystem;
 window.UserSearchAPI = UserSearchAPI;

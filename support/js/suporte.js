@@ -12,8 +12,8 @@ homeButton.addEventListener("click", () => {
     window.location.href = "../../login/html/login.html";
   }
 });
-goHome.onclick = goHomeButton;
-homeButton.onclick = goHomeButton;
+// goHome.onclick = goHomeButton;
+// homeButton.onclick = goHomeButton;
 
 // Função para voltar à página anterior
 function goBack() {
