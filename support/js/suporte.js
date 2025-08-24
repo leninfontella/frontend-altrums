@@ -26,8 +26,8 @@ function goBack() {
 
 // Função para abrir WhatsApp
 function openWhatsApp() {
-  const phoneNumber = "5511999999999"; // Substitua pelo número real
-  const message = "Olá! Preciso de suporte com a plataforma Lênin Fontella.";
+  const phoneNumber = "5551989134037"; // Substitua pelo número real
+  const message = "Olá! Preciso de suporte com o Altrum!";
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
     message
   )}`;
