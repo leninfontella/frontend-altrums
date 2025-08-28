@@ -273,12 +273,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Ir para editar perfil
-  const goEdit = document.getElementById("go-edit");
-  if (goEdit) {
-    goEdit.addEventListener("click", () => {
-      window.location.href = "/edit-profile/html/edit.html";
+  document.querySelectorAll(".setting-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      const link = item.getAttribute("data-link");
+      if (link) {
+        window.location.href = link;
+      }
     });
-  }
+  });
 
   // Botão voltar
   const backButton = document.querySelector(".back-button");
