@@ -842,7 +842,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     console.log("Inicializacao concluida!");
-    showNotification("Bem-vindo ao Living Coins!", "success");
+    showNotification("Bem-vindo ao Autrums!", "success");
   } catch (error) {
     console.error("Erro durante inicializacao:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
