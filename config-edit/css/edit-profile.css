@@ -158,7 +158,7 @@ body {
   color: #ffffff;
 }
 
-/* Conteúdo Principal */
+/* ConteÃºdo Principal */
 .content {
   flex: 1;
   overflow-y: auto;
@@ -194,7 +194,7 @@ body {
   background: linear-gradient(180deg, #00e9ff 0%, #00aacc 100%);
 }
 
-/* Seções de Formulário */
+/* SeÃ§Ãµes de FormulÃ¡rio */
 .section {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
@@ -243,7 +243,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* Itens de Formulário */
+/* Itens de FormulÃ¡rio */
 .form-group {
   margin-bottom: 20px;
 }
@@ -333,7 +333,7 @@ body {
   display: none;
 }
 
-/* Botão de Salvar no Conteúdo */
+/* BotÃ£o de Salvar no ConteÃºdo */
 .save-content-btn {
   width: 100%;
   padding: 16px;
@@ -378,7 +378,7 @@ body {
   visibility: visible;
 }
 
-/* Animações */
+/* AnimaÃ§Ãµes */
 @keyframes slideInUp {
   from {
     opacity: 0;

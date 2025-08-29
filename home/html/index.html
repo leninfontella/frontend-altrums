@@ -439,7 +439,7 @@
     <script src="../js/script.js"></script>
     <script src="../js/pull-to-refresh.js"></script>
 
-    <script>
+    <!-- <script>
       // Script de inicialização específico da página
       document.addEventListener("DOMContentLoaded", function () {
         // Atualizar horário na status bar
@@ -456,20 +456,20 @@
         setInterval(updateStatusTime, 60000);
 
         // Gerenciar estados de conexão
-        // function updateConnectionStatus(online) {
-        //   const statusEl = document.getElementById("connection-status");
-        //   const textEl = document.getElementById("connection-text");
+        function updateConnectionStatus(online) {
+          const statusEl = document.getElementById("connection-status");
+          const textEl = document.getElementById("connection-text");
 
-        //   if (online) {
-        //     statusEl.className = "connection-status online";
-        //     textEl.innerHTML = '<i class="fas fa-wifi"></i> teu cu';
-        //     setTimeout(() => (statusEl.style.opacity = "0"), 2000);
-        //   } else {
-        //     statusEl.className = "connection-status offline";
-        //     textEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Sem conexão';
-        //     statusEl.style.opacity = "1";
-        //   }
-        // }
+          if (online) {
+            statusEl.className = "connection-status online";
+            textEl.innerHTML = '<i class="fas fa-wifi"></i> teu cu';
+            setTimeout(() => (statusEl.style.opacity = "0"), 2000);
+          } else {
+            statusEl.className = "connection-status offline";
+            textEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Sem conexão';
+            statusEl.style.opacity = "1";
+          }
+        }
 
         // Event listeners de conectividade
         window.addEventListener("online", () => updateConnectionStatus(true));
@@ -612,6 +612,6 @@
       // Log de inicialização
       console.log("🏠 Página Home carregada com integração backend");
       console.log("🔧 Funcionalidades: Perfil, Saldo, Stats, Doações, Níveis");
-    </script>
+    </script> -->
   </body>
 </html>
