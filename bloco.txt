@@ -40,3 +40,15 @@ JWT_EXPIRES_IN=300m
 REFRESH_TOKEN_EXPIRES_IN=7d
 COOKIE_SECURE=false # true em production com HTTPS
 NODE_ENV=development
+
+
+
+
+
+               <img
+                data-user-photo
+                class="profile-image"
+                src="https://placehold.co/120x120/00d4ff/ffffff?text=User"
+                alt="Foto do Perfil"
+                onerror="this.src='https://placehold.co/120x120/00d4ff/ffffff?text=User'"
+               />

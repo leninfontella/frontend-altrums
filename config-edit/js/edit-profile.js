@@ -286,15 +286,18 @@ async function saveProfile() {
           result.user.profilePhotoUrl || result.user.avatar
         );
 
-        if (
-          window.userService &&
-          (result.user.profilePhotoUrl || result.user.avatar)
-        ) {
-          window.userService.updateProfilePhotoEverywhere(
-            result.user.profilePhotoUrl || result.user.avatar
-          );
+        // ✅ ATUALIZAÇÃO: Usar userService para sincronizar em todas as páginas
+        if (window.userService) {
+          window.userService.updateUserData(updatedUserData);
+
+          if (result.user.profilePhotoUrl || result.user.avatar) {
+            window.userService.updateProfilePhotoEverywhere(
+              result.user.profilePhotoUrl || result.user.avatar
+            );
+          }
         }
 
+        // Disparar evento customizado para compatibilidade
         window.dispatchEvent(
           new CustomEvent("userDataUpdated", {
             detail: { userData: updatedUserData },

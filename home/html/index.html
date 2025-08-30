@@ -302,7 +302,13 @@
         <div class="header">
           <div class="profile-section">
             <div class="profile-pic" id="user-avatar">
-              <i class="fas fa-user-astronaut"></i>
+              <img
+                data-user-photo
+                class="profile-image"
+                src="https://placehold.co/120x120/00d4ff/ffffff?text=User"
+                alt="Foto do Perfil"
+                onerror="this.src='https://placehold.co/120x120/00d4ff/ffffff?text=User'"
+              />
             </div>
             <div class="greeting">
               <h2 id="user-greeting">Olá, Usuário!</h2>
@@ -436,6 +442,9 @@
 
     <script src="../../js/auth.js"></script>
     <!-- <script src="../js/config.js"></script> -->
+
+    <script src="../../config-edit/js/userService.js"></script>
+    <script src="../../config-edit/js/globalInit.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/pull-to-refresh.js"></script>
 

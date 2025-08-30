@@ -96,6 +96,14 @@ body {
   position: relative;
 }
 
+.profile-image {
+  /* Estas propriedades já estavam corretas e são as mais importantes */
+  width: 100%; /* Garante que a imagem ocupe 100% da largura do contêiner */
+  height: 100%; /* Garante que a imagem ocupe 100% da altura do contêiner */
+  object-fit: cover; /* Faz a imagem preencher o contêiner, cortando o que sobrar */
+  border-radius: 100%; /* Faz a imagem ficar redonda */
+}
+
 .profile-section {
   display: flex;
   align-items: center;
@@ -104,10 +112,13 @@ body {
 }
 
 .profile-pic {
+  /* Ajuste este contêiner para combinar com a imagem */
   width: 60px;
   height: 60px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  border-radius: 50%; /* Corrigido: Agora o contêiner também é redondo */
+  overflow: hidden; /* Adicionado: Oculta qualquer parte da imagem que transborde */
+  /* As outras propriedades de estilo (background, display, etc.) podem permanecer */
+  background: linear-gradient(60deg, #00d4ff 0%, #0099cc 35%);
   display: flex;
   align-items: center;
   justify-content: center;
