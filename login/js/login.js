@@ -333,6 +333,25 @@ async function handleLogin(e) {
       const userBalance = userData?.balance || 0;
       showSuccessFeedback(userBalance);
 
+      // Adicione este trecho de código ao final da função handleLogin
+      if (result.success) {
+        console.log("Login bem-sucedido!");
+        // ... (código existente)
+
+        // 📝 PATCH DE CORREÇÃO PARA A FOTO DO PERFIL
+        // Garante que o profilePhotoUrl seja salvo corretamente
+        const completeUserData = result.user || result.data;
+        if (completeUserData && completeUserData.profilePhotoUrl) {
+          Auth.saveUserData({
+            ...Auth.getUserData(),
+            profilePhotoUrl: completeUserData.profilePhotoUrl,
+          });
+          console.log("✅ Foto de perfil salva no Local Storage.");
+        }
+
+        // ... (código existente, como showSuccessFeedback, redirecionamento, etc.)
+      }
+
       // Buscar dados atualizados do perfil (opcional)
       try {
         await Auth.getProfile();

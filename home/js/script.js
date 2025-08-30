@@ -14,26 +14,31 @@ const UserSystem = {
     try {
       console.log("📄 Carregando perfil do usuário...");
 
-      const profile = await Auth.getProfile();
+      // Obter dados locais para fallback e mesclagem
+      const localData = Auth.getUserData();
 
-      if (profile) {
-        this.updateUserInterface(profile);
-        console.log("✅ Perfil carregado:", profile);
-        return profile;
+      // Tentar carregar perfil da API
+      const profileFromAPI = await Auth.getProfile();
+
+      // Mesclar dados locais com os da API
+      // Os dados da API têm prioridade, mas os campos ausentes são preenchidos com os dados locais
+      const finalProfileData = {
+        ...(localData || {}),
+        ...(profileFromAPI || {}),
+      };
+
+      if (Object.keys(finalProfileData).length > 0) {
+        // Se houver dados (da API ou local), atualize a interface
+        this.updateUserInterface(finalProfileData);
+        console.log("✅ Perfil carregado:", finalProfileData);
+        return finalProfileData;
       } else {
-        // Fallback para dados salvos localmente
-        const localData = Auth.getUserData();
-        if (localData) {
-          this.updateUserInterface(localData);
-          console.log("⚠️ Usando dados locais:", localData);
-          return localData;
-        }
         throw new Error("Perfil não encontrado");
       }
     } catch (error) {
       console.error("❌ Erro ao carregar perfil:", error);
 
-      // Tentar usar dados salvos como fallback
+      // Tentar usar dados salvos como fallback em caso de erro na requisição
       const localData = Auth.getUserData();
       if (localData) {
         this.updateUserInterface(localData);
@@ -41,7 +46,6 @@ const UserSystem = {
         return localData;
       }
 
-      // Mostrar erro amigável
       showNotification("Alguns dados podem não estar atualizados", "warning");
       return null;
     }
@@ -113,9 +117,10 @@ const UserSystem = {
       // Atualizar saudação - CORREÇÃO: verificar se name existe
       const greetingElement = document.getElementById("user-greeting");
       if (greetingElement && userData.name) {
-        // Use o nome completo diretamente
-        greetingElement.textContent = `Olá, ${userData.name}!`;
-        console.log("✅ Saudação atualizada para:", userData.name);
+        // Pega o primeiro nome
+        const firstName = userData.name.split(" ")[0];
+        greetingElement.textContent = `Olá, ${firstName}!`;
+        console.log("✅ Saudação atualizada para:", firstName);
       } else if (greetingElement) {
         // Fallback se não tiver nome
         greetingElement.textContent = "Olá, Usuário!";
