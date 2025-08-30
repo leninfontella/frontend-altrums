@@ -127,14 +127,61 @@ const UserSystem = {
         console.log("⚠️ Nome não disponível, usando fallback");
       }
 
-      // Atualizar avatar se houver
+      // CORREÇÃO: Atualizar avatar com foto de perfil
       const profilePic = document.querySelector(".profile-pic");
-      if (profilePic && userData.profilePhotoUrl) {
-        profilePic.src = userData.profilePhotoUrl; // Usa a URL da foto
-        console.log("✅ Foto de perfil atualizada");
-      } else if (profilePic && userData.avatar) {
-        profilePic.innerHTML = userData.avatar;
-        console.log("✅ Avatar atualizado (fallback)");
+      if (profilePic) {
+        // Se tem foto de perfil, usar ela
+        if (userData.profilePhotoUrl) {
+          let imageUrl = userData.profilePhotoUrl;
+
+          // CORREÇÃO: Sempre usar a porta 5000 para imagens do backend
+          if (!userData.profilePhotoUrl.startsWith("http")) {
+            // Se é um caminho relativo, construir URL completa para o backend
+            imageUrl = `http://localhost:5000/${userData.profilePhotoUrl}`;
+          }
+
+          // Criar elemento img se não existir
+          let img = profilePic.querySelector("img");
+          if (!img) {
+            img = document.createElement("img");
+            img.id = "user-avatar-img";
+            img.style.cssText = `
+              width: 100%;
+              height: 100%;
+              border-radius: 50%;
+              object-fit: cover;
+              transition: transform 0.3s ease;
+            `;
+            profilePic.innerHTML = ""; // Limpar conteúdo anterior
+            profilePic.appendChild(img);
+          }
+
+          // Atualizar src com timestamp para evitar cache
+          const urlWithTimestamp = imageUrl.includes("?")
+            ? `${imageUrl}&t=${Date.now()}`
+            : `${imageUrl}?t=${Date.now()}`;
+
+          img.src = urlWithTimestamp;
+
+          // Fallback se a imagem não carregar
+          img.onerror = function () {
+            console.log("❌ Erro ao carregar foto de:", imageUrl);
+            console.log("🔄 Usando avatar padrão");
+            profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+          };
+
+          console.log("✅ Foto de perfil atualizada na HOME:", imageUrl);
+        }
+        // Se tem avatar (emoji/ícone), usar ele
+        else if (userData.avatar) {
+          profilePic.innerHTML = userData.avatar;
+          console.log("✅ Avatar atualizado (fallback)");
+        }
+        // Fallback padrão
+        else {
+          profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+          console.log("⚠️ Usando avatar padrão");
+        }
       }
 
       // Atualizar outros elementos do perfil se existirem
@@ -250,7 +297,7 @@ const UserSystem = {
   },
 };
 
-// // Sistema de níveis baseado no saldo
+// Sistema de níveis baseado no saldo
 const LevelSystem = {
   levels: {
     1: { min: 0, max: 99, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
@@ -368,12 +415,6 @@ const LevelSystem = {
     }
   },
 };
-
-// ========== SISTEMA DE BUSCA E DOAÇÃO - INTEGRAÇÃO COM API ==========
-
-// REMOVIDO: Base de dados simulada substituída por chamadas à API
-
-// ... (existing code)
 
 // ========== SISTEMA DE BUSCA E DOAÇÃO - INTEGRAÇÃO COM API ==========
 
@@ -498,7 +539,6 @@ const UserSearchAPI = {
     }
   },
 };
-// ... (rest of the code)
 
 function getCurrentUserBalance() {
   return Auth.getUserBalance();
@@ -654,7 +694,7 @@ function renderSearchResults(users) {
             .replace(" ", "-")}">${user.level || "Iniciante"}</span>
         </div>
       </div>
-      <div class="donate-icon">👐</div>
+      <div class="donate-icon">💝</div>
     </div>
   `
     )
@@ -702,7 +742,6 @@ async function openDonationModal(userId) {
     showNotification("Erro ao carregar dados do usuário", "error");
     return;
   }
-  createDonationModal(user); // agora `user.name`, `user.email`, etc. funcionam
 
   closeSearchModal();
   const existingModal = document.getElementById("donation-modal");
@@ -725,8 +764,6 @@ function setDonationAmount(amount) {
   input.focus();
 }
 
-// Dentro do seu arquivo script.js
-
 async function confirmDonation(recipientId) {
   const amountInput = document.getElementById("donation-amount");
   const messageInput = document.getElementById("donation-message");
@@ -735,7 +772,16 @@ async function confirmDonation(recipientId) {
   const message = messageInput.value.trim();
   const currentBalance = getCurrentUserBalance();
 
-  // ... (código de validação) ...
+  // Validações
+  if (!amount || amount <= 0) {
+    showNotification("Digite uma quantidade válida", "error");
+    return;
+  }
+
+  if (amount > currentBalance) {
+    showNotification("Saldo insuficiente para esta doação", "error");
+    return;
+  }
 
   try {
     // 1. Processar doação via API
@@ -878,6 +924,99 @@ document.addEventListener("DOMContentLoaded", async () => {
       element.style.transform = "translateY(0)";
     }, index * 100);
   });
+
+  // NOVO: Event listeners para sincronização de foto de perfil
+  window.addEventListener("profilePhotoUpdated", (event) => {
+    console.log("📸 Evento de foto atualizada recebido:", event.detail);
+
+    const newPhotoUrl = event.detail.photoUrl;
+    const profilePic = document.querySelector(".profile-pic");
+
+    if (profilePic && newPhotoUrl) {
+      let img = profilePic.querySelector("img");
+      if (!img) {
+        img = document.createElement("img");
+        img.id = "user-avatar-img";
+        img.style.cssText = `
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        `;
+        profilePic.innerHTML = "";
+        profilePic.appendChild(img);
+      }
+
+      // Atualizar com timestamp
+      const urlWithTimestamp = newPhotoUrl.includes("?")
+        ? `${newPhotoUrl}&t=${Date.now()}`
+        : `${newPhotoUrl}?t=${Date.now()}`;
+
+      img.src = urlWithTimestamp;
+
+      // Efeito visual de atualização
+      img.style.transform = "scale(1.1)";
+      setTimeout(() => {
+        img.style.transform = "scale(1)";
+      }, 300);
+
+      console.log("✅ Foto de perfil sincronizada na HOME");
+    }
+  });
+
+  window.addEventListener("profilePhotoRemoved", () => {
+    console.log("🗑️ Evento de foto removida recebido");
+
+    const profilePic = document.querySelector(".profile-pic");
+    if (profilePic) {
+      profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+      console.log("✅ Avatar padrão restaurado na HOME");
+    }
+  });
+
+  // NOVO: Event listener para mudanças nos dados do usuário
+  window.addEventListener("userDataUpdated", (event) => {
+    console.log("👤 Dados do usuário atualizados:", event.detail);
+
+    const userData = event.detail.userData;
+    if (userData) {
+      UserSystem.updateUserInterface(userData);
+    }
+  });
+
+  // NOVO: Verificar se há foto no localStorage ao iniciar
+  const userData = JSON.parse(localStorage.getItem("userData"));
+  if (userData && userData.profilePhotoUrl) {
+    const profilePic = document.querySelector(".profile-pic");
+    if (profilePic) {
+      let img = profilePic.querySelector("img");
+      if (!img) {
+        img = document.createElement("img");
+        img.id = "user-avatar-img";
+        img.style.cssText = `
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        `;
+        profilePic.innerHTML = "";
+        profilePic.appendChild(img);
+      }
+
+      // CORREÇÃO: Sempre usar porta 5000 para URLs de imagem
+      let imageUrl = userData.profilePhotoUrl;
+      if (!userData.profilePhotoUrl.startsWith("http")) {
+        imageUrl = `http://localhost:5000/${userData.profilePhotoUrl}`;
+      }
+
+      img.src = `${imageUrl}?t=${Date.now()}`;
+      img.onerror = function () {
+        profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+      };
+    }
+  }
 });
 
 // ========== EVENT LISTENERS ==========
@@ -993,5 +1132,5 @@ console.log(
 
 // Exportar funções globalmente se necessário
 window.UserSystem = UserSystem;
-// window.LevelSystem = LevelSystem;
+window.LevelSystem = LevelSystem;
 window.UserSearchAPI = UserSearchAPI;
