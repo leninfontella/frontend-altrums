@@ -294,6 +294,11 @@ body {
   animation-fill-mode: both;
   animation-delay: 0.1s;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* Espaço entre o ícone e o texto */
+  transform: rotate(-10deg);
 }
 
 .profile-photo-card img {
@@ -309,6 +314,11 @@ body {
 .profile-photo-card img:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* Espaço entre o ícone e o texto */
+  transform: rotate(-10deg);
 }
 
 .change-photo-btn {
@@ -388,4 +398,43 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Mensagens de sucesso e erro */
+.success-message {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  text-align: center;
+  padding: 15px;
+  border-radius: 15px;
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 300px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.success-message.error {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.success-message.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.profile-photo-container .change-photo-btn {
+  /* ... Outras propriedades ... */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* Espaço entre o ícone e o texto */
+  transform: rotate(-10deg);
+  /* Remova qualquer outra propriedade de transform que possa estar causando conflito */
 }

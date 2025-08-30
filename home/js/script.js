@@ -113,9 +113,9 @@ const UserSystem = {
       // Atualizar saudação - CORREÇÃO: verificar se name existe
       const greetingElement = document.getElementById("user-greeting");
       if (greetingElement && userData.name) {
-        const firstName = userData.name.split(" ")[0];
-        greetingElement.textContent = `Olá, ${firstName}!`;
-        console.log("✅ Saudação atualizada para:", firstName);
+        // Use o nome completo diretamente
+        greetingElement.textContent = `Olá, ${userData.name}!`;
+        console.log("✅ Saudação atualizada para:", userData.name);
       } else if (greetingElement) {
         // Fallback se não tiver nome
         greetingElement.textContent = "Olá, Usuário!";
