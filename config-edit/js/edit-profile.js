@@ -1,6 +1,11 @@
 // Função para mostrar mensagens
 function showMessage(message, type = "success") {
   const messageBox = document.getElementById("message-box");
+  if (!messageBox) {
+    console.log(`Mensagem (${type}):`, message);
+    return;
+  }
+
   messageBox.textContent = message;
 
   // Remover classes anteriores e adicionar a nova
@@ -65,8 +70,21 @@ async function saveProfile() {
 
     // Adicionar foto se foi selecionada
     const photoInput = document.getElementById("photo-input");
-    if (photoInput.files && photoInput.files[0]) {
-      formData.append("profilePhoto", photoInput.files[0]);
+    if (photoInput && photoInput.files && photoInput.files[0]) {
+      // Validar arquivo antes de enviar
+      const file = photoInput.files[0];
+
+      if (!file.type.startsWith("image/")) {
+        showMessage("Por favor, selecione apenas arquivos de imagem", "error");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showMessage("A imagem deve ter menos de 5MB", "error");
+        return;
+      }
+
+      formData.append("profilePhoto", file);
     }
 
     // Enviar para API usando apiConfig
@@ -78,19 +96,30 @@ async function saveProfile() {
       // Atualizar dados locais
       if (result.user) {
         // Atualizar localStorage com novos dados, incluindo a URL da foto
-        localStorage.setItem(
-          "userData",
-          JSON.stringify({
-            id: result.user.id,
-            name: result.user.name,
-            email: result.user.email,
-            phone: result.user.phone,
-            profilePhotoUrl: result.user.profilePhotoUrl, // Garante que a URL da foto seja salva
-            coins: result.user.coins,
-            level: result.user.level,
-            xp: result.user.xp,
-          })
-        );
+        const updatedUserData = {
+          id: result.user.id,
+          name: result.user.name,
+          fullName: result.user.fullName || result.user.name,
+          email: result.user.email,
+          phone: result.user.phone,
+          profilePhotoUrl: result.user.profilePhotoUrl,
+          avatar: result.user.avatar,
+          institution: result.user.institution,
+          coins: result.user.coins,
+          level: result.user.level,
+          xp: result.user.xp,
+          maxXp: result.user.maxXp,
+          score: result.user.score,
+          totalDonated: result.user.totalDonated,
+          totalReceived: result.user.totalReceived,
+          totalDonations: result.user.totalDonations,
+          stats: result.user.stats,
+        };
+
+        localStorage.setItem("userData", JSON.stringify(updatedUserData));
+
+        // Atualizar foto de perfil na página atual
+        updateProfilePhotoDisplay(result.user.profilePhotoUrl);
 
         // Atualizar foto de perfil em todas as páginas se houver userService
         if (window.userService && result.user.profilePhotoUrl) {
@@ -98,12 +127,24 @@ async function saveProfile() {
             result.user.profilePhotoUrl
           );
         }
+
+        // Disparar evento customizado para outras partes da aplicação
+        window.dispatchEvent(
+          new CustomEvent("userDataUpdated", {
+            detail: { userData: updatedUserData },
+          })
+        );
       }
 
       showMessage("Perfil salvo com sucesso!", "success");
 
       // Limpar input de arquivo após sucesso
-      photoInput.value = "";
+      if (photoInput) {
+        photoInput.value = "";
+      }
+
+      // Atualizar dados originais para nova comparação
+      setOriginalFormData(getCurrentFormData());
     } else {
       // Tratar erros específicos
       let errorMessage = "Erro ao salvar perfil";
@@ -112,6 +153,10 @@ async function saveProfile() {
         errorMessage = result.message;
       } else if (response.status === 401) {
         errorMessage = "Sessão expirada. Faça login novamente.";
+        // Redirecionar para login se necessário
+        setTimeout(() => {
+          window.location.href = "../../auth/login.html";
+        }, 2000);
       } else if (response.status === 413) {
         errorMessage = "Arquivo muito grande. Máximo 5MB.";
       } else if (response.status === 400) {
@@ -142,7 +187,26 @@ async function saveProfile() {
   }
 }
 
-// Função para carregar os dados do perfil do localStorage
+// Função para atualizar a exibição da foto de perfil
+function updateProfilePhotoDisplay(photoUrl) {
+  const profileImage = document.getElementById("profile-image");
+  if (profileImage && photoUrl) {
+    // Adicionar timestamp para evitar cache
+    const urlWithTimestamp = photoUrl.includes("?")
+      ? `${photoUrl}&t=${Date.now()}`
+      : `${photoUrl}?t=${Date.now()}`;
+
+    profileImage.src = window.apiConfig.baseURL + urlWithTimestamp;
+
+    // Efeito visual de atualização
+    profileImage.style.opacity = "0.7";
+    setTimeout(() => {
+      profileImage.style.opacity = "1";
+    }, 300);
+  }
+}
+
+// Função para carregar os dados do perfil
 function loadUserProfile() {
   const userData = JSON.parse(localStorage.getItem("userData"));
   if (userData) {
@@ -154,11 +218,39 @@ function loadUserProfile() {
     if (nameInput) nameInput.value = userData.name || "";
     if (emailInput) emailInput.value = userData.email || "";
     if (phoneInput) phoneInput.value = userData.phone || "";
+
+    // Carregar foto de perfil
+    const profileImage = document.getElementById("profile-image");
+    if (profileImage && userData.profilePhotoUrl && window.apiConfig) {
+      const photoUrl =
+        window.apiConfig.baseURL +
+        userData.profilePhotoUrl +
+        `?t=${Date.now()}`;
+      profileImage.src = photoUrl;
+
+      // Fallback em caso de erro na imagem
+      profileImage.onerror = function () {
+        this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+      };
+    }
+
+    // Definir dados originais para comparação
+    setOriginalFormData({
+      name: userData.name || "",
+      email: userData.email || "",
+      phone: userData.phone || "",
+      hasNewPhoto: false,
+    });
   }
 }
 
 // Adicionar o evento para carregar o perfil ao iniciar a página
-document.addEventListener("DOMContentLoaded", loadUserProfile);
+document.addEventListener("DOMContentLoaded", function () {
+  loadUserProfile();
+  setupChangeDetection();
+  setupKeyboardShortcuts();
+  setupPhotoPreview();
+});
 
 // Voltar para configurações
 const goBack = document.getElementById("go-back");
@@ -196,10 +288,10 @@ function hasUnsavedChanges() {
 
 function getCurrentFormData() {
   return {
-    name: document.getElementById("name").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    hasNewPhoto: document.getElementById("photo-input").files.length > 0,
+    name: document.getElementById("name")?.value.trim() || "",
+    email: document.getElementById("email")?.value.trim() || "",
+    phone: document.getElementById("phone")?.value.trim() || "",
+    hasNewPhoto: document.getElementById("photo-input")?.files.length > 0,
   };
 }
 
@@ -213,11 +305,13 @@ function setOriginalFormData(data) {
   originalFormData = { ...data };
 }
 
-// Pré-visualização da imagem selecionada
-const photoInput = document.getElementById("photo-input");
-const profileImage = document.getElementById("profile-image");
+// Configurar pré-visualização da imagem
+function setupPhotoPreview() {
+  const photoInput = document.getElementById("photo-input");
+  const profileImage = document.getElementById("profile-image");
 
-if (photoInput && profileImage) {
+  if (!photoInput || !profileImage) return;
+
   photoInput.addEventListener("change", function (event) {
     const file = event.target.files[0];
 
@@ -228,22 +322,22 @@ if (photoInput && profileImage) {
     // Validar tipo de arquivo
     if (!file.type.startsWith("image/")) {
       showMessage("Por favor, selecione apenas imagens", "error");
-      photoInput.value = ""; // Limpar input
+      photoInput.value = "";
       return;
     }
 
     // Validar tamanho (5MB)
     if (file.size > 5 * 1024 * 1024) {
       showMessage("A imagem deve ter menos de 5MB", "error");
-      photoInput.value = ""; // Limpar input
+      photoInput.value = "";
       return;
     }
 
-    // Validar dimensões mínimas (opcional)
+    // Validar dimensões mínimas
     const img = new Image();
     img.onload = function () {
-      if (this.width < 100 || this.height < 100) {
-        showMessage("A imagem deve ter pelo menos 100x100 pixels", "error");
+      if (this.width < 50 || this.height < 50) {
+        showMessage("A imagem deve ter pelo menos 50x50 pixels", "error");
         photoInput.value = "";
         return;
       }
@@ -268,17 +362,6 @@ if (photoInput && profileImage) {
     img.src = URL.createObjectURL(file);
   });
 }
-
-// Carregar dados do usuário ao inicializar
-document.addEventListener("DOMContentLoaded", function () {
-  loadUserData();
-
-  // Configurar eventos de mudança para detectar alterações
-  setupChangeDetection();
-
-  // Configurar atalhos de teclado
-  setupKeyboardShortcuts();
-});
 
 // Configurar detecção de mudanças
 function setupChangeDetection() {
@@ -310,139 +393,64 @@ function setupKeyboardShortcuts() {
   });
 }
 
-// Função para carregar dados do usuário
-async function loadUserData() {
+// Função para carregar dados do usuário da API
+async function loadUserDataFromAPI() {
   try {
-    // Mostrar loading nos campos
-    const inputs = document.querySelectorAll("#name, #email, #phone");
-    inputs.forEach((input) => {
-      input.disabled = true;
-      input.placeholder = "Carregando...";
-    });
+    if (!window.apiConfig) {
+      console.log("API config não disponível, usando dados locais");
+      return;
+    }
 
-    // Primeiro, tentar carregar do localStorage
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      try {
-        const userData = JSON.parse(storedUserData);
+    const response = await window.apiConfig.get("/api/profile");
 
-        // Preencher formulário com dados do localStorage
-        document.getElementById("name").value = userData.name || "";
-        document.getElementById("email").value = userData.email || "";
-        document.getElementById("phone").value = userData.phone || "";
+    if (response.ok) {
+      const result = await response.json();
 
-        // Carregar foto de perfil com a URL base da API
-        if (userData.profilePhotoUrl) {
-          profileImage.src =
+      if (result.success && result.user) {
+        const user = result.user;
+
+        // Atualizar formulário
+        document.getElementById("name").value = user.name || "";
+        document.getElementById("email").value = user.email || "";
+        document.getElementById("phone").value = user.phone || "";
+
+        // Atualizar foto de perfil
+        const profileImage = document.getElementById("profile-image");
+        if (profileImage && user.profilePhotoUrl) {
+          const photoUrl =
             window.apiConfig.baseURL +
-            userData.profilePhotoUrl +
+            user.profilePhotoUrl +
             `?t=${Date.now()}`;
-        } else {
-          profileImage.src =
-            "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+          profileImage.src = photoUrl;
+          profileImage.onerror = function () {
+            this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+          };
         }
 
-        // Definir dados originais para comparação
+        // Atualizar localStorage
+        localStorage.setItem("userData", JSON.stringify(user));
+
+        // Definir dados originais
         setOriginalFormData({
-          name: userData.name || "",
-          email: userData.email || "",
-          phone: userData.phone || "",
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
           hasNewPhoto: false,
         });
-
-        // Habilitar campos após carregar dados locais
-        inputs.forEach((input) => {
-          input.disabled = false;
-        });
-
-        // Atualizar placeholders
-        document.getElementById("name").placeholder =
-          "Digite seu nome completo";
-        document.getElementById("email").placeholder = "Digite seu email";
-        document.getElementById("phone").placeholder = "Digite seu telefone";
-
-        // Removido o return para permitir atualização da API
-        // return;
-      } catch (error) {
-        console.error("Erro ao carregar dados do localStorage:", error);
       }
+    } else if (response.status === 401) {
+      // Sessão expirada
+      localStorage.removeItem("userData");
+      showMessage("Sessão expirada. Faça login novamente.", "error");
+      setTimeout(() => {
+        window.location.href = "../../auth/login.html";
+      }, 3000);
+    } else {
+      throw new Error("Erro ao carregar dados da API");
     }
-
-    // Se não há dados locais ou API está disponível, tentar carregar da API
-    if (window.apiConfig) {
-      try {
-        const response = await window.apiConfig.get("/api/users/profile");
-
-        if (response.ok) {
-          const result = await response.json();
-
-          if (result.success && result.user) {
-            const user = result.user;
-
-            // Preencher formulário
-            document.getElementById("name").value = user.name || "";
-            document.getElementById("email").value = user.email || "";
-            document.getElementById("phone").value = user.phone || "";
-
-            // Carregar foto de perfil com a URL base da API
-            if (user.profilePhotoUrl) {
-              profileImage.src =
-                window.apiConfig.baseURL +
-                user.profilePhotoUrl +
-                `?t=${Date.now()}`;
-            } else {
-              profileImage.src =
-                "https://placehold.co/120x120/00d4ff/ffffff?text=User";
-            }
-
-            // Definir dados originais para comparação
-            setOriginalFormData({
-              name: user.name || "",
-              email: user.email || "",
-              phone: user.phone || "",
-              hasNewPhoto: false,
-            });
-
-            // Atualizar dados no localStorage
-            localStorage.setItem("userData", JSON.stringify(user));
-          }
-        } else if (response.status === 401) {
-          // Sessão expirada - limpar dados locais e mostrar mensagem
-          localStorage.removeItem("userData");
-          showMessage(
-            "Sessão expirada. Por favor, faça login novamente.",
-            "error"
-          );
-
-          // Opcional: redirecionar para página de login se existir
-          // setTimeout(() => {
-          //   window.location.href = "../../auth/login.html";
-          // }, 3000);
-        } else {
-          throw new Error("Erro ao carregar dados da API");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados da API:", error);
-        showMessage(
-          "Erro ao conectar com servidor. Usando dados locais.",
-          "error"
-        );
-      }
-    }
-
-    // Atualizar placeholders
-    document.getElementById("name").placeholder = "Digite seu nome completo";
-    document.getElementById("email").placeholder = "Digite seu email";
-    document.getElementById("phone").placeholder = "Digite seu telefone";
   } catch (error) {
-    console.error("Erro geral ao carregar dados do usuário:", error);
-    showMessage("Erro ao carregar dados. Verifique sua conexão.", "error");
-  } finally {
-    // Habilitar campos
-    const inputs = document.querySelectorAll("#name, #email, #phone");
-    inputs.forEach((input) => {
-      input.disabled = false;
-    });
+    console.error("Erro ao carregar dados da API:", error);
+    showMessage("Erro ao conectar com servidor. Usando dados locais.", "error");
   }
 }
 
@@ -450,14 +458,35 @@ async function loadUserData() {
 async function uploadPhotoOnly() {
   const photoInput = document.getElementById("photo-input");
 
-  if (!photoInput.files || !photoInput.files[0]) {
+  if (!photoInput || !photoInput.files || !photoInput.files[0]) {
     showMessage("Selecione uma foto primeiro", "error");
     return;
   }
 
   try {
+    // Validar arquivo
+    const file = photoInput.files[0];
+
+    if (!file.type.startsWith("image/")) {
+      showMessage("Por favor, selecione apenas arquivos de imagem", "error");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage("A imagem deve ter menos de 5MB", "error");
+      return;
+    }
+
+    // Mostrar loading
+    const uploadBtn = document.querySelector(".upload-photo-btn");
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    }
+
     const formData = new FormData();
-    formData.append("profilePhoto", photoInput.files[0]);
+    formData.append("profilePhoto", file);
 
     const response = await window.apiConfig.post(
       "/api/profile/upload-photo",
@@ -469,12 +498,31 @@ async function uploadPhotoOnly() {
     if (response.ok && result.success) {
       showMessage("Foto atualizada com sucesso!", "success");
 
-      // Atualizar foto em todas as páginas
+      // Atualizar foto na página atual
+      if (result.profilePhoto && result.profilePhoto.url) {
+        updateProfilePhotoDisplay(result.profilePhoto.url);
+      }
+
+      // Atualizar dados do usuário no localStorage
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (result.user && result.user.profilePhotoUrl) {
+        userData.profilePhotoUrl = result.user.profilePhotoUrl;
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+
+      // Atualizar foto em todas as páginas se houver userService
       if (window.userService && result.profilePhoto.url) {
         window.userService.updateProfilePhotoEverywhere(
           result.profilePhoto.url
         );
       }
+
+      // Disparar evento customizado
+      window.dispatchEvent(
+        new CustomEvent("profilePhotoUpdated", {
+          detail: { photoUrl: result.profilePhoto.url },
+        })
+      );
 
       // Limpar input
       photoInput.value = "";
@@ -484,13 +532,129 @@ async function uploadPhotoOnly() {
   } catch (error) {
     console.error("Erro ao fazer upload da foto:", error);
     showMessage("Erro de conexão", "error");
+  } finally {
+    // Restaurar botão
+    const uploadBtn = document.querySelector(".upload-photo-btn");
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Enviar Foto';
+    }
   }
 }
+
+// Função para remover foto de perfil
+async function removeProfilePhoto() {
+  if (!confirm("Tem certeza que deseja remover sua foto de perfil?")) {
+    return;
+  }
+
+  try {
+    const response = await window.apiConfig.delete("/api/profile/photo");
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      showMessage("Foto removida com sucesso!", "success");
+
+      // Atualizar imagem para placeholder
+      const profileImage = document.getElementById("profile-image");
+      if (profileImage) {
+        profileImage.src =
+          "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+      }
+
+      // Atualizar localStorage
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      userData.profilePhotoUrl = null;
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      // Limpar input de arquivo
+      const photoInput = document.getElementById("photo-input");
+      if (photoInput) {
+        photoInput.value = "";
+      }
+
+      // Atualizar em todas as páginas
+      if (window.userService) {
+        window.userService.updateProfilePhotoEverywhere(null);
+      }
+
+      // Disparar evento customizado
+      window.dispatchEvent(new CustomEvent("profilePhotoRemoved"));
+    } else {
+      showMessage(result.message || "Erro ao remover foto", "error");
+    }
+  } catch (error) {
+    console.error("Erro ao remover foto:", error);
+    showMessage("Erro de conexão", "error");
+  }
+}
+
+// Função para validar campos antes de salvar
+function validateForm() {
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+
+  const errors = [];
+
+  if (!name || name.length < 2) {
+    errors.push("Nome deve ter pelo menos 2 caracteres");
+  }
+
+  if (!email) {
+    errors.push("Email é obrigatório");
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.push("Email inválido");
+  }
+
+  if (phone && phone.length > 0) {
+    // Validação básica para telefone brasileiro
+    const phoneRegex =
+      /^(\+55\s?)?(\(?[1-9]{2}\)?\s?)?9?[0-9]{4}[-\s]?[0-9]{4}$/;
+    if (!phoneRegex.test(phone)) {
+      errors.push("Formato de telefone inválido");
+    }
+  }
+
+  return errors;
+}
+
+// Função para sincronizar dados periodicamente
+async function syncUserData() {
+  try {
+    if (window.apiConfig && navigator.onLine) {
+      await loadUserDataFromAPI();
+    }
+  } catch (error) {
+    console.log("Erro na sincronização automática:", error);
+  }
+}
+
+// Configurar sincronização automática a cada 5 minutos
+setInterval(syncUserData, 5 * 60 * 1000);
+
+// Eventos de conectividade
+window.addEventListener("online", () => {
+  console.log("Reconectado à internet");
+  syncUserData();
+});
+
+window.addEventListener("offline", () => {
+  console.log("Desconectado da internet");
+  showMessage(
+    "Modo offline. Algumas funcionalidades podem estar limitadas.",
+    "error"
+  );
+});
 
 // Exportar funções para uso global se necessário
 window.editProfileFunctions = {
   saveProfile,
   uploadPhotoOnly,
-  loadUserData,
+  removeProfilePhoto,
+  loadUserProfile,
+  loadUserDataFromAPI,
   showMessage,
+  validateForm,
+  syncUserData,
 };

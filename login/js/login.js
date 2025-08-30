@@ -705,6 +705,7 @@ if (window.Auth && window.Auth.login) {
             rank: userData.rank || calculateRank(userData.balance || 0),
             score: userData.score || calculateScore(userData.balance || 0),
             achievements: userData.achievements || [],
+            profilePhotoUrl: userData.profilePhotoUrl || null,
             avatar: userData.avatar || generateAvatar(userData.name || email),
             joinDate: userData.joinDate || new Date().toISOString(),
             lastLogin: new Date().toISOString(),

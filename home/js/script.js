@@ -124,9 +124,12 @@ const UserSystem = {
 
       // Atualizar avatar se houver
       const profilePic = document.querySelector(".profile-pic");
-      if (profilePic && userData.avatar) {
+      if (profilePic && userData.profilePhotoUrl) {
+        profilePic.src = userData.profilePhotoUrl; // Usa a URL da foto
+        console.log("✅ Foto de perfil atualizada");
+      } else if (profilePic && userData.avatar) {
         profilePic.innerHTML = userData.avatar;
-        console.log("✅ Avatar atualizado");
+        console.log("✅ Avatar atualizado (fallback)");
       }
 
       // Atualizar outros elementos do perfil se existirem
