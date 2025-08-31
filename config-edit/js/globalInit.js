@@ -112,25 +112,31 @@
   }
 
   // Função para carregar foto de perfil em elementos específicos
+
+  // ✅ FUNÇÃO CORRIGIDA: Função para carregar foto de perfil em elementos específicos
   function loadProfilePhotos() {
     const userData = getUserData();
     if (!userData) return;
 
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
-    const imageUrl = window.userService
-      ? window.userService.getImageUrl(photoUrl)
-      : photoUrl || "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    const imageUrl =
+      photoUrl || "https://placehold.co/120x120/00d4ff/ffffff?text=User";
 
-    // Selecionar todos os elementos de foto de perfil
     const profileImages = document.querySelectorAll(
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
     );
 
     profileImages.forEach((img) => {
-      img.src = imageUrl;
-      img.onerror = function () {
-        this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
-      };
+      // Extrair a URL base da imagem atual (sem o timestamp ?t=...)
+      const currentSrcBase = img.src.split("?")[0];
+
+      // Apenas atualiza a imagem se a URL base for diferente
+      if (currentSrcBase !== imageUrl) {
+        img.src = imageUrl;
+        img.onerror = function () {
+          this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+        };
+      }
     });
   }
 

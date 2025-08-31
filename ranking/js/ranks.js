@@ -1,3 +1,35 @@
+// ========== FUNÇÕES AUXILIARES PARA FOTOS ==========
+/**
+ * Função auxiliar para gerar iniciais do nome
+ */
+function getUserInitials(name) {
+  if (!name) return "U";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .substring(0, 2);
+}
+
+/**
+ * Função auxiliar para gerar ID do usuário para foto
+ */
+function getUserPhotoId(name) {
+  if (!name) return "user";
+  return name
+    .toLowerCase()
+    .replace(/[áàãâä]/g, "a")
+    .replace(/[éèêë]/g, "e")
+    .replace(/[íìîï]/g, "i")
+    .replace(/[óòõôö]/g, "o")
+    .replace(/[úùûü]/g, "u")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
 // ========== CONFIGURAÇÃO DA API ==========
 const API_CONFIG = {
   baseURL: "http://localhost:5000/api",
@@ -644,10 +676,24 @@ class RankingManager {
         const balance = user.balance || user.coins || 0;
         const displayName = user.displayName || user.name || "Usuário";
 
+        // Adicionar variáveis para foto
+        const userInitials = getUserInitials(displayName);
+        const userPhotoId = isCurrentUser ? "" : getUserPhotoId(displayName);
+
         rankItem.innerHTML = `
           <div class="rank-position">${user.rank}</div>
           <div class="rank-avatar ${isCurrentUser ? "highlighted" : ""}">
-            <i class="fas fa-user"></i>
+            <img
+              ${
+                isCurrentUser
+                  ? "data-user-photo"
+                  : `data-user-photo="${userPhotoId}"`
+              }
+              class="profile-image"
+              src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
+              alt="Foto do Perfil"
+              onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+            />
           </div>
           <div class="rank-info">
             <div class="rank-name">${displayName}${
@@ -695,16 +741,22 @@ class RankingManager {
     rankItem.classList.add("rank-item", "current-user");
 
     const balance = currentUser.coins || currentUser.balance || 0;
+    const displayName = currentUser.fullName || currentUser.name;
+    const userInitials = getUserInitials(displayName);
 
     rankItem.innerHTML = `
       <div class="rank-position">${rank}</div>
       <div class="rank-avatar highlighted">
-        <i class="fas fa-user"></i>
+        <img
+          data-user-photo
+          class="profile-image"
+          src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
+          alt="Foto do Perfil"
+          onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+        />
       </div>
       <div class="rank-info">
-        <div class="rank-name">${
-          currentUser.fullName || currentUser.name
-        } (Você)</div>
+        <div class="rank-name">${displayName} (Você)</div>
       </div>
       <div class="rank-balance">
         <div class="coin-icon">₿</div>
@@ -741,14 +793,29 @@ class RankingManager {
       }
 
       const balance = user.balance || user.coins || 0;
+      const displayName = user.displayName || user.name;
+
+      // Adicionar variáveis para foto
+      const userInitials = getUserInitials(displayName);
+      const userPhotoId = isCurrentUser ? "" : getUserPhotoId(displayName);
 
       rankItem.innerHTML = `
         <div class="rank-position">${user.rank}</div>
         <div class="rank-avatar ${isCurrentUser ? "highlighted" : ""}">
-          <i class="fas fa-user"></i>
+          <img
+            ${
+              isCurrentUser
+                ? "data-user-photo"
+                : `data-user-photo="${userPhotoId}"`
+            }
+            class="profile-image"
+            src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
+            alt="Foto do Perfil"
+            onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+          />
         </div>
         <div class="rank-info">
-          <div class="rank-name">${user.displayName || user.name}${
+          <div class="rank-name">${displayName}${
         isCurrentUser ? " (Você)" : ""
       }</div>
         </div>

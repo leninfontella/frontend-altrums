@@ -453,6 +453,14 @@ body {
   }
 }
 
+.profile-image {
+  /* Estas propriedades já estavam corretas e são as mais importantes */
+  width: 100%; /* Garante que a imagem ocupe 100% da largura do contêiner */
+  height: 100%; /* Garante que a imagem ocupe 100% da altura do contêiner */
+  object-fit: cover; /* Faz a imagem preencher o contêiner, cortando o que sobrar */
+  border-radius: 100%; /* Faz a imagem ficar redonda */
+}
+
 /* ========== ANIMAÇÕES ADICIONAIS ========== */
 .rank-item {
   opacity: 0;

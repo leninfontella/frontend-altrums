@@ -1,5 +1,5 @@
 // userService.js - Sistema global para gerenciar dados do usuário
-class UserService {
+class GlobalUserService {
   constructor() {
     this.userData = null;
     this.listeners = new Set();
@@ -210,12 +210,12 @@ class UserService {
 }
 
 // Criar instância global
-window.userService = new UserService();
+window.userService = new GlobalUserService();
 
 // Função helper para inicializar em qualquer página
 function initUserService() {
   if (!window.userService) {
-    window.userService = new UserService();
+    window.userService = new GlobalUserService();
   }
   return window.userService;
 }
@@ -235,7 +235,7 @@ function getUserData() {
 // Exportar para uso em módulos (se necessário)
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
-    UserService,
+    GlobalUserService,
     initUserService,
     updateUserProfilePhoto,
     getUserData,
