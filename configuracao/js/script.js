@@ -87,6 +87,21 @@ function loadUserData() {
   return { userName, userEmail };
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const userCards = document.querySelectorAll(".clickable-card");
+
+  userCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      // Exemplo de ação: ir para uma URL baseada em dados do card
+      const userId = card.getAttribute("data-user-id");
+      window.location.href = "../../profile/pages/profile.html";
+
+      // Ou você pode chamar qualquer outra função, como:
+      // showUserProfileModal(userId);
+    });
+  });
+});
+
 // Função para atualizar a interface com os dados do usuário
 function updateUserInterface(userName, userEmail) {
   // Selecionar elementos com múltiplas tentativas
