@@ -596,12 +596,71 @@ async function uploadPhotoOnly() {
 }
 
 // Função para remover foto de perfil
-async function removeProfilePhoto() {
-  if (!confirm("Tem certeza que deseja remover sua foto de perfil?")) {
-    return;
-  }
 
+function showRemovePhotoModal() {
+  const modal = document.getElementById("remove-photo-modal");
+  if (modal) {
+    modal.classList.add("show");
+
+    // Adicionar evento para fechar com ESC
+    document.addEventListener("keydown", handleModalEscape);
+
+    // Focar no botão cancelar para melhor acessibilidade
+    setTimeout(() => {
+      const cancelBtn = modal.querySelector(".modal-btn-cancel");
+      if (cancelBtn) {
+        cancelBtn.focus();
+      }
+    }, 100);
+  }
+}
+
+// Fechar modal de confirmação
+function closeRemovePhotoModal() {
+  const modal = document.getElementById("remove-photo-modal");
+  if (modal) {
+    modal.classList.remove("show");
+
+    // Remover listener do ESC
+    document.removeEventListener("keydown", handleModalEscape);
+  }
+}
+
+// Confirmar remoção da foto
+async function confirmRemovePhoto() {
+  // Fechar modal primeiro
+  closeRemovePhotoModal();
+
+  // Executar a remoção (função já existente, mas sem o confirm)
+  await removeProfilePhotoWithoutConfirm();
+}
+
+// Função para lidar com tecla ESC na modal
+function handleModalEscape(event) {
+  if (event.key === "Escape") {
+    closeRemovePhotoModal();
+  }
+}
+
+// Fechar modal clicando fora dela
+document.addEventListener("click", function (event) {
+  const modal = document.getElementById("remove-photo-modal");
+  if (modal && event.target === modal) {
+    closeRemovePhotoModal();
+  }
+});
+
+// Versão da função removeProfilePhoto sem o confirm (para usar na modal)
+async function removeProfilePhotoWithoutConfirm() {
   try {
+    // Mostrar loading no botão de remoção
+    const removeBtn = document.querySelector(".remove-photo-btn");
+    if (removeBtn) {
+      removeBtn.disabled = true;
+      removeBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Removendo...';
+    }
+
     const response = await window.apiConfig.delete("/api/profile/photo");
     const result = await response.json();
 
@@ -613,6 +672,12 @@ async function removeProfilePhoto() {
       if (profileImage) {
         profileImage.src =
           "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+
+        // Efeito visual de remoção
+        profileImage.style.opacity = "0.5";
+        setTimeout(() => {
+          profileImage.style.opacity = "1";
+        }, 300);
       }
 
       // Atualizar localStorage
@@ -639,6 +704,13 @@ async function removeProfilePhoto() {
   } catch (error) {
     console.error("Erro ao remover foto:", error);
     showMessage("Erro de conexão", "error");
+  } finally {
+    // Restaurar botão
+    const removeBtn = document.querySelector(".remove-photo-btn");
+    if (removeBtn) {
+      removeBtn.disabled = false;
+      removeBtn.innerHTML = '<i class="fas fa-trash"></i> Remover Foto';
+    }
   }
 }
 
@@ -704,7 +776,7 @@ window.addEventListener("offline", () => {
 window.editProfileFunctions = {
   saveProfile,
   uploadPhotoOnly,
-  removeProfilePhoto,
+  // removeProfilePhoto,
   loadUserProfile,
   loadUserDataFromAPI,
   showMessage,

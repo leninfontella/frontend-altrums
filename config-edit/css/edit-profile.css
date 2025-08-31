@@ -158,7 +158,7 @@ body {
   color: #ffffff;
 }
 
-/* ConteÃºdo Principal */
+/* Conteúdo Principal */
 .content {
   flex: 1;
   overflow-y: auto;
@@ -194,7 +194,7 @@ body {
   background: linear-gradient(180deg, #00e9ff 0%, #00aacc 100%);
 }
 
-/* SeÃ§Ãµes de FormulÃ¡rio */
+/* Seções de Formulário */
 .section {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
@@ -243,7 +243,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* Itens de FormulÃ¡rio */
+/* Itens de Formulário */
 .form-group {
   margin-bottom: 20px;
 }
@@ -294,11 +294,6 @@ body {
   animation-fill-mode: both;
   animation-delay: 0.1s;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px; /* Espaço entre o ícone e o texto */
-  transform: rotate(-10deg);
 }
 
 .profile-photo-card img {
@@ -314,36 +309,70 @@ body {
 .profile-photo-card img:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px; /* Espaço entre o ícone e o texto */
-  transform: rotate(-10deg);
 }
 
-.change-photo-btn {
+/* Controles da Foto */
+.photo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-top: 16px;
+  align-items: center;
+}
+
+.change-photo-btn,
+.remove-photo-btn {
   padding: 10px 20px;
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  color: #00d4ff;
+  border: 1px solid;
   font-weight: 600;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  min-width: 140px;
+}
+
+.change-photo-btn {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: #00d4ff;
 }
 
 .change-photo-btn:hover {
   background: rgba(0, 212, 255, 0.2);
   transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+}
+
+.remove-photo-btn {
+  background: rgba(220, 53, 69, 0.1);
+  border-color: rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+}
+
+.remove-photo-btn:hover {
+  background: rgba(220, 53, 69, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}
+
+.remove-photo-btn:disabled,
+.change-photo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 .hidden-input {
   display: none;
 }
 
-/* BotÃ£o de Salvar no ConteÃºdo */
+/* Botão de Salvar no Conteúdo */
 .save-content-btn {
   width: 100%;
   padding: 16px;
@@ -388,7 +417,133 @@ body {
   visibility: visible;
 }
 
-/* AnimaÃ§Ãµes */
+/* Modal de Confirmação */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-container {
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  width: 90%;
+  max-width: 400px;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.modal-overlay.show .modal-container {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  padding: 30px 30px 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-icon {
+  font-size: 48px;
+  color: #dc3545;
+  margin-bottom: 16px;
+  animation: modalIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes modalIconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.modal-body {
+  padding: 20px 30px;
+}
+
+.modal-text {
+  font-size: 16px;
+  color: #cccccc;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.modal-actions {
+  padding: 20px 30px 30px;
+  display: flex;
+  gap: 12px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-btn-cancel {
+  background: rgba(108, 117, 125, 0.1);
+  border: 1px solid rgba(108, 117, 125, 0.3);
+  color: #6c757d;
+}
+
+.modal-btn-cancel:hover {
+  background: rgba(108, 117, 125, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
+}
+
+.modal-btn-confirm {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ffffff;
+}
+
+.modal-btn-confirm:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+}
+
+/* Animações */
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -427,14 +582,4 @@ body {
 .success-message.show {
   opacity: 1;
   visibility: visible;
-}
-
-.profile-photo-container .change-photo-btn {
-  /* ... Outras propriedades ... */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px; /* Espaço entre o ícone e o texto */
-  transform: rotate(-10deg);
-  /* Remova qualquer outra propriedade de transform que possa estar causando conflito */
 }
