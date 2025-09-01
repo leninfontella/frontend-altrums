@@ -1130,6 +1130,206 @@ console.log(
   "Funcionalidades disponíveis: Perfil, Saldo, Estatísticas, Doações via API"
 );
 
+// ================ PATCH PARA SCRIPT.JS ================
+// Adicione este código no FINAL do arquivo script.js
+
+// 🔧 CORREÇÃO: Melhorar inicialização da foto de perfil
+document.addEventListener("DOMContentLoaded", function () {
+  // ... (código existente) ...
+
+  // 🔧 PATCH: Verificar foto de perfil salva no localStorage ao inicializar
+  setTimeout(() => {
+    console.log("🔄 Verificando foto de perfil salva...");
+
+    // Tentar obter userData do localStorage primeiro
+    let userData;
+    try {
+      userData = JSON.parse(localStorage.getItem("userData"));
+      if (!userData) {
+        userData = JSON.parse(sessionStorage.getItem("userData"));
+      }
+    } catch (error) {
+      console.warn("⚠️ Erro ao carregar userData:", error);
+    }
+
+    if (userData && userData.profilePhotoUrl) {
+      console.log(
+        "📸 Foto encontrada no localStorage:",
+        userData.profilePhotoUrl
+      );
+
+      const profilePic = document.querySelector(".profile-pic");
+      if (profilePic) {
+        updateProfilePicture(profilePic, userData.profilePhotoUrl);
+      }
+    } else {
+      console.log("📷 Nenhuma foto encontrada no armazenamento local");
+    }
+  }, 500); // Aguardar um pouco mais para garantir que tudo carregou
+});
+
+// 🔧 NOVA FUNÇÃO: Atualizar imagem de perfil com melhor tratamento de erros
+function updateProfilePicture(profilePicElement, photoUrl) {
+  if (!profilePicElement || !photoUrl) return;
+
+  console.log("🔄 Atualizando foto de perfil:", photoUrl);
+
+  // Construir URL correta
+  let imageUrl;
+  if (photoUrl.startsWith("http")) {
+    imageUrl = photoUrl;
+  } else if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
+    imageUrl = `http://localhost:5000${
+      photoUrl.startsWith("/") ? "" : "/"
+    }${photoUrl}`;
+  } else {
+    imageUrl = `http://localhost:5000/${photoUrl}`;
+  }
+
+  // Criar ou encontrar elemento img
+  let img = profilePicElement.querySelector("img");
+  if (!img) {
+    img = document.createElement("img");
+    img.id = "user-avatar-img";
+    img.style.cssText = `
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    `;
+    profilePicElement.innerHTML = "";
+    profilePicElement.appendChild(img);
+  }
+
+  // Adicionar timestamp para evitar cache
+  const urlWithTimestamp = imageUrl.includes("?")
+    ? `${imageUrl}&t=${Date.now()}`
+    : `${imageUrl}?t=${Date.now()}`;
+
+  img.src = urlWithTimestamp;
+
+  // Tratamento de erro melhorado
+  img.onerror = function () {
+    console.error("❌ Erro ao carregar foto:", imageUrl);
+    console.log("🔄 Usando avatar padrão");
+    profilePicElement.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+  };
+
+  // Efeito visual de carregamento
+  img.onload = function () {
+    console.log("✅ Foto carregada com sucesso:", imageUrl);
+    this.style.transform = "scale(1.05)";
+    setTimeout(() => {
+      this.style.transform = "scale(1)";
+    }, 300);
+  };
+}
+
+// 🔧 CORREÇÃO: Melhorar função updateUserInterface existente
+const originalUpdateUserInterface = UserSystem.updateUserInterface;
+UserSystem.updateUserInterface = function (userData) {
+  try {
+    console.log(
+      "🎨 Atualizando interface do usuário (versão corrigida):",
+      userData
+    );
+
+    // Executar função original primeiro
+    if (originalUpdateUserInterface) {
+      originalUpdateUserInterface.call(this, userData);
+    }
+
+    // 🔧 CORREÇÃO ADICIONAL: Garantir que a foto seja sempre atualizada
+    if (userData && (userData.profilePhotoUrl || userData.avatar)) {
+      const profilePic = document.querySelector(".profile-pic");
+      if (profilePic) {
+        const photoUrl = userData.profilePhotoUrl || userData.avatar;
+
+        // Se é uma URL de foto real (não um emoji/ícone)
+        if (
+          photoUrl &&
+          (photoUrl.startsWith("http") || photoUrl.includes("uploads"))
+        ) {
+          updateProfilePicture(profilePic, photoUrl);
+        } else if (
+          photoUrl &&
+          !photoUrl.startsWith("http") &&
+          !photoUrl.includes("uploads")
+        ) {
+          // É um avatar emoji/ícone
+          profilePic.innerHTML = photoUrl;
+        }
+      }
+    }
+
+    console.log("✅ Interface atualizada (versão corrigida)");
+  } catch (error) {
+    console.error("❌ Erro ao atualizar interface (versão corrigida):", error);
+  }
+};
+
+// 🔧 PATCH: Interceptar eventos de atualização de foto
+window.addEventListener("profilePhotoUpdated", (event) => {
+  console.log(
+    "📸 [PATCH] Evento de foto atualizada interceptado:",
+    event.detail
+  );
+
+  const newPhotoUrl = event.detail.photoUrl;
+  const profilePic = document.querySelector(".profile-pic");
+
+  if (profilePic && newPhotoUrl) {
+    updateProfilePicture(profilePic, newPhotoUrl);
+
+    // Salvar no localStorage via Auth se disponível
+    if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+      Auth.updateProfilePhoto(newPhotoUrl);
+    }
+  }
+});
+
+// 🔧 PATCH: Interceptar eventos de remoção de foto
+window.addEventListener("profilePhotoRemoved", () => {
+  console.log("🗑️ [PATCH] Evento de foto removida interceptado");
+
+  const profilePic = document.querySelector(".profile-pic");
+  if (profilePic) {
+    profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+
+    // Limpar do localStorage via Auth se disponível
+    if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+      Auth.updateProfilePhoto(null);
+    }
+  }
+});
+
+// 🔧 FUNÇÃO DE DEBUG PARA TESTAR O PATCH
+window.debugProfilePhoto = function () {
+  console.log("=== DEBUG PROFILE PHOTO PATCH ===");
+
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  console.log("UserData localStorage:", userData);
+
+  const sessionData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  console.log("UserData sessionStorage:", sessionData);
+
+  const profilePic = document.querySelector(".profile-pic");
+  console.log("Profile pic element:", profilePic);
+
+  if (userData.profilePhotoUrl) {
+    console.log(
+      "Foto encontrada, tentando carregar:",
+      userData.profilePhotoUrl
+    );
+    updateProfilePicture(profilePic, userData.profilePhotoUrl);
+  }
+
+  console.log("================================");
+};
+
+console.log("✅ Patch para foto de perfil aplicado ao script.js");
+
 // Exportar funções globalmente se necessário
 window.UserSystem = UserSystem;
 window.LevelSystem = LevelSystem;

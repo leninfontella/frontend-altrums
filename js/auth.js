@@ -24,10 +24,11 @@ const Auth = {
     rememberedEmail: "rememberedEmail",
     userBalance: "userBalance",
     loginTimestamp: "loginTimestamp",
+    // 🔧 NOVA CHAVE ESPECÍFICA PARA FOTO DE PERFIL
+    profilePhoto: "userProfilePhoto",
   },
 
   // ========== REQUISIÇÕES AUTENTICADAS ==========
-
   async makeRequest(endpoint, options = {}) {
     const token = this.getToken();
     const url = endpoint.startsWith("http")
@@ -44,7 +45,7 @@ const Auth = {
     }
 
     try {
-      console.log(`🔡 Fazendo requisição para: ${endpoint}`);
+      console.log(`📡 Fazendo requisição para: ${endpoint}`);
 
       const response = await fetch(url, {
         ...options,
@@ -56,7 +57,6 @@ const Auth = {
         console.warn("⚠️ Token expirado ou inválido");
         this.logout();
         this.redirectToLogin();
-        // Lance o erro aqui!
         throw new Error(
           "Token de autenticação expirado. Por favor, faça login novamente."
         );
@@ -87,6 +87,7 @@ const Auth = {
       throw error;
     }
   },
+
   // ========== GERENCIAMENTO DE TOKEN ==========
   getToken() {
     return sessionStorage.getItem(this.STORAGE_KEYS.token);
@@ -137,20 +138,45 @@ const Auth = {
 
       // Processar e salvar dados do usuário
       if (user) {
+        // 🔧 CORREÇÃO CRÍTICA: Preservar foto de perfil existente
+        const existingData = JSON.parse(
+          localStorage.getItem(this.STORAGE_KEYS.userData) || "{}"
+        );
+        const existingProfilePhoto = localStorage.getItem(
+          this.STORAGE_KEYS.profilePhoto
+        );
+
         const userInfo = {
           id: user.id || user._id,
           name: user.name || user.fullName,
           email: user.email,
-          // CORREÇÃO: Backend usa 'coins' não 'balance'
           balance: user.coins || user.balance || 0,
-          coins: user.coins || user.balance || 0, // Manter compatibilidade
+          coins: user.coins || user.balance || 0,
           level: user.level || 1,
           avatar: user.avatar,
           totalDonated: user.totalDonated || 0,
           totalReceived: user.totalReceived || 0,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
+          // 🔧 PRIORIDADE: 1º API, 2º localStorage específico, 3º userData antigo, 4º null
+          profilePhotoUrl:
+            user.profilePhotoUrl ||
+            existingProfilePhoto ||
+            existingData.profilePhotoUrl ||
+            null,
         };
+
+        // 🔧 CORREÇÃO: Salvar foto separadamente para garantir persistência
+        if (userInfo.profilePhotoUrl) {
+          localStorage.setItem(
+            this.STORAGE_KEYS.profilePhoto,
+            userInfo.profilePhotoUrl
+          );
+          console.log(
+            "📸 Foto de perfil salva separadamente:",
+            userInfo.profilePhotoUrl
+          );
+        }
 
         // Salvar dados individuais para acesso rápido
         sessionStorage.setItem("userName", userInfo.name || "");
@@ -162,17 +188,28 @@ const Auth = {
         );
         sessionStorage.setItem("userLevel", userInfo.level.toString());
 
-        // Salvar objeto completo
+        // Salvar no localStorage para persistência (dados completos)
+        localStorage.setItem(
+          this.STORAGE_KEYS.userData,
+          JSON.stringify(userInfo)
+        );
+
+        // Manter no sessionStorage também (compatibilidade)
         sessionStorage.setItem(
           this.STORAGE_KEYS.userData,
           JSON.stringify(userInfo)
         );
+
+        // 🔧 COMPATIBILIDADE: Salvar também em formatos que ranks.js espera
+        localStorage.setItem("currentUser", JSON.stringify(userInfo));
+        sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
 
         console.log("✅ Dados salvos:", {
           name: userInfo.name,
           email: userInfo.email,
           balance: userInfo.balance,
           level: userInfo.level,
+          profilePhotoUrl: userInfo.profilePhotoUrl,
         });
       }
 
@@ -192,8 +229,31 @@ const Auth = {
 
   getUserData() {
     try {
-      const userData = sessionStorage.getItem(this.STORAGE_KEYS.userData);
-      return userData ? JSON.parse(userData) : null;
+      // Tentar localStorage primeiro para dados persistentes
+      let userData = localStorage.getItem(this.STORAGE_KEYS.userData);
+      if (!userData) {
+        userData = sessionStorage.getItem(this.STORAGE_KEYS.userData);
+      }
+
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+
+        // 🔧 CORREÇÃO: Sempre verificar se existe foto salva separadamente
+        const separatePhotoUrl = localStorage.getItem(
+          this.STORAGE_KEYS.profilePhoto
+        );
+        if (separatePhotoUrl && !parsedData.profilePhotoUrl) {
+          parsedData.profilePhotoUrl = separatePhotoUrl;
+          console.log(
+            "🔄 Foto de perfil restaurada do storage separado:",
+            separatePhotoUrl
+          );
+        }
+
+        return parsedData;
+      }
+
+      return null;
     } catch (error) {
       console.error("❌ Erro ao obter dados do usuário:", error);
       return null;
@@ -212,18 +272,95 @@ const Auth = {
       newBalance.toString()
     );
 
-    // Atualizar também no objeto userData
+    // Atualizar também no objeto userData (tanto localStorage quanto sessionStorage)
     const userData = this.getUserData();
     if (userData) {
       userData.balance = newBalance;
       userData.coins = newBalance; // Manter compatibilidade
+
+      // Atualizar em ambos os storages
+      localStorage.setItem(
+        this.STORAGE_KEYS.userData,
+        JSON.stringify(userData)
+      );
       sessionStorage.setItem(
         this.STORAGE_KEYS.userData,
         JSON.stringify(userData)
       );
+
+      // 🔧 COMPATIBILIDADE: Atualizar também currentUser
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+      sessionStorage.setItem("currentUser", JSON.stringify(userData));
     }
 
     console.log(`💰 Saldo atualizado para: ${newBalance}`);
+  },
+
+  // 🔧 FUNÇÃO MELHORADA: Atualizar foto de perfil
+  updateProfilePhoto(photoUrl, skipEvent = false) {
+    console.log("📸 Atualizando foto de perfil:", photoUrl);
+
+    // Verificar se já está sendo processada (evitar loop)
+    if (this._updatingProfilePhoto) {
+      console.warn("⚠️ updateProfilePhoto já está em execução, evitando loop");
+      return;
+    }
+
+    // Marcar como em processamento
+    this._updatingProfilePhoto = true;
+
+    try {
+      // 1. Salvar foto separadamente (persistência garantida)
+      if (photoUrl) {
+        localStorage.setItem(this.STORAGE_KEYS.profilePhoto, photoUrl);
+      } else {
+        localStorage.removeItem(this.STORAGE_KEYS.profilePhoto);
+      }
+
+      // 2. Atualizar nos dados do usuário
+      const userData = this.getUserData();
+      if (userData) {
+        userData.profilePhotoUrl = photoUrl;
+
+        // Salvar em todos os formatos
+        localStorage.setItem(
+          this.STORAGE_KEYS.userData,
+          JSON.stringify(userData)
+        );
+        sessionStorage.setItem(
+          this.STORAGE_KEYS.userData,
+          JSON.stringify(userData)
+        );
+        localStorage.setItem("currentUser", JSON.stringify(userData));
+        sessionStorage.setItem("currentUser", JSON.stringify(userData));
+
+        console.log("✅ Foto de perfil atualizada em todos os storages");
+
+        // 3. Disparar evento para sincronização (apenas se não for chamada interna)
+        if (!skipEvent) {
+          window.dispatchEvent(
+            new CustomEvent("profilePhotoUpdated", {
+              detail: { photoUrl },
+            })
+          );
+        }
+      }
+    } finally {
+      // Sempre limpar o flag, mesmo se der erro
+      this._updatingProfilePhoto = false;
+    }
+  },
+
+  // 🔧 NOVA FUNÇÃO: Obter apenas a foto de perfil
+  getProfilePhoto() {
+    // Prioridade: 1º storage separado, 2º userData
+    const separatePhoto = localStorage.getItem(this.STORAGE_KEYS.profilePhoto);
+    if (separatePhoto) {
+      return separatePhoto;
+    }
+
+    const userData = this.getUserData();
+    return userData?.profilePhotoUrl || null;
   },
 
   // ========== VERIFICAÇÃO DE AUTENTICAÇÃO ==========
@@ -297,7 +434,7 @@ const Auth = {
   // ========== AUTENTICAÇÃO (LOGIN/REGISTER) ==========
   async login(email, password, rememberMe = false) {
     try {
-      console.log(`🔍 Tentativa de login para: ${email}`);
+      console.log(`🔐 Tentativa de login para: ${email}`);
 
       const response = await this.makeRequest(this.ENDPOINTS.login, {
         method: "POST",
@@ -327,7 +464,7 @@ const Auth = {
 
   async register(userData) {
     try {
-      console.log("📝 Tentativa de registro para:", userData.email);
+      console.log("🔐 Tentativa de registro para:", userData.email);
 
       const response = await this.makeRequest(this.ENDPOINTS.register, {
         method: "POST",
@@ -375,13 +512,22 @@ const Auth = {
     }
   },
 
+  // 🔧 FUNÇÃO CRÍTICA CORRIGIDA: Preservar foto de perfil no logout
   clearLocalData() {
-    console.log("🧹 Limpando todos os dados do usuário...");
+    console.log("🧹 Limpando dados do usuário (preservando foto de perfil)...");
+
+    // 🔧 CRÍTICO: Salvar foto de perfil ANTES de limpar
+    const currentPhoto = this.getProfilePhoto();
+    console.log("📸 Foto atual antes da limpeza:", currentPhoto);
 
     // Limpar todas as chaves definidas no STORAGE_KEYS
     Object.values(this.STORAGE_KEYS).forEach((key) => {
-      sessionStorage.removeItem(key);
-      console.log(`🗑️ Removido sessionStorage: ${key}`);
+      // 🔧 CORREÇÃO: NÃO limpar a chave da foto de perfil
+      if (key !== this.STORAGE_KEYS.profilePhoto) {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key); // Limpar também do localStorage
+        console.log(`🗑️ Removido: ${key}`);
+      }
     });
 
     // Limpar dados específicos do sessionStorage
@@ -390,8 +536,8 @@ const Auth = {
       "userEmail",
       "userId",
       "userLevel",
-      "userBalance", // Garantir que o saldo seja limpo
-      "currentUser", // Compatibilidade
+      "userBalance",
+      "currentUser",
     ];
 
     sessionKeys.forEach((key) => {
@@ -399,15 +545,17 @@ const Auth = {
       console.log(`🗑️ Removido sessionStorage: ${key}`);
     });
 
-    // Limpar dados do localStorage relacionados ao "lembre-se de mim" (opcional)
-    // Descomente as linhas abaixo se quiser limpar também o "lembre-se de mim"
-    // localStorage.removeItem(this.STORAGE_KEYS.rememberMe);
-    // localStorage.removeItem(this.STORAGE_KEYS.rememberedEmail);
-
-    // Compatibilidade com outros sistemas
+    // 🔧 CRÍTICO: Limpar userData do localStorage mas preservar foto
+    localStorage.removeItem(this.STORAGE_KEYS.userData);
     localStorage.removeItem("currentUser");
 
-    console.log("✅ Limpeza completa realizada");
+    // 🔧 RESTAURAR foto de perfil após limpeza
+    if (currentPhoto) {
+      localStorage.setItem(this.STORAGE_KEYS.profilePhoto, currentPhoto);
+      console.log("🔄 Foto de perfil preservada após limpeza:", currentPhoto);
+    }
+
+    console.log("✅ Limpeza completa realizada (foto de perfil preservada)");
   },
 
   // ========== PERFIL E SALDO ==========
@@ -420,8 +568,15 @@ const Auth = {
       const data = await response.json();
 
       if (data.success && data.data) {
-        // CORREÇÃO: Estrutura correta do backend
+        // Estrutura correta do backend
         const userData = data.data.user || data.data;
+
+        // 🔧 CRÍTICO: Sempre preservar foto local se não vier da API
+        const existingPhoto = this.getProfilePhoto();
+        if (existingPhoto && !userData.profilePhotoUrl) {
+          userData.profilePhotoUrl = existingPhoto;
+          console.log("🔄 Foto local preservada no getProfile:", existingPhoto);
+        }
 
         // Salvar dados atualizados
         this.saveUserData({
@@ -451,7 +606,7 @@ const Auth = {
       const data = await response.json();
 
       if (data.success) {
-        // CORREÇÃO: Backend retorna 'coins' não 'balance'
+        // Backend retorna 'coins' não 'balance'
         const balance =
           data.coins || data.data?.coins || data.balance || data.data?.balance;
 
@@ -512,6 +667,11 @@ const Auth = {
       const data = await response.json();
 
       if (data.success && data.data) {
+        // 🔧 Se está atualizando a foto, salvar separadamente também
+        if (profileData.profilePhotoUrl) {
+          this.updateProfilePhoto(profileData.profilePhotoUrl);
+        }
+
         // Atualizar dados salvos
         this.saveUserData({
           success: true,
@@ -534,17 +694,14 @@ const Auth = {
     try {
       const response = await this.makeRequest(this.ENDPOINTS.stats);
 
-      // Apenas processa a resposta se ela for bem-sucedida
       const data = await response.json();
 
-      // Verificação de sucesso da API
       if (!data.success || !data.data) {
         throw new Error(
           data.message || "Erro ao buscar dados do usuário na API"
         );
       }
 
-      // Retorna os dados mapeados se tudo estiver certo
       return {
         totalEarned: data.data.coins || 0,
         totalDonated: data.data.totalDonated || 0,
@@ -557,7 +714,6 @@ const Auth = {
       };
     } catch (error) {
       console.error("❌ Erro ao buscar estatísticas:", error);
-      // Propaga o erro para ser tratado por quem chamou esta função
       throw error;
     }
   },
@@ -584,14 +740,14 @@ const Auth = {
     return localStorage.getItem(this.STORAGE_KEYS.rememberMe) === "true";
   },
 
-  // Método para forçar limpeza completa (útil para debug)
+  // Método para força limpeza completa (útil para debug)
   forceCleanAll() {
     console.log("🔥 LIMPEZA FORÇADA - Removendo TODOS os dados...");
 
     // Limpar TODO o sessionStorage
     sessionStorage.clear();
 
-    // Limpar dados específicos do localStorage (mantendo apenas o essencial)
+    // Limpar dados específicos do localStorage (incluindo foto)
     const localStorageKeysToRemove = [
       "currentUser",
       "authToken",
@@ -599,7 +755,9 @@ const Auth = {
       "isLoggedIn",
       "userBalance",
       "loginTimestamp",
-      // Adicione outras chaves se necessário
+      "userProfilePhoto", // 🔧 Agora remove a foto na limpeza forçada
+      "rememberMe",
+      "rememberedEmail",
     ];
 
     localStorageKeysToRemove.forEach((key) => {
@@ -630,6 +788,7 @@ const Auth = {
       level:
         userData?.level || parseInt(sessionStorage.getItem("userLevel")) || 1,
       avatar: userData?.avatar || null,
+      profilePhotoUrl: this.getProfilePhoto(), // 🔧 Usar função específica
     };
   },
 };
@@ -689,7 +848,9 @@ if (typeof module !== "undefined" && module.exports) {
   window.Auth = Auth;
 }
 
-console.log("🚀 Módulo Auth unificado carregado com sucesso!");
+console.log(
+  "🚀 Módulo Auth unificado carregado com correção de foto de perfil!"
+);
 
 // ========== COMPATIBILIDADE COM CONFIG ==========
 

@@ -31,10 +31,13 @@
       element.textContent = userData.phone || "";
     });
 
-    // Atualizar foto de perfil
+    // 🔧 CORREÇÃO: Atualizar foto de perfil com melhor lógica
     if (window.userService) {
       const photoUrl = userData.profilePhotoUrl || userData.avatar;
       window.userService.updateProfilePhotoEverywhere(photoUrl);
+    } else {
+      // Fallback caso userService não esteja disponível
+      loadProfilePhotos();
     }
 
     // Atualizar informações específicas (coins, level, etc.)
@@ -48,7 +51,7 @@
       "[data-user-coins], .user-coins, .coins-count"
     );
     coinElements.forEach((element) => {
-      element.textContent = userData.coins || "0";
+      element.textContent = userData.coins || userData.balance || "0";
     });
 
     // Atualizar level
@@ -111,16 +114,45 @@
     }
   }
 
-  // Função para carregar foto de perfil em elementos específicos
-
   // ✅ FUNÇÃO CORRIGIDA: Função para carregar foto de perfil em elementos específicos
   function loadProfilePhotos() {
     const userData = getUserData();
     if (!userData) return;
 
+    console.log("🔄 Carregando fotos de perfil:", userData.profilePhotoUrl);
+
+    // 🔧 CORREÇÃO: Usar profilePhotoUrl salvo no localStorage
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
-    const imageUrl =
-      photoUrl || "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+
+    if (!photoUrl) {
+      console.log("📷 Nenhuma foto de perfil encontrada");
+      return;
+    }
+
+    // 🔧 CORREÇÃO: Construir URL correta com base na origem da imagem
+    let imageUrl;
+    if (photoUrl.startsWith("http")) {
+      // URL completa
+      imageUrl = photoUrl;
+    } else if (
+      photoUrl.startsWith("/uploads/") ||
+      photoUrl.includes("uploads")
+    ) {
+      // Caminho do backend - usar porta 5000
+      imageUrl = `http://localhost:5000${
+        photoUrl.startsWith("/") ? "" : "/"
+      }${photoUrl}`;
+    } else {
+      // Fallback
+      imageUrl = photoUrl;
+    }
+
+    // Adicionar timestamp para evitar cache
+    const finalUrl = imageUrl.includes("?")
+      ? `${imageUrl}&t=${Date.now()}`
+      : `${imageUrl}?t=${Date.now()}`;
+
+    console.log("📸 URL final da imagem:", finalUrl);
 
     const profileImages = document.querySelectorAll(
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
@@ -129,19 +161,74 @@
     profileImages.forEach((img) => {
       // Extrair a URL base da imagem atual (sem o timestamp ?t=...)
       const currentSrcBase = img.src.split("?")[0];
+      const newSrcBase = finalUrl.split("?")[0];
 
       // Apenas atualiza a imagem se a URL base for diferente
-      if (currentSrcBase !== imageUrl) {
-        img.src = imageUrl;
+      if (currentSrcBase !== newSrcBase) {
+        console.log(
+          `🔄 Atualizando imagem: ${currentSrcBase} -> ${newSrcBase}`
+        );
+
+        img.src = finalUrl;
         img.onerror = function () {
+          console.error("❌ Erro ao carregar imagem:", finalUrl);
           this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
         };
+
+        // Efeito visual de atualização
+        img.style.transition = "opacity 0.3s ease";
+        img.style.opacity = "0.7";
+        setTimeout(() => {
+          img.style.opacity = "1";
+        }, 150);
+      }
+    });
+
+    // 🔧 CORREÇÃO: Atualizar também elementos com background-image
+    const profileElements = document.querySelectorAll(
+      "[data-user-photo]:not(img), .profile-image:not(img), .user-avatar:not(img), .profile-avatar:not(img)"
+    );
+
+    profileElements.forEach((element) => {
+      if (element.style) {
+        element.style.backgroundImage = `url(${finalUrl})`;
+        element.style.backgroundSize = "cover";
+        element.style.backgroundPosition = "center";
+        element.style.backgroundRepeat = "no-repeat";
       }
     });
   }
 
+  // 🔧 NOVA FUNÇÃO: Inicializar foto de perfil no carregamento da página
+  function initializeProfilePhoto() {
+    console.log("🔄 Inicializando foto de perfil...");
+
+    // Aguardar um momento para garantir que Auth está carregado
+    setTimeout(() => {
+      const userData = getUserData();
+      if (userData && userData.profilePhotoUrl) {
+        console.log(
+          "📸 Foto de perfil encontrada no userData:",
+          userData.profilePhotoUrl
+        );
+        loadProfilePhotos();
+
+        // Disparar evento para sincronizar com outras partes do sistema
+        window.dispatchEvent(
+          new CustomEvent("profilePhotoUpdated", {
+            detail: { photoUrl: userData.profilePhotoUrl },
+          })
+        );
+      } else {
+        console.log("📷 Nenhuma foto de perfil encontrada no userData");
+      }
+    }, 100);
+  }
+
   // Função principal de inicialização
   function initGlobal() {
+    console.log("🚀 Inicializando sistema global...");
+
     // Aguardar carregamento do userService
     if (window.userService) {
       loadUserInterface();
@@ -154,9 +241,16 @@
           loadUserInterface();
           setupUpdateListeners();
           loadProfilePhotos();
+        } else {
+          // Fallback sem userService
+          loadUserInterface();
+          loadProfilePhotos();
         }
       }, 100);
     }
+
+    // 🔧 CORREÇÃO: Sempre inicializar foto de perfil
+    initializeProfilePhoto();
   }
 
   // Inicializar quando o DOM estiver pronto
@@ -173,14 +267,84 @@
     }
   });
 
+  // 🔧 CORREÇÃO: Listener aprimorado para mudanças na foto de perfil
+  window.addEventListener("profilePhotoUpdated", (event) => {
+    console.log("📸 Evento de foto atualizada recebido:", event.detail);
+
+    const newPhotoUrl = event.detail.photoUrl;
+
+    // Atualizar userData no localStorage
+    const userData = getUserData();
+    if (userData) {
+      userData.profilePhotoUrl = newPhotoUrl;
+
+      // Salvar tanto no localStorage quanto no sessionStorage
+      if (typeof Auth !== "undefined" && Auth.saveUserData) {
+        Auth.saveUserData({ user: userData });
+      } else {
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+
+      console.log("💾 userData atualizado com nova foto:", newPhotoUrl);
+    }
+
+    // Recarregar fotos em todos os elementos
+    loadProfilePhotos();
+  });
+
+  // 🔧 CORREÇÃO: Listener para remoção de foto
+  window.addEventListener("profilePhotoRemoved", () => {
+    console.log("🗑️ Evento de foto removida recebido");
+
+    // Atualizar userData removendo a foto
+    const userData = getUserData();
+    if (userData) {
+      userData.profilePhotoUrl = null;
+
+      if (typeof Auth !== "undefined" && Auth.saveUserData) {
+        Auth.saveUserData({ user: userData });
+      } else {
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+
+      console.log("💾 Foto removida do userData");
+    }
+
+    // Restaurar imagens padrão
+    const profileImages = document.querySelectorAll(
+      "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
+    );
+
+    profileImages.forEach((img) => {
+      img.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    });
+  });
+
   // Função global para forçar atualização
   window.refreshUserInterface = function () {
+    console.log("🔄 Atualizacao forcada da interface...");
     initGlobal();
   };
 
   // Função para debug
   window.debugUserData = function () {
+    console.log("=== DEBUG USER DATA ===");
     console.log("UserData:", getUserData());
     console.log("UserService:", window.userService);
+    console.log("Auth disponível:", typeof Auth !== "undefined");
+
+    const userData = getUserData();
+    if (userData) {
+      console.log("ProfilePhotoUrl:", userData.profilePhotoUrl);
+      console.log("Avatar:", userData.avatar);
+    }
+    console.log("=======================");
+  };
+
+  // 🔧 NOVA FUNÇÃO: Forçar recarregamento da foto de perfil
+  window.reloadProfilePhoto = function () {
+    console.log("🔄 Recarregamento forçado da foto de perfil...");
+    initializeProfilePhoto();
+    loadProfilePhotos();
   };
 })();
