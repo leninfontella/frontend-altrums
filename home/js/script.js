@@ -10,6 +10,8 @@ if (typeof Auth === "undefined") {
 
 // Sistema de usuário integrado com Auth.js
 const UserSystem = {
+  profilePicInitialized: false, // Flag para evitar múltiplas inicializações
+
   async loadUserProfile() {
     try {
       console.log("📄 Carregando perfil do usuário...");
@@ -21,14 +23,12 @@ const UserSystem = {
       const profileFromAPI = await Auth.getProfile();
 
       // Mesclar dados locais com os da API
-      // Os dados da API têm prioridade, mas os campos ausentes são preenchidos com os dados locais
       const finalProfileData = {
         ...(localData || {}),
         ...(profileFromAPI || {}),
       };
 
       if (Object.keys(finalProfileData).length > 0) {
-        // Se houver dados (da API ou local), atualize a interface
         this.updateUserInterface(finalProfileData);
         console.log("✅ Perfil carregado:", finalProfileData);
         return finalProfileData;
@@ -38,7 +38,6 @@ const UserSystem = {
     } catch (error) {
       console.error("❌ Erro ao carregar perfil:", error);
 
-      // Tentar usar dados salvos como fallback em caso de erro na requisição
       const localData = Auth.getUserData();
       if (localData) {
         this.updateUserInterface(localData);
@@ -62,7 +61,6 @@ const UserSystem = {
         console.log("✅ Saldo carregado:", balance);
         return balance;
       } else {
-        // Fallback para saldo local se API falhar
         const localBalance = Auth.getUserBalance();
         this.updateBalanceInterface(localBalance);
         console.log("⚠️ Usando saldo local:", localBalance);
@@ -71,7 +69,6 @@ const UserSystem = {
     } catch (error) {
       console.error("❌ Erro ao carregar saldo:", error);
 
-      // Usar saldo local como fallback
       const localBalance = Auth.getUserBalance();
       this.updateBalanceInterface(localBalance);
       console.log("⚠️ Fallback para saldo local:", localBalance);
@@ -95,7 +92,6 @@ const UserSystem = {
     } catch (error) {
       console.error("❌ Erro ao carregar estatísticas:", error);
 
-      // Fallback com stats simuladas baseadas no saldo
       const balance = Auth.getUserBalance();
       const mockStats = {
         totalEarned: balance + Math.floor(Math.random() * 500),
@@ -114,75 +110,19 @@ const UserSystem = {
     try {
       console.log("🎨 Atualizando interface do usuário:", userData);
 
-      // Atualizar saudação - CORREÇÃO: verificar se name existe
+      // Atualizar saudação
       const greetingElement = document.getElementById("user-greeting");
       if (greetingElement && userData.name) {
-        // Pega o primeiro nome
         const firstName = userData.name.split(" ")[0];
         greetingElement.textContent = `Olá, ${firstName}!`;
         console.log("✅ Saudação atualizada para:", firstName);
       } else if (greetingElement) {
-        // Fallback se não tiver nome
         greetingElement.textContent = "Olá, Usuário!";
         console.log("⚠️ Nome não disponível, usando fallback");
       }
 
-      // CORREÇÃO: Atualizar avatar com foto de perfil
-      const profilePic = document.querySelector(".profile-pic");
-      if (profilePic) {
-        // Se tem foto de perfil, usar ela
-        if (userData.profilePhotoUrl) {
-          let imageUrl = userData.profilePhotoUrl;
-
-          // CORREÇÃO: Sempre usar a porta 5000 para imagens do backend
-          if (!userData.profilePhotoUrl.startsWith("http")) {
-            // Se é um caminho relativo, construir URL completa para o backend
-            imageUrl = `http://localhost:5000/${userData.profilePhotoUrl}`;
-          }
-
-          // Criar elemento img se não existir
-          let img = profilePic.querySelector("img");
-          if (!img) {
-            img = document.createElement("img");
-            img.id = "user-avatar-img";
-            img.style.cssText = `
-              width: 100%;
-              height: 100%;
-              border-radius: 50%;
-              object-fit: cover;
-              transition: transform 0.3s ease;
-            `;
-            profilePic.innerHTML = ""; // Limpar conteúdo anterior
-            profilePic.appendChild(img);
-          }
-
-          // Atualizar src com timestamp para evitar cache
-          const urlWithTimestamp = imageUrl.includes("?")
-            ? `${imageUrl}&t=${Date.now()}`
-            : `${imageUrl}?t=${Date.now()}`;
-
-          img.src = urlWithTimestamp;
-
-          // Fallback se a imagem não carregar
-          img.onerror = function () {
-            console.log("❌ Erro ao carregar foto de:", imageUrl);
-            console.log("🔄 Usando avatar padrão");
-            profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
-          };
-
-          console.log("✅ Foto de perfil atualizada na HOME:", imageUrl);
-        }
-        // Se tem avatar (emoji/ícone), usar ele
-        else if (userData.avatar) {
-          profilePic.innerHTML = userData.avatar;
-          console.log("✅ Avatar atualizado (fallback)");
-        }
-        // Fallback padrão
-        else {
-          profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
-          console.log("⚠️ Usando avatar padrão");
-        }
-      }
+      // CORREÇÃO: NÃO inicializar foto aqui para evitar piscar
+      // A foto já foi carregada pelo script inline no HTML
 
       // Atualizar outros elementos do perfil se existirem
       const userNameElements = document.querySelectorAll(".user-name");
@@ -196,14 +136,57 @@ const UserSystem = {
     }
   },
 
+  // FUNÇÃO REMOVIDA: initializeProfilePicture - não é mais necessária
+  // A inicialização agora é feita pelo script inline no HTML
+
+  // NOVA FUNÇÃO: Apenas para atualizações EXTERNAS (eventos)
+  updateProfilePicture(newPhotoUrl) {
+    const profilePic = document.querySelector(".profile-pic");
+    if (!profilePic) return;
+
+    const img = profilePic.querySelector("img[data-user-photo]");
+    const icon = profilePic.querySelector(".fa-user-astronaut");
+
+    if (!img || !icon) return;
+
+    if (newPhotoUrl) {
+      let imageUrl = newPhotoUrl;
+
+      if (!newPhotoUrl.startsWith("http")) {
+        imageUrl = `http://localhost:5000/${newPhotoUrl}`;
+      }
+
+      const urlWithTimestamp = imageUrl.includes("?")
+        ? `${imageUrl}&t=${Date.now()}`
+        : `${imageUrl}?t=${Date.now()}`;
+
+      img.src = urlWithTimestamp;
+      img.style.display = "block";
+      icon.style.display = "none";
+
+      img.onerror = () => {
+        console.error("❌ Erro ao carregar foto:", imageUrl);
+        img.style.display = "none";
+        icon.style.display = "block";
+      };
+
+      img.onload = () => {
+        console.log("✅ Foto atualizada externamente:", imageUrl);
+      };
+    } else {
+      // Remover foto - mostrar ícone
+      img.style.display = "none";
+      icon.style.display = "block";
+      console.log("✅ Foto removida, ícone padrão restaurado");
+    }
+  },
+
   updateBalanceInterface(balance) {
     try {
       console.log("💰 Atualizando saldo na interface:", balance);
 
-      // CORREÇÃO: Remover placeholder e atualizar saldo
       const balanceElement = document.querySelector("#user-balance");
       if (balanceElement) {
-        // Remover placeholder se existir
         const placeholder = balanceElement.querySelector(".data-placeholder");
         if (placeholder) {
           placeholder.remove();
@@ -211,7 +194,6 @@ const UserSystem = {
 
         balanceElement.textContent = balance.toLocaleString();
 
-        // Animação de atualização
         const balanceCard = document.getElementById("balance-card");
         if (balanceCard) {
           balanceCard.classList.add("balance-updated");
@@ -231,7 +213,6 @@ const UserSystem = {
     try {
       console.log("📊 Atualizando estatísticas na interface:", stats);
 
-      // Mapeamento correto dos cards
       const statsMap = [
         { id: "earned-coins-card", value: stats.totalEarned },
         { id: "donated-coins-card", value: stats.totalDonated },
@@ -244,7 +225,6 @@ const UserSystem = {
         if (card && value !== undefined) {
           const amountSpan = card.querySelector(".coin-amount span");
           if (amountSpan) {
-            // Remover placeholder se existir
             const placeholder = amountSpan.querySelector(".data-placeholder");
             if (placeholder) {
               placeholder.remove();
@@ -282,9 +262,7 @@ const UserSystem = {
           "success"
         );
 
-        // Recarregar estatísticas após doação
         setTimeout(() => this.loadUserStats(), 1000);
-
         return result;
       } else {
         throw new Error("Erro ao processar doação");
@@ -372,11 +350,10 @@ const LevelSystem = {
   addLevelBadge(balance) {
     try {
       const levelInfo = this.calculateLevel(balance);
-
-      // Procurar um local para adicionar o badge
       const profileSection = document.querySelector(
         ".profile-section, .user-info, .header"
       );
+
       if (profileSection) {
         let levelBadge = document.querySelector(".user-level-badge");
 
@@ -419,8 +396,7 @@ const LevelSystem = {
 // ========== SISTEMA DE BUSCA E DOAÇÃO - INTEGRAÇÃO COM API ==========
 
 const UserSearchAPI = {
-  // CORREÇÃO: Mudar a porta para 5000, que é a porta do backend
-  baseUrl: "http://localhost:5000/api", // Configurar conforme sua API
+  baseUrl: "http://localhost:5000/api",
 
   async searchUsers(query) {
     try {
@@ -446,14 +422,9 @@ const UserSearchAPI = {
 
       const data = await response.json();
 
-      // DEBUG: Ver toda a estrutura da resposta
       console.log("📋 Resposta completa da API:", data);
-      console.log("📋 Tipo da resposta:", typeof data);
-      console.log("📋 Chaves disponíveis:", Object.keys(data));
 
-      // CORREÇÃO: Tentar diferentes estruturas possíveis
       let users = [];
-
       if (data.users) {
         users = data.users;
       } else if (data.data && data.data.users) {
@@ -468,8 +439,6 @@ const UserSearchAPI = {
       }
 
       console.log("✅ Usuários encontrados:", users.length);
-      console.log("👥 Lista de usuários:", users);
-
       return users;
     } catch (error) {
       console.error("❌ Erro ao buscar usuários:", error);
@@ -494,8 +463,6 @@ const UserSearchAPI = {
 
       const userData = await response.json();
       console.log("✅ Detalhes do usuário carregados:", userData);
-
-      // ⬇️ Retorna direto o objeto do usuário
       return userData.data.user;
     } catch (error) {
       console.error("❌ Erro ao carregar detalhes do usuário:", error);
@@ -508,7 +475,6 @@ const UserSearchAPI = {
       console.log("🎁 Processando doação via API:", { recipientId, amount });
 
       const token = Auth.getToken();
-      // CORREÇÃO: A rota agora é '/donations'
       const response = await fetch(`${this.baseUrl}/donations`, {
         method: "POST",
         headers: {
@@ -531,7 +497,6 @@ const UserSearchAPI = {
 
       const result = await response.json();
       console.log("✅ Doação processada com sucesso:", result);
-
       return result;
     } catch (error) {
       console.error("❌ Erro ao processar doação:", error);
@@ -625,12 +590,12 @@ function createDonationModal(user) {
               <span class="coin-icon">🪙</span>
             </div>
             
-              <div class="quick-amounts">
+            <div class="quick-amounts">
               <button class="quick-amount" onclick="setDonationAmount(10)">10</button>
               <button class="quick-amount" onclick="setDonationAmount(50)">50</button>
               <button class="quick-amount" onclick="setDonationAmount(100)">100</button>
-              </div>
-              </div>
+            </div>
+          </div>
           
           <div class="donation-message-section">
             <label for="donation-message">Mensagem (opcional):</label>
@@ -643,10 +608,12 @@ function createDonationModal(user) {
           </div>
           
           <div class="donation-actions">
-  <button class="cancel-btn" onclick="closeDonationModal()">Cancelar</button>
-  <button class="confirm-donation-btn" onclick="confirmDonation('${user.id}')">
-    Confirmar Doação
-  </button>
+            <button class="cancel-btn" onclick="closeDonationModal()">Cancelar</button>
+            <button class="confirm-donation-btn" onclick="confirmDonation('${
+              user.id
+            }')">
+              Confirmar Doação
+            </button>
           </div>
         </div>
       </div>
@@ -655,7 +622,6 @@ function createDonationModal(user) {
 
   document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-  // Event listeners
   const messageTextarea = document.getElementById("donation-message");
   const charCounter = document.querySelector(".char-counter");
 
@@ -717,12 +683,11 @@ function openSearchModal() {
   searchInput.addEventListener("input", function () {
     const query = this.value;
 
-    // Debounce para evitar muitas requisições
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
       const results = await UserSearchAPI.searchUsers(query);
       renderSearchResults(results);
-    }, 500); // Aguardar 500ms após parar de digitar
+    }, 500);
   });
 
   setTimeout(() => searchInput.focus(), 100);
@@ -772,7 +737,6 @@ async function confirmDonation(recipientId) {
   const message = messageInput.value.trim();
   const currentBalance = getCurrentUserBalance();
 
-  // Validações
   if (!amount || amount <= 0) {
     showNotification("Digite uma quantidade válida", "error");
     return;
@@ -784,7 +748,6 @@ async function confirmDonation(recipientId) {
   }
 
   try {
-    // 1. Processar doação via API
     const result = await UserSearchAPI.processDonation(
       recipientId,
       amount,
@@ -792,23 +755,14 @@ async function confirmDonation(recipientId) {
     );
 
     if (result.success) {
-      // 2. BUSCAR O SALDO MAIS RECENTE DIRETAMENTE DA API
       const newBalance = await Auth.getBalance();
-
-      // 3. ATUALIZAR A INTERFACE COM O NOVO SALDO
       UserSystem.updateBalanceInterface(newBalance);
-
-      // Fechar modal
       closeDonationModal();
-
       showNotification(
         `Doação de ${amount} moedas realizada com sucesso!`,
         "success"
       );
-
-      // Recarregar estatísticas (isso já está correto)
       setTimeout(() => UserSystem.loadUserStats(), 1000);
-
       console.log("Doação realizada com sucesso:", result);
     } else {
       throw new Error(result.message || "Erro ao processar doação");
@@ -842,7 +796,7 @@ function showNotification(message, type = "info") {
 // ========== INICIALIZAÇÃO E EVENTOS ==========
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Verificar se usuário está logado usando Auth.js
+  // Verificar se usuário está logado
   if (!Auth.checkSession()) {
     console.log("Usuario não logado - redirecionando");
     Auth.redirectToLogin();
@@ -866,7 +820,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       UserSystem.loadUserStats(),
     ]);
 
-    // Processar resultados
     const profileData = profile.status === "fulfilled" ? profile.value : null;
     const balanceData =
       balance.status === "fulfilled" ? balance.value : Auth.getUserBalance();
@@ -877,7 +830,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (balanceData !== null) {
-      // Adicionar badge de nível baseado no saldo
       LevelSystem.addLevelBadge(balanceData);
       console.log("Saldo carregado e nivel calculado");
     }
@@ -886,7 +838,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Estatisticas carregadas");
     }
 
-    // CORREÇÃO: Habilitar botão de doação após carregar dados
+    // Habilitar botão de doação
     const searchDonateBtn = document.getElementById("search-donate-btn");
     if (searchDonateBtn) {
       searchDonateBtn.disabled = false;
@@ -901,7 +853,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Erro durante inicializacao:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
 
-    // Mesmo com erro, habilitar o botão se tiver saldo
     const searchDonateBtn = document.getElementById("search-donate-btn");
     if (searchDonateBtn && Auth.getUserBalance() > 0) {
       searchDonateBtn.disabled = false;
@@ -925,107 +876,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, index * 100);
   });
 
-  // NOVO: Event listeners para sincronização de foto de perfil
+  // CORREÇÃO: Event listeners para foto de perfil - evitar piscar
   window.addEventListener("profilePhotoUpdated", (event) => {
     console.log("📸 Evento de foto atualizada recebido:", event.detail);
-
     const newPhotoUrl = event.detail.photoUrl;
-    const profilePic = document.querySelector(".profile-pic");
-
-    if (profilePic && newPhotoUrl) {
-      let img = profilePic.querySelector("img");
-      if (!img) {
-        img = document.createElement("img");
-        img.id = "user-avatar-img";
-        img.style.cssText = `
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          object-fit: cover;
-          transition: transform 0.3s ease;
-        `;
-        profilePic.innerHTML = "";
-        profilePic.appendChild(img);
-      }
-
-      // Atualizar com timestamp
-      const urlWithTimestamp = newPhotoUrl.includes("?")
-        ? `${newPhotoUrl}&t=${Date.now()}`
-        : `${newPhotoUrl}?t=${Date.now()}`;
-
-      img.src = urlWithTimestamp;
-
-      // Efeito visual de atualização
-      img.style.transform = "scale(1.1)";
-      setTimeout(() => {
-        img.style.transform = "scale(1)";
-      }, 300);
-
-      console.log("✅ Foto de perfil sincronizada na HOME");
-    }
+    UserSystem.updateProfilePicture(newPhotoUrl);
   });
 
   window.addEventListener("profilePhotoRemoved", () => {
     console.log("🗑️ Evento de foto removida recebido");
-
-    const profilePic = document.querySelector(".profile-pic");
-    if (profilePic) {
-      profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
-      console.log("✅ Avatar padrão restaurado na HOME");
-    }
+    UserSystem.updateProfilePicture(null);
   });
 
-  // NOVO: Event listener para mudanças nos dados do usuário
   window.addEventListener("userDataUpdated", (event) => {
     console.log("👤 Dados do usuário atualizados:", event.detail);
-
     const userData = event.detail.userData;
     if (userData) {
       UserSystem.updateUserInterface(userData);
     }
   });
-
-  // NOVO: Verificar se há foto no localStorage ao iniciar
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  if (userData && userData.profilePhotoUrl) {
-    const profilePic = document.querySelector(".profile-pic");
-    if (profilePic) {
-      let img = profilePic.querySelector("img");
-      if (!img) {
-        img = document.createElement("img");
-        img.id = "user-avatar-img";
-        img.style.cssText = `
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          object-fit: cover;
-          transition: transform 0.3s ease;
-        `;
-        profilePic.innerHTML = "";
-        profilePic.appendChild(img);
-      }
-
-      // CORREÇÃO: Sempre usar porta 5000 para URLs de imagem
-      let imageUrl = userData.profilePhotoUrl;
-      if (!userData.profilePhotoUrl.startsWith("http")) {
-        imageUrl = `http://localhost:5000/${userData.profilePhotoUrl}`;
-      }
-
-      img.src = `${imageUrl}?t=${Date.now()}`;
-      img.onerror = function () {
-        profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
-      };
-    }
-  }
 });
 
 // ========== EVENT LISTENERS ==========
 
-// Botão principal de buscar e doar - CORREÇÃO: Garantir que funcione
 const searchDonateBtn = document.getElementById("search-donate-btn");
 if (searchDonateBtn) {
   searchDonateBtn.addEventListener("click", () => {
-    // Verificar se está habilitado
     if (searchDonateBtn.disabled) {
       showNotification("Aguarde o carregamento dos dados", "info");
       return;
@@ -1123,214 +999,11 @@ function updateTime() {
 }
 
 setInterval(updateTime, 60000);
-updateTime(); // Executar imediatamente
+updateTime();
 
 console.log("Sistema integrado com Auth.js e API real carregado com sucesso!");
-console.log(
-  "Funcionalidades disponíveis: Perfil, Saldo, Estatísticas, Doações via API"
-);
 
-// ================ PATCH PARA SCRIPT.JS ================
-// Adicione este código no FINAL do arquivo script.js
-
-// 🔧 CORREÇÃO: Melhorar inicialização da foto de perfil
-document.addEventListener("DOMContentLoaded", function () {
-  // ... (código existente) ...
-
-  // 🔧 PATCH: Verificar foto de perfil salva no localStorage ao inicializar
-  setTimeout(() => {
-    console.log("🔄 Verificando foto de perfil salva...");
-
-    // Tentar obter userData do localStorage primeiro
-    let userData;
-    try {
-      userData = JSON.parse(localStorage.getItem("userData"));
-      if (!userData) {
-        userData = JSON.parse(sessionStorage.getItem("userData"));
-      }
-    } catch (error) {
-      console.warn("⚠️ Erro ao carregar userData:", error);
-    }
-
-    if (userData && userData.profilePhotoUrl) {
-      console.log(
-        "📸 Foto encontrada no localStorage:",
-        userData.profilePhotoUrl
-      );
-
-      const profilePic = document.querySelector(".profile-pic");
-      if (profilePic) {
-        updateProfilePicture(profilePic, userData.profilePhotoUrl);
-      }
-    } else {
-      console.log("📷 Nenhuma foto encontrada no armazenamento local");
-    }
-  }, 500); // Aguardar um pouco mais para garantir que tudo carregou
-});
-
-// 🔧 NOVA FUNÇÃO: Atualizar imagem de perfil com melhor tratamento de erros
-function updateProfilePicture(profilePicElement, photoUrl) {
-  if (!profilePicElement || !photoUrl) return;
-
-  console.log("🔄 Atualizando foto de perfil:", photoUrl);
-
-  // Construir URL correta
-  let imageUrl;
-  if (photoUrl.startsWith("http")) {
-    imageUrl = photoUrl;
-  } else if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
-    imageUrl = `http://localhost:5000${
-      photoUrl.startsWith("/") ? "" : "/"
-    }${photoUrl}`;
-  } else {
-    imageUrl = `http://localhost:5000/${photoUrl}`;
-  }
-
-  // Criar ou encontrar elemento img
-  let img = profilePicElement.querySelector("img");
-  if (!img) {
-    img = document.createElement("img");
-    img.id = "user-avatar-img";
-    img.style.cssText = `
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    `;
-    profilePicElement.innerHTML = "";
-    profilePicElement.appendChild(img);
-  }
-
-  // Adicionar timestamp para evitar cache
-  const urlWithTimestamp = imageUrl.includes("?")
-    ? `${imageUrl}&t=${Date.now()}`
-    : `${imageUrl}?t=${Date.now()}`;
-
-  img.src = urlWithTimestamp;
-
-  // Tratamento de erro melhorado
-  img.onerror = function () {
-    console.error("❌ Erro ao carregar foto:", imageUrl);
-    console.log("🔄 Usando avatar padrão");
-    profilePicElement.innerHTML = '<i class="fas fa-user-astronaut"></i>';
-  };
-
-  // Efeito visual de carregamento
-  img.onload = function () {
-    console.log("✅ Foto carregada com sucesso:", imageUrl);
-    this.style.transform = "scale(1.05)";
-    setTimeout(() => {
-      this.style.transform = "scale(1)";
-    }, 300);
-  };
-}
-
-// 🔧 CORREÇÃO: Melhorar função updateUserInterface existente
-const originalUpdateUserInterface = UserSystem.updateUserInterface;
-UserSystem.updateUserInterface = function (userData) {
-  try {
-    console.log(
-      "🎨 Atualizando interface do usuário (versão corrigida):",
-      userData
-    );
-
-    // Executar função original primeiro
-    if (originalUpdateUserInterface) {
-      originalUpdateUserInterface.call(this, userData);
-    }
-
-    // 🔧 CORREÇÃO ADICIONAL: Garantir que a foto seja sempre atualizada
-    if (userData && (userData.profilePhotoUrl || userData.avatar)) {
-      const profilePic = document.querySelector(".profile-pic");
-      if (profilePic) {
-        const photoUrl = userData.profilePhotoUrl || userData.avatar;
-
-        // Se é uma URL de foto real (não um emoji/ícone)
-        if (
-          photoUrl &&
-          (photoUrl.startsWith("http") || photoUrl.includes("uploads"))
-        ) {
-          updateProfilePicture(profilePic, photoUrl);
-        } else if (
-          photoUrl &&
-          !photoUrl.startsWith("http") &&
-          !photoUrl.includes("uploads")
-        ) {
-          // É um avatar emoji/ícone
-          profilePic.innerHTML = photoUrl;
-        }
-      }
-    }
-
-    console.log("✅ Interface atualizada (versão corrigida)");
-  } catch (error) {
-    console.error("❌ Erro ao atualizar interface (versão corrigida):", error);
-  }
-};
-
-// 🔧 PATCH: Interceptar eventos de atualização de foto
-window.addEventListener("profilePhotoUpdated", (event) => {
-  console.log(
-    "📸 [PATCH] Evento de foto atualizada interceptado:",
-    event.detail
-  );
-
-  const newPhotoUrl = event.detail.photoUrl;
-  const profilePic = document.querySelector(".profile-pic");
-
-  if (profilePic && newPhotoUrl) {
-    updateProfilePicture(profilePic, newPhotoUrl);
-
-    // Salvar no localStorage via Auth se disponível
-    if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
-      Auth.updateProfilePhoto(newPhotoUrl);
-    }
-  }
-});
-
-// 🔧 PATCH: Interceptar eventos de remoção de foto
-window.addEventListener("profilePhotoRemoved", () => {
-  console.log("🗑️ [PATCH] Evento de foto removida interceptado");
-
-  const profilePic = document.querySelector(".profile-pic");
-  if (profilePic) {
-    profilePic.innerHTML = '<i class="fas fa-user-astronaut"></i>';
-
-    // Limpar do localStorage via Auth se disponível
-    if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
-      Auth.updateProfilePhoto(null);
-    }
-  }
-});
-
-// 🔧 FUNÇÃO DE DEBUG PARA TESTAR O PATCH
-window.debugProfilePhoto = function () {
-  console.log("=== DEBUG PROFILE PHOTO PATCH ===");
-
-  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-  console.log("UserData localStorage:", userData);
-
-  const sessionData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  console.log("UserData sessionStorage:", sessionData);
-
-  const profilePic = document.querySelector(".profile-pic");
-  console.log("Profile pic element:", profilePic);
-
-  if (userData.profilePhotoUrl) {
-    console.log(
-      "Foto encontrada, tentando carregar:",
-      userData.profilePhotoUrl
-    );
-    updateProfilePicture(profilePic, userData.profilePhotoUrl);
-  }
-
-  console.log("================================");
-};
-
-console.log("✅ Patch para foto de perfil aplicado ao script.js");
-
-// Exportar funções globalmente se necessário
+// Exportar funções globalmente
 window.UserSystem = UserSystem;
 window.LevelSystem = LevelSystem;
 window.UserSearchAPI = UserSearchAPI;

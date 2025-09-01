@@ -275,9 +275,100 @@
           opacity: 1;
         }
       }
+
+      /* Correção para evitar piscar da foto */
+      .profile-pic {
+        position: relative;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00d4ff, #0099cc);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .profile-pic img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        opacity: 1;
+      }
+
+      .profile-pic .fa-user-astronaut {
+        font-size: 28px;
+        color: #ffffff;
+      }
+
+      /* Prevenir flash inicial */
+      .profile-pic.loading {
+        opacity: 0.7;
+      }
+
+      .profile-pic.loaded {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
+    <!-- Script inline para carregar foto imediatamente -->
+    <script>
+      // Executar ANTES do DOM estar pronto para evitar piscar
+      (function () {
+        try {
+          // Tentar pegar userData do localStorage/sessionStorage
+          let userData = null;
+          try {
+            userData = JSON.parse(
+              localStorage.getItem("userData") ||
+                sessionStorage.getItem("userData") ||
+                "{}"
+            );
+          } catch (e) {
+            console.warn("Erro ao carregar userData:", e);
+          }
+
+          // Se tem foto salva, preparar para carregar
+          if (userData && userData.profilePhotoUrl) {
+            let imageUrl = userData.profilePhotoUrl;
+
+            // Construir URL correta
+            if (!imageUrl.startsWith("http")) {
+              imageUrl = `http://localhost:5000/${imageUrl}`;
+            }
+
+            // Adicionar timestamp para evitar cache
+            imageUrl = imageUrl.includes("?")
+              ? `${imageUrl}&t=${Date.now()}`
+              : `${imageUrl}?t=${Date.now()}`;
+
+            // Definir função para executar quando DOM estiver pronto
+            document.addEventListener("DOMContentLoaded", function () {
+              const img = document.querySelector("[data-user-photo]");
+              const icon = document.querySelector(".fa-user-astronaut");
+
+              if (img && icon) {
+                img.src = imageUrl;
+                img.style.display = "block";
+                icon.style.display = "none";
+
+                img.onerror = function () {
+                  this.style.display = "none";
+                  icon.style.display = "block";
+                };
+
+                console.log("✅ Foto carregada sem piscar:", imageUrl);
+              }
+            });
+          }
+        } catch (error) {
+          console.warn("Erro no carregamento inicial da foto:", error);
+        }
+      })();
+    </script>
     <div id="connection-status" class="connection-status">
       <i class="fas fa-wifi"></i> <span id="connection-text">Conectado</span>
     </div>
@@ -307,8 +398,9 @@
                 class="profile-image"
                 src="https://placehold.co/120x120/00d4ff/ffffff?text=User"
                 alt="Foto do Perfil"
-                onerror="this.src='https://placehold.co/120x120/00d4ff/ffffff?text=User'"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.fa-user-astronaut').style.display='block';"
               />
+              <i class="fas fa-user-astronaut" style="display: none"></i>
             </div>
             <div class="greeting">
               <h2 id="user-greeting">Olá, Usuário!</h2>
@@ -441,186 +533,9 @@
     </div>
 
     <script src="../../js/auth.js"></script>
-    <!-- <script src="../js/config.js"></script> -->
-
     <script src="../../config-edit/js/userService.js"></script>
     <script src="../../config-edit/js/globalInit.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/pull-to-refresh.js"></script>
-
-    <!-- <script>
-      // Script de inicialização específico da página
-      document.addEventListener("DOMContentLoaded", function () {
-        // Atualizar horário na status bar
-        function updateStatusTime() {
-          const now = new Date();
-          const hours = now.getHours().toString().padStart(2, "0");
-          const minutes = now.getMinutes().toString().padStart(2, "0");
-          document.getElementById(
-            "status-time"
-          ).textContent = `${hours}:${minutes}`;
-        }
-
-        updateStatusTime();
-        setInterval(updateStatusTime, 60000);
-
-        // Gerenciar estados de conexão
-        function updateConnectionStatus(online) {
-          const statusEl = document.getElementById("connection-status");
-          const textEl = document.getElementById("connection-text");
-
-          if (online) {
-            statusEl.className = "connection-status online";
-            textEl.innerHTML = '<i class="fas fa-wifi"></i> teu cu';
-            setTimeout(() => (statusEl.style.opacity = "0"), 2000);
-          } else {
-            statusEl.className = "connection-status offline";
-            textEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Sem conexão';
-            statusEl.style.opacity = "1";
-          }
-        }
-
-        // Event listeners de conectividade
-        window.addEventListener("online", () => updateConnectionStatus(true));
-        window.addEventListener("offline", () => updateConnectionStatus(false));
-
-        // Verificar conectividade inicial
-        if (navigator.onLine) {
-          updateConnectionStatus(true);
-        } else {
-          updateConnectionStatus(false);
-        }
-
-        // Ocultar loading após carregar scripts
-        setTimeout(() => {
-          const loadingOverlay = document.getElementById("loading-overlay");
-          if (loadingOverlay) {
-            loadingOverlay.classList.add("hidden");
-            setTimeout(() => loadingOverlay.remove(), 500);
-          }
-        }, 1000);
-      });
-
-      // Função global para mostrar estados de erro
-      window.showErrorState = function (containerId, message) {
-        const container = document.getElementById(containerId);
-        if (container) {
-          container.style.display = "block";
-          container.textContent = message;
-        }
-      };
-
-      // Função global para ocultar estados de erro
-      window.hideErrorState = function (containerId) {
-        const container = document.getElementById(containerId);
-        if (container) {
-          container.style.display = "none";
-        }
-      };
-
-      // Função para remover loading dos cards
-      window.removeCardLoading = function (cardId) {
-        const card = document.getElementById(cardId);
-        if (card) {
-          card.classList.remove("loading");
-        }
-      };
-
-      // Função para atualizar dados dos cards
-      window.updateCardData = function (cardId, value) {
-        const card = document.getElementById(cardId);
-        if (card) {
-          const span = card.querySelector(".coin-amount span");
-          if (span) {
-            span.textContent = value.toLocaleString();
-            card.classList.remove("loading");
-            card.classList.add("fade-in");
-          }
-        }
-      };
-
-      // Função para animação de atualização do saldo
-      window.animateBalanceUpdate = function (newBalance) {
-        const balanceCard = document.getElementById("balance-card");
-        const balanceSpan = document.getElementById("user-balance");
-
-        if (balanceCard && balanceSpan) {
-          balanceCard.classList.add("balance-updated");
-          balanceSpan.textContent = newBalance.toLocaleString();
-
-          setTimeout(() => {
-            balanceCard.classList.remove("balance-updated");
-          }, 400);
-        }
-      };
-
-      // Função para habilitar botão de doação
-      window.enableDonationButton = function () {
-        const button = document.getElementById("search-donate-btn");
-        if (button) {
-          button.disabled = false;
-          button.style.opacity = "1";
-          button.style.cursor = "pointer";
-        }
-      };
-
-      // Função para criar badge de nível
-      window.createLevelBadge = function (levelInfo) {
-        const profileSection = document.querySelector(".profile-section");
-        if (!profileSection) return;
-
-        let levelBadge = profileSection.querySelector(".user-level-badge");
-
-        if (!levelBadge) {
-          levelBadge = document.createElement("div");
-          levelBadge.className = "user-level-badge";
-          profileSection.appendChild(levelBadge);
-        }
-
-        const progressWidth = levelInfo.progress || 0;
-
-        levelBadge.innerHTML = `
-        <div class="level-info" style="
-          background: linear-gradient(135deg, ${levelInfo.color}20, ${
-          levelInfo.color
-        }40);
-          border: 1px solid ${levelInfo.color}60;
-          border-radius: 12px;
-          padding: 8px 12px;
-          margin-top: 8px;
-        ">
-          <div style="
-            color: ${levelInfo.color}; 
-            font-size: 14px; 
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-          ">
-            <span style="font-size: 16px;">${levelInfo.icon || "🏅"}</span>
-            ${levelInfo.name}
-          </div>
-          <div style="
-            color: #888; 
-            font-size: 11px;
-            text-align: center;
-            margin-top: 4px;
-          ">
-            Nível ${levelInfo.level} • ${Math.round(progressWidth)}%
-          </div>
-          <div class="level-progress">
-            <div class="level-progress-bar" style="width: ${progressWidth}%;"></div>
-          </div>
-        </div>
-      `;
-
-        levelBadge.classList.add("fade-in");
-      };
-
-      // Log de inicialização
-      console.log("🏠 Página Home carregada com integração backend");
-      console.log("🔧 Funcionalidades: Perfil, Saldo, Stats, Doações, Níveis");
-    </script> -->
   </body>
 </html>
