@@ -159,11 +159,7 @@ const Auth = {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           // 🔧 PRIORIDADE: 1º API, 2º localStorage específico, 3º userData antigo, 4º null
-          profilePhotoUrl:
-            user.profilePhotoUrl ||
-            existingProfilePhoto ||
-            existingData.profilePhotoUrl ||
-            null,
+          profilePhotoUrl: user.profilePhotoUrl || user.avatar || null,
         };
 
         // 🔧 CORREÇÃO: Salvar foto separadamente para garantir persistência

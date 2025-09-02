@@ -185,6 +185,8 @@ class GlobalUserService {
   clearUserData() {
     this.userData = null;
     localStorage.removeItem("userData");
+    localStorage.removeItem("userProfilePhoto"); // ✅ CORREÇÃO: Remover a foto de perfil
+    localStorage.removeItem("currentUser"); // ✅ CORREÇÃO: Remover também o currentUser para total limpeza
     this.notifyListeners();
   }
 
