@@ -19,38 +19,6 @@ function showMessage(message, type = "success") {
   }, 3000);
 }
 
-// 🔧 NOVA FUNÇÃO: Aguardar carregamento do Auth
-async function waitForAuth(maxAttempts = 50) {
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-
-    const checkAuth = () => {
-      attempts++;
-
-      if (typeof window.Auth !== "undefined" && window.Auth) {
-        console.log("✅ Auth carregado com sucesso");
-        resolve(window.Auth);
-        return;
-      }
-
-      if (attempts >= maxAttempts) {
-        console.error(
-          "❌ Timeout aguardando Auth após",
-          maxAttempts * 100,
-          "ms"
-        );
-        reject(new Error("Auth não foi carregado no tempo esperado"));
-        return;
-      }
-
-      console.log(`⏳ Aguardando Auth... tentativa ${attempts}/${maxAttempts}`);
-      setTimeout(checkAuth, 100);
-    };
-
-    checkAuth();
-  });
-}
-
 // ✅ FUNÇÃO CORRIGIDA: Função para atualizar a exibição da foto de perfil
 function updateProfilePhotoDisplay(photoUrl) {
   const profileImage = document.getElementById("profile-image");
@@ -92,30 +60,16 @@ function updateProfilePhotoDisplay(photoUrl) {
   }
 }
 
-// ✅ FUNÇÃO CORRIGIDA: Carregar dados da API PRIMEIRO com verificação segura do Auth
+// ✅ FUNÇÃO CORRIGIDA: Carregar dados da API PRIMEIRO
 async function loadUserDataFromAPI() {
   try {
     console.log("🔄 PRIORIDADE: Carregando dados da API...");
 
-    // 🔧 CORREÇÃO CRÍTICA: Aguardar Auth estar disponível
-    let Auth;
-    try {
-      Auth = await waitForAuth();
-    } catch (error) {
-      console.error("❌ Auth não disponível:", error);
-      showMessage(
-        "Sistema de autenticação não carregado. Redirecionando...",
-        "error"
+    // Verificar se Auth está disponível
+    if (typeof Auth === "undefined" || !Auth.getToken()) {
+      console.error(
+        "❌ Sistema de autenticação não disponível ou token ausente"
       );
-      setTimeout(() => {
-        window.location.href = "../../login/html/login.html";
-      }, 2000);
-      return;
-    }
-
-    // Verificar se Auth está logado e tem token
-    if (!Auth.isLoggedIn() || !Auth.getToken()) {
-      console.error("❌ Usuário não autenticado ou token ausente");
       showMessage("Sessão expirada. Redirecionando...", "error");
       setTimeout(() => {
         window.location.href = "../../login/html/login.html";
@@ -216,7 +170,7 @@ function loadUserProfileFromLocalStorage() {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (userData) {
-    console.log("💾 Carregando dados locais como fallback:", userData);
+    console.log("📁 Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
     setOriginalFormData({
       name: userData.name || userData.fullName || "",
@@ -239,20 +193,11 @@ function loadUserProfile() {
   loadUserProfileFromLocalStorage();
 }
 
-// 🔧 FUNÇÃO CORRIGIDA: Salvar perfil com verificação segura do Auth
+// Função para salvar o perfil
 async function saveProfile() {
   try {
-    // 🔧 CORREÇÃO: Aguardar Auth estar disponível
-    let Auth;
-    try {
-      Auth = await waitForAuth(10); // Timeout menor para save
-    } catch (error) {
-      showMessage("Sistema de autenticação não disponível.", "error");
-      return;
-    }
-
     // Verificar autenticação
-    if (!Auth.isLoggedIn() || !Auth.getToken()) {
+    if (typeof Auth === "undefined" || !Auth.getToken()) {
       showMessage("Sessão expirada. Faça login novamente.", "error");
       return;
     }
@@ -385,17 +330,11 @@ async function handleSuccessfulUpdate(updatedUserData) {
   );
 
   // ✅ SINCRONIZAÇÃO: Usar Auth para atualizar dados globalmente
-  try {
-    const Auth = await waitForAuth(10);
-    if (Auth && Auth.updateProfilePhoto) {
-      const photoUrl =
-        updatedUserData.profilePhotoUrl || updatedUserData.avatar;
-      if (photoUrl) {
-        Auth.updateProfilePhoto(photoUrl);
-      }
+  if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+    const photoUrl = updatedUserData.profilePhotoUrl || updatedUserData.avatar;
+    if (photoUrl) {
+      Auth.updateProfilePhoto(photoUrl);
     }
-  } catch (error) {
-    console.warn("⚠️ Erro ao sincronizar com Auth:", error);
   }
 
   // Disparar eventos para sincronização
@@ -419,28 +358,15 @@ async function handleSuccessfulUpdate(updatedUserData) {
   showMessage("Perfil salvo com sucesso!", "success");
 }
 
-// ✅ CORREÇÃO CRÍTICA: Inicialização da página com carregamento seguro
+// ✅ CORREÇÃO CRÍTICA: Inicialização da página
 document.addEventListener("DOMContentLoaded", async function () {
   console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
 
-  // 🔧 CRÍTICO: Aguardar um pouco para scripts carregarem
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  // ✅ PRIORIDADE: Sempre carregar da API primeiro com verificação segura
+  // ✅ PRIORIDADE: Sempre carregar da API primeiro
   try {
     await loadUserDataFromAPI();
   } catch (error) {
     console.error("❌ Falha crítica no carregamento:", error);
-    // Em caso de falha total, tentar carregar do localStorage
-    try {
-      loadUserProfileFromLocalStorage();
-    } catch (fallbackError) {
-      console.error("❌ Falha também no fallback:", fallbackError);
-      showMessage("Erro ao carregar dados. Redirecionando...", "error");
-      setTimeout(() => {
-        window.location.href = "../../login/html/login.html";
-      }, 3000);
-    }
   }
 
   // Configurar funcionalidades da página
@@ -643,13 +569,8 @@ async function uploadPhotoOnly() {
       if (result.user && result.user.profilePhotoUrl) {
         localStorage.setItem("userData", JSON.stringify(result.user));
 
-        try {
-          const Auth = await waitForAuth(10);
-          if (Auth && Auth.updateProfilePhoto) {
-            Auth.updateProfilePhoto(result.user.profilePhotoUrl);
-          }
-        } catch (error) {
-          console.warn("⚠️ Erro ao sincronizar foto com Auth:", error);
+        if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+          Auth.updateProfilePhoto(result.user.profilePhotoUrl);
         }
       }
 
@@ -768,13 +689,8 @@ async function removeProfilePhotoWithoutConfirm() {
       localStorage.setItem("userData", JSON.stringify(userData));
 
       // ✅ CORREÇÃO: Usar Auth para sincronizar
-      try {
-        const Auth = await waitForAuth(10);
-        if (Auth && Auth.updateProfilePhoto) {
-          Auth.updateProfilePhoto(null);
-        }
-      } catch (error) {
-        console.warn("⚠️ Erro ao sincronizar remoção com Auth:", error);
+      if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+        Auth.updateProfilePhoto(null);
       }
 
       // Limpar input de arquivo
@@ -835,16 +751,13 @@ function validateForm() {
 async function syncUserDataSafe() {
   try {
     // Só sincronizar se não há mudanças não salvas
-    if (!hasUnsavedChanges() && navigator.onLine) {
+    if (
+      !hasUnsavedChanges() &&
+      typeof Auth !== "undefined" &&
+      navigator.onLine
+    ) {
       console.log("🔄 Sincronização automática segura...");
-
-      // Verificar se Auth está disponível antes de sincronizar
-      try {
-        await waitForAuth(5); // Timeout baixo para sync automática
-        await loadUserDataFromAPI();
-      } catch (authError) {
-        console.log("⚠️ Auth não disponível para sincronização automática");
-      }
+      await loadUserDataFromAPI();
     }
   } catch (error) {
     console.log("⚠️ Erro na sincronização automática:", error);
@@ -864,7 +777,7 @@ window.addEventListener("online", () => {
 });
 
 window.addEventListener("offline", () => {
-  console.log("🔵 Desconectado da internet");
+  console.log("📵 Desconectado da internet");
   showMessage(
     "Modo offline. Algumas funcionalidades podem estar limitadas.",
     "error"
@@ -888,5 +801,4 @@ window.editProfileFunctions = {
   showMessage,
   validateForm,
   syncUserDataSafe,
-  waitForAuth, // Exportar também a função de espera
 };
