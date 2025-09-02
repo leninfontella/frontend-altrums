@@ -104,6 +104,15 @@ body {
   border-radius: 100%; /* Faz a imagem ficar redonda */
 }
 
+/* Evita "piscado" da foto de perfil */
+.profile-image {
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+.profile-image.is-loaded {
+  opacity: 1;
+}
+
 .profile-section {
   display: flex;
   align-items: center;
@@ -118,7 +127,7 @@ body {
   border-radius: 50%; /* Corrigido: Agora o contêiner também é redondo */
   overflow: hidden; /* Adicionado: Oculta qualquer parte da imagem que transborde */
   /* As outras propriedades de estilo (background, display, etc.) podem permanecer */
-  background: linear-gradient(60deg, #00d4ff 0%, #0099cc 35%);
+  /* background: linear-gradient(60deg, #00d4ff 0%, #0099cc 35%); */
   display: flex;
   align-items: center;
   justify-content: center;
