@@ -19,6 +19,38 @@ function showMessage(message, type = "success") {
   }, 3000);
 }
 
+// 🔧 NOVA FUNÇÃO: Aguardar carregamento do Auth
+async function waitForAuth(maxAttempts = 50) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const checkAuth = () => {
+      attempts++;
+
+      if (typeof window.Auth !== "undefined" && window.Auth) {
+        console.log("✅ Auth carregado com sucesso");
+        resolve(window.Auth);
+        return;
+      }
+
+      if (attempts >= maxAttempts) {
+        console.error(
+          "❌ Timeout aguardando Auth após",
+          maxAttempts * 100,
+          "ms"
+        );
+        reject(new Error("Auth não foi carregado no tempo esperado"));
+        return;
+      }
+
+      console.log(`⏳ Aguardando Auth... tentativa ${attempts}/${maxAttempts}`);
+      setTimeout(checkAuth, 100);
+    };
+
+    checkAuth();
+  });
+}
+
 // ✅ FUNÇÃO CORRIGIDA: Função para atualizar a exibição da foto de perfil
 function updateProfilePhotoDisplay(photoUrl) {
   const profileImage = document.getElementById("profile-image");
@@ -60,37 +92,132 @@ function updateProfilePhotoDisplay(photoUrl) {
   }
 }
 
-// ✅ FUNÇÃO CORRIGIDA: Função para carregar os dados do perfil
-function loadUserProfile() {
+// ✅ FUNÇÃO CORRIGIDA: Carregar dados da API PRIMEIRO com verificação segura do Auth
+async function loadUserDataFromAPI() {
+  try {
+    console.log("🔄 PRIORIDADE: Carregando dados da API...");
+
+    // 🔧 CORREÇÃO CRÍTICA: Aguardar Auth estar disponível
+    let Auth;
+    try {
+      Auth = await waitForAuth();
+    } catch (error) {
+      console.error("❌ Auth não disponível:", error);
+      showMessage(
+        "Sistema de autenticação não carregado. Redirecionando...",
+        "error"
+      );
+      setTimeout(() => {
+        window.location.href = "../../login/html/login.html";
+      }, 2000);
+      return;
+    }
+
+    // Verificar se Auth está logado e tem token
+    if (!Auth.isLoggedIn() || !Auth.getToken()) {
+      console.error("❌ Usuário não autenticado ou token ausente");
+      showMessage("Sessão expirada. Redirecionando...", "error");
+      setTimeout(() => {
+        window.location.href = "../../login/html/login.html";
+      }, 2000);
+      return;
+    }
+
+    // Usar Auth para buscar dados atualizados
+    const userData = await Auth.getProfile();
+
+    if (userData) {
+      console.log("✅ Dados atualizados recebidos da API:", userData);
+
+      // ✅ LIMPAR dados antigos ANTES de definir os novos
+      clearFormData();
+
+      // Preencher formulário com dados da API
+      populateFormWithData(userData);
+
+      // Definir dados originais para comparação
+      setOriginalFormData({
+        name: userData.name || userData.fullName || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        hasNewPhoto: false,
+      });
+
+      // ✅ CRÍTICO: Atualizar localStorage com dados corretos da API
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      showMessage("Dados carregados com sucesso", "success");
+    } else {
+      throw new Error("Dados não recebidos da API");
+    }
+  } catch (error) {
+    console.error("❌ Erro ao carregar dados da API:", error);
+
+    if (error.message.includes("401") || error.message.includes("Token")) {
+      showMessage("Sessão expirada. Redirecionando...", "error");
+      setTimeout(() => {
+        window.location.href = "../../login/html/login.html";
+      }, 2000);
+      return;
+    }
+
+    // ✅ FALLBACK: Só usar localStorage se API falhar completamente
+    console.log("⚠️ Usando dados locais como fallback...");
+    loadUserProfileFromLocalStorage();
+    showMessage(
+      "Carregado do cache local. Algumas informações podem estar desatualizadas.",
+      "error"
+    );
+  }
+}
+
+// ✅ NOVA FUNÇÃO: Limpar dados do formulário
+function clearFormData() {
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
+  const phoneInput = document.getElementById("phone");
+  const profileImage = document.getElementById("profile-image");
+
+  if (nameInput) nameInput.value = "";
+  if (emailInput) emailInput.value = "";
+  if (phoneInput) phoneInput.value = "";
+
+  // Limpar foto para placeholder
+  if (profileImage) {
+    profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+  }
+}
+
+// ✅ NOVA FUNÇÃO: Preencher formulário com dados específicos
+function populateFormWithData(userData) {
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
+  const phoneInput = document.getElementById("phone");
+
+  if (nameInput) nameInput.value = userData.name || userData.fullName || "";
+  if (emailInput) emailInput.value = userData.email || "";
+  if (phoneInput) phoneInput.value = userData.phone || "";
+
+  // Atualizar foto de perfil
+  if (userData.profilePhotoUrl) {
+    updateProfilePhotoDisplay(userData.profilePhotoUrl);
+  } else if (userData.avatar) {
+    updateProfilePhotoDisplay(userData.avatar);
+  } else {
+    const profileImage = document.getElementById("profile-image");
+    if (profileImage) {
+      profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    }
+  }
+}
+
+// ✅ FUNÇÃO RENOMEADA: Carregar do localStorage apenas como fallback
+function loadUserProfileFromLocalStorage() {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (userData) {
-    console.log("Carregando dados do usuário:", userData);
-
-    // Preencher os campos do formulário
-    const nameInput = document.getElementById("name");
-    const emailInput = document.getElementById("email");
-    const phoneInput = document.getElementById("phone");
-
-    if (nameInput) nameInput.value = userData.name || userData.fullName || "";
-    if (emailInput) emailInput.value = userData.email || "";
-    if (phoneInput) phoneInput.value = userData.phone || "";
-
-    // ✅ CORREÇÃO: Carregar foto de perfil com verificações adequadas
-    if (userData.profilePhotoUrl) {
-      updateProfilePhotoDisplay(userData.profilePhotoUrl);
-    } else if (userData.avatar) {
-      updateProfilePhotoDisplay(userData.avatar);
-    } else {
-      // Usar placeholder se não há foto
-      const profileImage = document.getElementById("profile-image");
-      if (profileImage) {
-        profileImage.src =
-          "https://placehold.co/120x120/00d4ff/ffffff?text=User";
-      }
-    }
-
-    // Definir dados originais para comparação
+    console.log("💾 Carregando dados locais como fallback:", userData);
+    populateFormWithData(userData);
     setOriginalFormData({
       name: userData.name || userData.fullName || "",
       email: userData.email || "",
@@ -98,93 +225,35 @@ function loadUserProfile() {
       hasNewPhoto: false,
     });
   } else {
-    console.log("Nenhum dado de usuário encontrado no localStorage");
-    // Carregar dados da API se não houver dados locais
-    loadUserDataFromAPI();
+    console.log("❌ Nenhum dado local encontrado");
+    showMessage("Nenhum dado encontrado. Faça login novamente.", "error");
+    setTimeout(() => {
+      window.location.href = "../../login/html/login.html";
+    }, 2000);
   }
 }
 
-// ✅ FUNÇÃO CORRIGIDA: Função para carregar dados do usuário da API
-async function loadUserDataFromAPI() {
+// ✅ FUNÇÃO DEPRECIADA: Manter apenas para compatibilidade
+function loadUserProfile() {
+  console.warn("⚠️ loadUserProfile() é deprecated. Use loadUserDataFromAPI()");
+  loadUserProfileFromLocalStorage();
+}
+
+// 🔧 FUNÇÃO CORRIGIDA: Salvar perfil com verificação segura do Auth
+async function saveProfile() {
   try {
-    if (!window.apiConfig) {
-      console.log("API config não disponível, usando dados locais");
-      // Se não há API config, tentar usar dados locais
-      loadUserProfile();
+    // 🔧 CORREÇÃO: Aguardar Auth estar disponível
+    let Auth;
+    try {
+      Auth = await waitForAuth(10); // Timeout menor para save
+    } catch (error) {
+      showMessage("Sistema de autenticação não disponível.", "error");
       return;
     }
 
-    console.log("Carregando dados da API...");
-    const response = await window.apiConfig.get("/api/profile");
-
-    if (response.ok) {
-      const result = await response.json();
-
-      if (result.success && result.user) {
-        const user = result.user;
-        console.log("Dados recebidos da API:", user);
-
-        // Atualizar formulário
-        const nameInput = document.getElementById("name");
-        const emailInput = document.getElementById("email");
-        const phoneInput = document.getElementById("phone");
-
-        if (nameInput) nameInput.value = user.name || user.fullName || "";
-        if (emailInput) emailInput.value = user.email || "";
-        if (phoneInput) phoneInput.value = user.phone || "";
-
-        // ✅ CORREÇÃO: Atualizar foto de perfil
-        if (user.profilePhotoUrl) {
-          updateProfilePhotoDisplay(user.profilePhotoUrl);
-        } else if (user.avatar) {
-          updateProfilePhotoDisplay(user.avatar);
-        } else {
-          const profileImage = document.getElementById("profile-image");
-          if (profileImage) {
-            profileImage.src =
-              "https://placehold.co/120x120/00d4ff/ffffff?text=User";
-          }
-        }
-
-        // Atualizar localStorage
-        localStorage.setItem("userData", JSON.stringify(user));
-
-        // Definir dados originais
-        setOriginalFormData({
-          name: user.name || user.fullName || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          hasNewPhoto: false,
-        });
-      }
-    } else if (response.status === 401) {
-      // Sessão expirada
-      localStorage.removeItem("userData");
+    // Verificar autenticação
+    if (!Auth.isLoggedIn() || !Auth.getToken()) {
       showMessage("Sessão expirada. Faça login novamente.", "error");
-      setTimeout(() => {
-        window.location.href = "../../auth/login.html";
-      }, 3000);
-    } else {
-      throw new Error(`Erro ${response.status}: ${response.statusText}`);
-    }
-  } catch (error) {
-    console.error("Erro ao carregar dados da API:", error);
-    showMessage("Erro ao conectar com servidor. Usando dados locais.", "error");
-
-    // Fallback para dados locais
-    const userData = JSON.parse(localStorage.getItem("userData"));
-    if (userData) {
-      loadUserProfile();
-    }
-  }
-}
-
-// Função para salvar o perfil
-async function saveProfile() {
-  try {
-    // Verificar se a API está disponível
-    if (!window.apiConfig) {
-      showMessage("Configuração da API não encontrada", "error");
       return;
     }
 
@@ -222,16 +291,16 @@ async function saveProfile() {
       return;
     }
 
-    // Criar FormData para envio
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("phone", phone);
+    // Preparar dados para atualização
+    const profileData = {
+      name,
+      email,
+      phone,
+    };
 
-    // Adicionar foto se foi selecionada
+    // Verificar se há nova foto
     const photoInput = document.getElementById("photo-input");
     if (photoInput && photoInput.files && photoInput.files[0]) {
-      // Validar arquivo antes de enviar
       const file = photoInput.files[0];
 
       if (!file.type.startsWith("image/")) {
@@ -244,96 +313,55 @@ async function saveProfile() {
         return;
       }
 
+      // ✅ CORREÇÃO: Usar FormData quando há arquivo
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("phone", phone);
       formData.append("profilePhoto", file);
-    } else {
-      // ✅ CORREÇÃO: Se nenhuma foto nova foi selecionada, envie a URL existente.
-      const currentLocalData = JSON.parse(localStorage.getItem("userData"));
-      if (currentLocalData && currentLocalData.profilePhotoUrl) {
-        formData.append("profilePhotoUrl", currentLocalData.profilePhotoUrl);
-      }
-    }
 
-    // Enviar para API usando apiConfig
-    const response = await window.apiConfig.put("/api/profile", formData);
+      // Usar apiConfig diretamente para FormData
+      const response = await window.apiConfig.put("/api/profile", formData);
+      const result = await response.json();
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
-      // Atualizar dados locais
-      if (result.user) {
-        const updatedUserData = {
-          id: result.user.id,
-          name: result.user.name,
-          fullName: result.user.fullName || result.user.name,
-          email: result.user.email,
-          phone: result.user.phone,
-          profilePhotoUrl: result.user.profilePhotoUrl,
-          avatar: result.user.avatar,
-          institution: result.user.institution,
-          coins: result.user.coins,
-          level: result.user.level,
-          xp: result.user.xp,
-          maxXp: result.user.maxXp,
-          score: result.user.score,
-          totalDonated: result.user.totalDonated,
-          totalReceived: result.user.totalReceived,
-          totalDonations: result.user.totalDonations,
-          stats: result.user.stats,
-        };
-
-        localStorage.setItem("userData", JSON.stringify(updatedUserData));
-        updateProfilePhotoDisplay(
-          result.user.profilePhotoUrl || result.user.avatar
-        );
-
-        // ✅ ATUALIZAÇÃO: Usar userService para sincronizar em todas as páginas
-        if (window.userService) {
-          window.userService.updateUserData(updatedUserData);
-
-          if (result.user.profilePhotoUrl || result.user.avatar) {
-            window.userService.updateProfilePhotoEverywhere(
-              result.user.profilePhotoUrl || result.user.avatar
-            );
-          }
-        }
-
-        // Disparar evento customizado para compatibilidade
-        window.dispatchEvent(
-          new CustomEvent("userDataUpdated", {
-            detail: { userData: updatedUserData },
-          })
-        );
-      }
-
-      showMessage("Perfil salvo com sucesso!", "success");
-      if (photoInput) {
+      if (response.ok && result.success) {
+        await handleSuccessfulUpdate(result.user);
         photoInput.value = "";
+      } else {
+        throw new Error(result.message || "Erro ao salvar perfil");
       }
-      setOriginalFormData(getCurrentFormData());
     } else {
-      let errorMessage = "Erro ao salvar perfil";
-      if (result.message) {
-        errorMessage = result.message;
-      } else if (response.status === 401) {
-        errorMessage = "Sessão expirada. Faça login novamente.";
-        setTimeout(() => {
-          window.location.href = "../../auth/login.html";
-        }, 2000);
-      } else if (response.status === 413) {
-        errorMessage = "Arquivo muito grande. Máximo 5MB.";
-      } else if (response.status === 400) {
-        errorMessage = "Dados inválidos. Verifique as informações.";
+      // ✅ CORREÇÃO: Usar Auth.updateProfile para dados sem foto
+      const result = await Auth.updateProfile(profileData);
+
+      if (result.success) {
+        await handleSuccessfulUpdate(result.data);
+      } else {
+        throw new Error(result.message || "Erro ao salvar perfil");
       }
-      showMessage(errorMessage, "error");
     }
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
-    if (error.name === "TypeError" && error.message.includes("fetch")) {
+
+    if (error.message.includes("401") || error.message.includes("Token")) {
+      showMessage("Sessão expirada. Faça login novamente.", "error");
+      setTimeout(() => {
+        window.location.href = "../../login/html/login.html";
+      }, 2000);
+    } else if (error.message.includes("413")) {
+      showMessage("Arquivo muito grande. Máximo 5MB.", "error");
+    } else if (error.message.includes("400")) {
+      showMessage("Dados inválidos. Verifique as informações.", "error");
+    } else if (error.name === "TypeError" && error.message.includes("fetch")) {
       showMessage("Erro de conexão. Verifique sua internet.", "error");
     } else {
-      showMessage("Erro inesperado. Tente novamente.", "error");
+      showMessage(
+        error.message || "Erro inesperado. Tente novamente.",
+        "error"
+      );
     }
   } finally {
+    // Restaurar botões
     const saveButtons = document.querySelectorAll(
       ".save-button, .save-content-btn"
     );
@@ -346,24 +374,79 @@ async function saveProfile() {
   }
 }
 
-// ✅ CORREÇÃO: Adicionar o evento para carregar o perfil ao iniciar a página
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("DOM carregado, iniciando carregamento do perfil...");
+// ✅ NOVA FUNÇÃO: Tratar atualização bem-sucedida
+async function handleSuccessfulUpdate(updatedUserData) {
+  // ✅ CRÍTICO: Atualizar localStorage com dados corretos
+  localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-  // Primeiro tentar carregar da API, se não conseguir, usar dados locais
-  loadUserDataFromAPI()
-    .then(() => {
-      setupChangeDetection();
-      setupKeyboardShortcuts();
-      setupPhotoPreview();
+  // Atualizar exibição
+  updateProfilePhotoDisplay(
+    updatedUserData.profilePhotoUrl || updatedUserData.avatar
+  );
+
+  // ✅ SINCRONIZAÇÃO: Usar Auth para atualizar dados globalmente
+  try {
+    const Auth = await waitForAuth(10);
+    if (Auth && Auth.updateProfilePhoto) {
+      const photoUrl =
+        updatedUserData.profilePhotoUrl || updatedUserData.avatar;
+      if (photoUrl) {
+        Auth.updateProfilePhoto(photoUrl);
+      }
+    }
+  } catch (error) {
+    console.warn("⚠️ Erro ao sincronizar com Auth:", error);
+  }
+
+  // Disparar eventos para sincronização
+  window.dispatchEvent(
+    new CustomEvent("userDataUpdated", {
+      detail: { userData: updatedUserData },
     })
-    .catch(() => {
-      // Fallback para dados locais
-      loadUserProfile();
-      setupChangeDetection();
-      setupKeyboardShortcuts();
-      setupPhotoPreview();
-    });
+  );
+
+  if (updatedUserData.profilePhotoUrl) {
+    window.dispatchEvent(
+      new CustomEvent("profilePhotoUpdated", {
+        detail: { photoUrl: updatedUserData.profilePhotoUrl },
+      })
+    );
+  }
+
+  // Atualizar dados originais
+  setOriginalFormData(getCurrentFormData());
+
+  showMessage("Perfil salvo com sucesso!", "success");
+}
+
+// ✅ CORREÇÃO CRÍTICA: Inicialização da página com carregamento seguro
+document.addEventListener("DOMContentLoaded", async function () {
+  console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
+
+  // 🔧 CRÍTICO: Aguardar um pouco para scripts carregarem
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // ✅ PRIORIDADE: Sempre carregar da API primeiro com verificação segura
+  try {
+    await loadUserDataFromAPI();
+  } catch (error) {
+    console.error("❌ Falha crítica no carregamento:", error);
+    // Em caso de falha total, tentar carregar do localStorage
+    try {
+      loadUserProfileFromLocalStorage();
+    } catch (fallbackError) {
+      console.error("❌ Falha também no fallback:", fallbackError);
+      showMessage("Erro ao carregar dados. Redirecionando...", "error");
+      setTimeout(() => {
+        window.location.href = "../../login/html/login.html";
+      }, 3000);
+    }
+  }
+
+  // Configurar funcionalidades da página
+  setupChangeDetection();
+  setupKeyboardShortcuts();
+  setupPhotoPreview();
 });
 
 // Voltar para configurações
@@ -556,18 +639,18 @@ async function uploadPhotoOnly() {
         updateProfilePhotoDisplay(result.profilePhoto.url);
       }
 
-      // Atualizar dados do usuário no localStorage
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      // ✅ CORREÇÃO: Usar Auth para sincronizar globalmente
       if (result.user && result.user.profilePhotoUrl) {
-        userData.profilePhotoUrl = result.user.profilePhotoUrl;
-        localStorage.setItem("userData", JSON.stringify(userData));
-      }
+        localStorage.setItem("userData", JSON.stringify(result.user));
 
-      // Atualizar foto em todas as páginas se houver userService
-      if (window.userService && result.profilePhoto.url) {
-        window.userService.updateProfilePhotoEverywhere(
-          result.profilePhoto.url
-        );
+        try {
+          const Auth = await waitForAuth(10);
+          if (Auth && Auth.updateProfilePhoto) {
+            Auth.updateProfilePhoto(result.user.profilePhotoUrl);
+          }
+        } catch (error) {
+          console.warn("⚠️ Erro ao sincronizar foto com Auth:", error);
+        }
       }
 
       // Disparar evento customizado
@@ -596,7 +679,6 @@ async function uploadPhotoOnly() {
 }
 
 // Função para remover foto de perfil
-
 function showRemovePhotoModal() {
   const modal = document.getElementById("remove-photo-modal");
   if (modal) {
@@ -631,7 +713,7 @@ async function confirmRemovePhoto() {
   // Fechar modal primeiro
   closeRemovePhotoModal();
 
-  // Executar a remoção (função já existente, mas sem o confirm)
+  // Executar a remoção
   await removeProfilePhotoWithoutConfirm();
 }
 
@@ -680,20 +762,25 @@ async function removeProfilePhotoWithoutConfirm() {
         }, 300);
       }
 
-      // Atualizar localStorage
+      // ✅ CORREÇÃO: Atualizar localStorage
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       userData.profilePhotoUrl = null;
       localStorage.setItem("userData", JSON.stringify(userData));
+
+      // ✅ CORREÇÃO: Usar Auth para sincronizar
+      try {
+        const Auth = await waitForAuth(10);
+        if (Auth && Auth.updateProfilePhoto) {
+          Auth.updateProfilePhoto(null);
+        }
+      } catch (error) {
+        console.warn("⚠️ Erro ao sincronizar remoção com Auth:", error);
+      }
 
       // Limpar input de arquivo
       const photoInput = document.getElementById("photo-input");
       if (photoInput) {
         photoInput.value = "";
-      }
-
-      // Atualizar em todas as páginas
-      if (window.userService) {
-        window.userService.updateProfilePhotoEverywhere(null);
       }
 
       // Disparar evento customizado
@@ -744,42 +831,62 @@ function validateForm() {
   return errors;
 }
 
-// Função para sincronizar dados periodicamente
-async function syncUserData() {
+// ✅ NOVA FUNÇÃO: Sincronizar dados periodicamente apenas se não houver mudanças
+async function syncUserDataSafe() {
   try {
-    if (window.apiConfig && navigator.onLine) {
-      await loadUserDataFromAPI();
+    // Só sincronizar se não há mudanças não salvas
+    if (!hasUnsavedChanges() && navigator.onLine) {
+      console.log("🔄 Sincronização automática segura...");
+
+      // Verificar se Auth está disponível antes de sincronizar
+      try {
+        await waitForAuth(5); // Timeout baixo para sync automática
+        await loadUserDataFromAPI();
+      } catch (authError) {
+        console.log("⚠️ Auth não disponível para sincronização automática");
+      }
     }
   } catch (error) {
-    console.log("Erro na sincronização automática:", error);
+    console.log("⚠️ Erro na sincronização automática:", error);
   }
 }
 
-// Configurar sincronização automática a cada 5 minutos
-setInterval(syncUserData, 5 * 60 * 1000);
+// Configurar sincronização automática a cada 5 minutos (mais segura)
+setInterval(syncUserDataSafe, 5 * 60 * 1000);
 
 // Eventos de conectividade
 window.addEventListener("online", () => {
-  console.log("Reconectado à internet");
-  syncUserData();
+  console.log("🌐 Reconectado à internet");
+  // Sincronizar apenas se não há mudanças pendentes
+  if (!hasUnsavedChanges()) {
+    syncUserDataSafe();
+  }
 });
 
 window.addEventListener("offline", () => {
-  console.log("Desconectado da internet");
+  console.log("🔵 Desconectado da internet");
   showMessage(
     "Modo offline. Algumas funcionalidades podem estar limitadas.",
     "error"
   );
 });
 
+// ✅ NOVA FUNÇÃO: Forçar recarregamento completo dos dados
+async function forceReloadUserData() {
+  console.log("🔄 Recarregamento forçado dos dados...");
+  clearFormData();
+  await loadUserDataFromAPI();
+}
+
 // Exportar funções para uso global se necessário
 window.editProfileFunctions = {
   saveProfile,
   uploadPhotoOnly,
-  // removeProfilePhoto,
-  loadUserProfile,
   loadUserDataFromAPI,
+  loadUserProfileFromLocalStorage,
+  forceReloadUserData,
   showMessage,
   validateForm,
-  syncUserData,
+  syncUserDataSafe,
+  waitForAuth, // Exportar também a função de espera
 };
