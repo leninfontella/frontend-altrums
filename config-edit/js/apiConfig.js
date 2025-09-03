@@ -1,4 +1,4 @@
-// Configuração centralizada da API
+// Configuração unificada da API - Living Coins
 class ApiConfig {
   constructor() {
     this.baseURL = this.detectApiBaseURL();
@@ -6,8 +6,8 @@ class ApiConfig {
     this.token = this.getAuthToken();
   }
 
+  // Auto-detecção da URL base da API
   detectApiBaseURL() {
-    // Detectar automaticamente a URL base da API
     const currentHost = window.location.hostname;
     const currentProtocol = window.location.protocol;
 
@@ -27,8 +27,17 @@ class ApiConfig {
     return `${currentProtocol}//${currentHost}`;
   }
 
-  // Obter token de autenticação
+  // Obter token de autenticação de múltiplas fontes
   getAuthToken() {
+    // Tentar Auth global primeiro (compatibilidade com código antigo)
+    if (typeof Auth !== "undefined" && Auth?.getToken) {
+      const token = Auth.getToken();
+      if (token) {
+        console.log("Token obtido via Auth global");
+        return token;
+      }
+    }
+
     // Tentar obter de várias fontes possíveis
     const sources = [
       () => localStorage.getItem("authToken"),
@@ -84,18 +93,92 @@ class ApiConfig {
     localStorage.removeItem("authToken");
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userData");
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("token");
+
+    // Limpar cookies
+    document.cookie =
+      "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   }
 
-  // Método para fazer requisições com configurações padrão
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+  // Headers padrão para requisições JSON
+  getDefaultHeaders() {
+    const headers = {
+      Accept: "application/json",
+    };
 
-    // Reobter token mais recente antes da requisição
+    // Reobter token mais recente
     if (!this.token) {
       this.token = this.getAuthToken();
     }
+
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
+
+    return headers;
+  }
+
+  // Headers para FormData (sem Content-Type)
+  getFormDataHeaders() {
+    const headers = {
+      Accept: "application/json",
+    };
+
+    // Reobter token mais recente
+    if (!this.token) {
+      this.token = this.getAuthToken();
+    }
+
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
+
+    // NÃO definir Content-Type para FormData - o browser fará isso automaticamente
+    return headers;
+  }
+
+  // Método para tratar respostas e erros globalmente
+  async handleResponse(response) {
+    // Se não autenticado (401), redirecionar para login
+    if (response.status === 401) {
+      console.warn("Token expirado ou inválido - redirecionando para login");
+
+      // Limpar dados de autenticação
+      this.clearAuthToken();
+
+      // Tentar usar Auth global se disponível
+      if (typeof Auth !== "undefined") {
+        Auth.logout?.();
+        Auth.redirectToLogin?.();
+      } else {
+        // Fallback: redirecionar para página de login
+        window.location.href = "/login.html";
+      }
+
+      throw new Error("Sessão expirada. Redirecionando para login...");
+    }
+
+    // Se rate limit (429), mostrar mensagem específica
+    if (response.status === 429) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: "Muitas requisições" }));
+      throw new Error(
+        errorData.message ||
+          "Muitas requisições. Tente novamente em alguns minutos."
+      );
+    }
+
+    // Para outros erros HTTP, não fazer nada aqui - deixar o código chamador tratar
+    return response;
+  }
+
+  // Método principal para fazer requisições
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
 
     const defaultOptions = {
       credentials: "include",
@@ -106,6 +189,10 @@ class ApiConfig {
     };
 
     // Adicionar token de autorização se disponível
+    if (!this.token) {
+      this.token = this.getAuthToken();
+    }
+
     if (this.token) {
       defaultOptions.headers.Authorization = `Bearer ${this.token}`;
     }
@@ -118,7 +205,7 @@ class ApiConfig {
     const finalOptions = { ...defaultOptions, ...options };
 
     console.log("Fazendo requisição para:", url);
-    console.log("Headers:", finalOptions.headers);
+    console.log("Method:", finalOptions.method || "GET");
 
     try {
       const controller = new AbortController();
@@ -131,18 +218,8 @@ class ApiConfig {
 
       clearTimeout(timeoutId);
 
-      // Se receber 401, limpar token e tentar novamente uma vez
-      if (response.status === 401 && this.token) {
-        console.warn("Token expirado, limpando...");
-        this.clearAuthToken();
-
-        // Tentar uma vez sem token
-        const retryOptions = { ...finalOptions };
-        delete retryOptions.headers.Authorization;
-
-        const retryResponse = await fetch(url, retryOptions);
-        return retryResponse;
-      }
+      // Usar o handleResponse para tratar erros globalmente
+      await this.handleResponse(response);
 
       return response;
     } catch (error) {
@@ -153,28 +230,151 @@ class ApiConfig {
     }
   }
 
-  // Métodos de conveniência
+  // Método GET
   async get(endpoint, options = {}) {
-    return this.request(endpoint, { ...options, method: "GET" });
+    const response = await this.request(endpoint, {
+      method: "GET",
+      headers: this.getDefaultHeaders(),
+      ...options,
+    });
+
+    return response;
   }
 
+  // Método POST
   async post(endpoint, data, options = {}) {
-    const body = data instanceof FormData ? data : JSON.stringify(data);
-    return this.request(endpoint, { ...options, method: "POST", body });
+    const isFormData = data instanceof FormData;
+
+    const response = await this.request(endpoint, {
+      method: "POST",
+      headers: isFormData
+        ? this.getFormDataHeaders()
+        : {
+            ...this.getDefaultHeaders(),
+            "Content-Type": "application/json",
+          },
+      body: isFormData ? data : JSON.stringify(data),
+      ...options,
+    });
+
+    return response;
   }
 
+  // Método PUT
   async put(endpoint, data, options = {}) {
-    const body = data instanceof FormData ? data : JSON.stringify(data);
-    return this.request(endpoint, { ...options, method: "PUT", body });
+    const isFormData = data instanceof FormData;
+
+    const response = await this.request(endpoint, {
+      method: "PUT",
+      headers: isFormData
+        ? this.getFormDataHeaders()
+        : {
+            ...this.getDefaultHeaders(),
+            "Content-Type": "application/json",
+          },
+      body: isFormData ? data : JSON.stringify(data),
+      ...options,
+    });
+
+    return response;
   }
 
+  // Método DELETE
   async delete(endpoint, options = {}) {
-    return this.request(endpoint, { ...options, method: "DELETE" });
+    const response = await this.request(endpoint, {
+      method: "DELETE",
+      headers: this.getDefaultHeaders(),
+      ...options,
+    });
+
+    return response;
+  }
+
+  // Método específico para upload de arquivo com progresso (XMLHttpRequest)
+  async uploadFile(endpoint, formData, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      // Configurar headers
+      if (!this.token) {
+        this.token = this.getAuthToken();
+      }
+
+      if (this.token) {
+        xhr.setRequestHeader("Authorization", `Bearer ${this.token}`);
+      }
+
+      // Progress callback
+      if (onProgress) {
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            onProgress(percentComplete);
+          }
+        });
+      }
+
+      // Response handlers
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch (e) {
+            resolve({ success: true, message: "Upload concluído" });
+          }
+        } else if (xhr.status === 401) {
+          console.warn("Token expirado durante upload");
+          this.clearAuthToken();
+
+          if (typeof Auth !== "undefined") {
+            Auth.logout?.();
+            Auth.redirectToLogin?.();
+          } else {
+            window.location.href = "/login.html";
+          }
+
+          reject(new Error("Sessão expirada"));
+        } else {
+          try {
+            const errorResponse = JSON.parse(xhr.responseText);
+            reject(
+              new Error(errorResponse.message || `Erro HTTP ${xhr.status}`)
+            );
+          } catch (e) {
+            reject(new Error(`Erro HTTP ${xhr.status}`));
+          }
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Erro de conexão durante upload"));
+      });
+
+      xhr.addEventListener("timeout", () => {
+        reject(new Error("Timeout durante upload"));
+      });
+
+      // Configurar timeout
+      xhr.timeout = this.timeout;
+
+      // Enviar requisição
+      xhr.open("POST", `${this.baseURL}${endpoint}`);
+      xhr.send(formData);
+    });
   }
 }
 
 // Instância global
 const apiConfig = new ApiConfig();
 
-// Exportar para uso global
+// Disponibilizar como window.apiConfig (compatibilidade com código antigo)
 window.apiConfig = apiConfig;
+
+// Exportar para uso em módulos
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = apiConfig;
+}
+
+console.log("API Config Unificado carregado - Base URL:", apiConfig.baseURL);
+console.log("Token disponível:", !!apiConfig.token);
