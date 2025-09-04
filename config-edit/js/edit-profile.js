@@ -492,11 +492,8 @@ if (goBack) {
   goBack.addEventListener("click", (e) => {
     e.preventDefault();
 
-    // Verificar se há mudanças não salvas
     if (hasUnsavedChanges()) {
-      if (confirm("Você tem alterações não salvas. Deseja continuar?")) {
-        navigateBack();
-      }
+      showUnsavedChangesModal();
     } else {
       navigateBack();
     }
@@ -678,6 +675,46 @@ document.addEventListener("click", function (event) {
   const modal = document.getElementById("remove-photo-modal");
   if (modal && event.target === modal) {
     closeRemovePhotoModal();
+  }
+});
+
+// ===== Modal "Alterações não salvas" =====
+function showUnsavedChangesModal() {
+  const modal = document.getElementById("unsaved-modal");
+  if (modal) {
+    modal.classList.add("show");
+    document.addEventListener("keydown", handleUnsavedModalEscape);
+    // Acessibilidade: focar o botão cancelar
+    setTimeout(() => {
+      modal.querySelector(".modal-btn-cancel")?.focus();
+    }, 100);
+  }
+}
+
+function closeUnsavedChangesModal() {
+  const modal = document.getElementById("unsaved-modal");
+  if (modal) {
+    modal.classList.remove("show");
+    document.removeEventListener("keydown", handleUnsavedModalEscape);
+  }
+}
+
+function confirmLeaveWithUnsavedChanges() {
+  closeUnsavedChangesModal();
+  navigateBack();
+}
+
+function handleUnsavedModalEscape(event) {
+  if (event.key === "Escape") {
+    closeUnsavedChangesModal();
+  }
+}
+
+// Fechar a modal clicando fora
+document.addEventListener("click", function (event) {
+  const modal = document.getElementById("unsaved-modal");
+  if (modal && event.target === modal) {
+    closeUnsavedChangesModal();
   }
 });
 
