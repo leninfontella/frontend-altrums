@@ -115,67 +115,54 @@
   }
 
   // ✅ FUNÇÃO CORRIGIDA: Função para carregar foto de perfil em elementos específicos
+
   function loadProfilePhotos() {
     const userData = getUserData();
     if (!userData) return;
 
     console.log("🔄 Carregando fotos de perfil:", userData.profilePhotoUrl);
 
-    // 🔧 CORREÇÃO: Usar profilePhotoUrl salvo no localStorage
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
-
     if (!photoUrl) {
       console.log("📷 Nenhuma foto de perfil encontrada");
       return;
     }
 
-    // 🔧 CORREÇÃO: Construir URL correta com base na origem da imagem
+    // 🔧 CORREÇÃO: Construir URL correta SEM o timestamp
     let imageUrl;
     if (photoUrl.startsWith("http")) {
-      // URL completa
       imageUrl = photoUrl;
     } else if (
       photoUrl.startsWith("/uploads/") ||
       photoUrl.includes("uploads")
     ) {
-      // Caminho do backend - usar porta 5000
       imageUrl = `http://localhost:5000${
         photoUrl.startsWith("/") ? "" : "/"
       }${photoUrl}`;
     } else {
-      // Fallback
       imageUrl = photoUrl;
     }
 
-    // Adicionar timestamp para evitar cache
-    const finalUrl = imageUrl.includes("?")
-      ? `${imageUrl}&t=${Date.now()}`
-      : `${imageUrl}?t=${Date.now()}`;
+    // ✅ CORREÇÃO: A URL final é agora a URL base, sem o timestamp
+    const finalUrl = imageUrl;
 
     console.log("📸 URL final da imagem:", finalUrl);
-
     const profileImages = document.querySelectorAll(
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
     );
 
     profileImages.forEach((img) => {
-      // Extrair a URL base da imagem atual (sem o timestamp ?t=...)
       const currentSrcBase = img.src.split("?")[0];
       const newSrcBase = finalUrl.split("?")[0];
-
-      // Apenas atualiza a imagem se a URL base for diferente
       if (currentSrcBase !== newSrcBase) {
         console.log(
           `🔄 Atualizando imagem: ${currentSrcBase} -> ${newSrcBase}`
         );
-
         img.src = finalUrl;
         img.onerror = function () {
           console.error("❌ Erro ao carregar imagem:", finalUrl);
           this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
         };
-
-        // Efeito visual de atualização
         img.style.transition = "opacity 0.3s ease";
         img.style.opacity = "0.7";
         setTimeout(() => {
@@ -188,7 +175,6 @@
     const profileElements = document.querySelectorAll(
       "[data-user-photo]:not(img), .profile-image:not(img), .user-avatar:not(img), .profile-avatar:not(img)"
     );
-
     profileElements.forEach((element) => {
       if (element.style) {
         element.style.backgroundImage = `url(${finalUrl})`;

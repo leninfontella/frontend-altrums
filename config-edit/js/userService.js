@@ -129,16 +129,15 @@ class GlobalUserService {
     if (!photoUrl) {
       return "https://placehold.co/120x120/00d4ff/ffffff?text=User";
     }
-
     if (photoUrl.startsWith("http")) {
-      return `${photoUrl}?t=${Date.now()}`;
+      // A URL já é completa, retorne-a como está.
+      return photoUrl;
     }
-
     if (window.apiConfig && window.apiConfig.baseURL) {
-      return `${window.apiConfig.baseURL}${photoUrl}?t=${Date.now()}`;
+      // Combine a base URL com o caminho da imagem.
+      return `${window.apiConfig.baseURL}${photoUrl}`;
     }
-
-    return `${photoUrl}?t=${Date.now()}`;
+    return photoUrl; // Retornar URL como está por padrão
   }
 
   // Adicionar listener para mudanças
