@@ -36,12 +36,13 @@ function updateProfilePhotoDisplay(photoUrl) {
       imageUrl = window.apiConfig.baseURL + photoUrl;
     }
 
-    // Adicionar timestamp para evitar cache
-    const urlWithTimestamp = imageUrl.includes("?")
-      ? `${imageUrl}&t=${Date.now()}`
-      : `${imageUrl}?t=${Date.now()}`;
+    // 🚫 REMOVER ESTA LINHA QUE ESTÁ CAUSANDO O PROBLEMA:
+    // const urlWithTimestamp = imageUrl.includes("?")
+    //   ? `${imageUrl}&t=${Date.now()}`
+    //   : `${imageUrl}?t=${Date.now()}`;
 
-    profileImage.src = urlWithTimestamp;
+    // ✅ USAR DIRETAMENTE A URL SEM TIMESTAMP:
+    profileImage.src = imageUrl;
 
     // Efeito visual de atualização
     profileImage.style.opacity = "0.7";
@@ -51,11 +52,62 @@ function updateProfilePhotoDisplay(photoUrl) {
 
     // Fallback em caso de erro
     profileImage.onerror = function () {
-      console.log("Erro ao carregar imagem:", urlWithTimestamp);
+      console.log("Erro ao carregar imagem:", imageUrl);
       this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
     };
   } else {
     // Se não há foto, usar placeholder
+    profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+  }
+}
+
+function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
+  const profileImage = document.getElementById("profile-image");
+  if (!profileImage) return;
+
+  if (photoUrl) {
+    let imageUrl = photoUrl;
+
+    // Construir URL completa se necessário
+    if (
+      !photoUrl.startsWith("http") &&
+      window.apiConfig &&
+      window.apiConfig.baseURL
+    ) {
+      imageUrl = window.apiConfig.baseURL + photoUrl;
+    }
+
+    // ✅ APENAS adicionar timestamp quando REALMENTE necessário
+    if (forceRefresh) {
+      const separator = imageUrl.includes("?") ? "&" : "?";
+      imageUrl = `${imageUrl}${separator}t=${Date.now()}`;
+      console.log("🔄 Cache busting aplicado:", imageUrl);
+    }
+
+    profileImage.src = imageUrl;
+
+    // Animação suave
+    profileImage.style.opacity = "0.7";
+    setTimeout(() => {
+      profileImage.style.opacity = "1";
+    }, 300);
+
+    // Fallback melhorado
+    profileImage.onerror = function () {
+      console.warn("Erro ao carregar:", imageUrl);
+
+      // Se falhou com cache bust, tentar sem
+      if (forceRefresh && imageUrl.includes("?t=")) {
+        const cleanUrl = imageUrl.split("?t=")[0];
+        console.log("🔄 Tentando sem cache bust:", cleanUrl);
+        this.src = cleanUrl;
+        return;
+      }
+
+      // Fallback final
+      this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    };
+  } else {
     profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
   }
 }
@@ -84,14 +136,15 @@ function clearUserData() {
 }
 
 // 🔧 FUNÇÃO MELHORADA: Carregar dados da API com limpeza prévia
+
 async function loadUserDataFromAPI() {
   try {
-    console.log("🔄 PRIORIDADE: Carregando dados da API...");
+    console.log("📄 PRIORIDADE: Carregando dados da API...");
 
     // Verificar se Auth está disponível
     if (typeof Auth === "undefined" || !Auth.getToken()) {
       console.error(
-        "⚠ Sistema de autenticação não disponível ou token ausente"
+        "⚠️ Sistema de autenticação não disponível ou token ausente"
       );
       showMessage("Sessão expirada. Redirecionando...", "error");
       setTimeout(() => {
@@ -100,7 +153,7 @@ async function loadUserDataFromAPI() {
       return;
     }
 
-    // 🔧 CRÍTICO: Sempre limpar dados anteriores ANTES de carregar novos
+    // Sempre limpar dados anteriores ANTES de carregar novos
     clearUserData();
 
     // Usar Auth para buscar dados atualizados do usuário atual
@@ -120,7 +173,7 @@ async function loadUserDataFromAPI() {
         hasNewPhoto: false,
       });
 
-      // 🔧 CRÍTICO: Atualizar localStorage apenas com dados do usuário atual
+      // ✅ CRÍTICO: Atualizar localStorage apenas com dados do usuário atual
       localStorage.setItem("userData", JSON.stringify(userData));
 
       showMessage("Dados carregados com sucesso", "success");
@@ -128,7 +181,7 @@ async function loadUserDataFromAPI() {
       throw new Error("Dados não recebidos da API");
     }
   } catch (error) {
-    console.error("⚠ Erro ao carregar dados da API:", error);
+    console.error("⚠️ Erro ao carregar dados da API:", error);
 
     if (error.message.includes("401") || error.message.includes("Token")) {
       showMessage("Sessão expirada. Redirecionando...", "error");
@@ -149,6 +202,7 @@ async function loadUserDataFromAPI() {
 }
 
 // Função para preencher formulário com dados específicos
+
 function populateFormWithData(userData) {
   console.log("📝 Preenchendo formulário com dados:", userData);
 
@@ -160,11 +214,11 @@ function populateFormWithData(userData) {
   if (emailInput) emailInput.value = userData.email || "";
   if (phoneInput) phoneInput.value = userData.phone || "";
 
-  // Atualizar foto de perfil
+  // ✅ CORRIGIR: Atualizar foto SEM forçar cache bust no carregamento inicial
   if (userData.profilePhotoUrl) {
-    updateProfilePhotoDisplay(userData.profilePhotoUrl);
+    updateProfilePhotoDisplayFixed(userData.profilePhotoUrl, false); // false = sem cache bust
   } else if (userData.avatar) {
-    updateProfilePhotoDisplay(userData.avatar);
+    updateProfilePhotoDisplayFixed(userData.avatar, false);
   } else {
     const profileImage = document.getElementById("profile-image");
     if (profileImage) {
@@ -348,11 +402,18 @@ async function handleSuccessfulUpdate(updatedUserData) {
   // Atualizar localStorage com dados corretos
   localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-  // Atualizar exibição
-  updateProfilePhotoDisplay(
-    updatedUserData.profilePhotoUrl || updatedUserData.avatar
+  // ✅ CORRIGIR: Usar forceRefresh=true APENAS quando há nova foto
+  const hasNewPhoto =
+    updatedUserData.profilePhotoUrl &&
+    JSON.parse(localStorage.getItem("userData") || "{}").profilePhotoUrl !==
+      updatedUserData.profilePhotoUrl;
+
+  updateProfilePhotoDisplayFixed(
+    updatedUserData.profilePhotoUrl || updatedUserData.avatar,
+    hasNewPhoto // Só força refresh se realmente mudou
   );
 
+  // Resto da função permanece igual...
   // Sincronização: Usar Auth para atualizar dados globalmente
   if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
     const photoUrl = updatedUserData.profilePhotoUrl || updatedUserData.avatar;
@@ -381,7 +442,6 @@ async function handleSuccessfulUpdate(updatedUserData) {
 
   showMessage("Perfil salvo com sucesso!", "success");
 }
-
 // 🔧 NOVA FUNÇÃO: Upload APENAS da foto (separado dos dados pessoais)
 async function uploadPhotoOnly() {
   const photoInput = document.getElementById("photo-input");
