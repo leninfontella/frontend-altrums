@@ -529,7 +529,7 @@ async function loadAndDisplayUserData() {
     updateStats(userData);
 
     // Atualizar dashboard
-    // DashboardManager.updateDashboard(userData);
+    DashboardManager.updateDashboard(userData);
 
     // Atualizar metas
     GoalManager.updateGoalDisplay();
