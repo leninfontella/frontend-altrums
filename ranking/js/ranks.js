@@ -30,6 +30,48 @@ function getUserPhotoId(name) {
     .replace(/^_|_$/g, "");
 }
 
+/**
+ * NOVA FUNÇÃO: Obter a foto do usuário atual (apenas para o usuário logado)
+ */
+function getCurrentUserPhoto() {
+  // Tentar obter a foto do userService
+  if (window.userService && window.userService.getUserPhoto) {
+    const photo = window.userService.getUserPhoto();
+    if (photo) return photo;
+  }
+
+  // Tentar obter do userData
+  const userData = getUserData();
+  if (userData && userData.profilePhotoUrl) {
+    return userData.profilePhotoUrl;
+  }
+
+  // Tentar obter do localStorage
+  const storedPhoto = localStorage.getItem("userProfilePhoto");
+  if (storedPhoto) return storedPhoto;
+
+  return null;
+}
+
+/**
+ * NOVA FUNÇÃO: Gerar URL completa da imagem
+ */
+function getFullImageUrl(photoUrl) {
+  if (!photoUrl) return null;
+
+  if (photoUrl.startsWith("http")) {
+    return photoUrl;
+  }
+
+  if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
+    return `http://localhost:5000${
+      photoUrl.startsWith("/") ? "" : "/"
+    }${photoUrl}`;
+  }
+
+  return photoUrl;
+}
+
 // ========== CONFIGURAÇÃO DA API ==========
 const API_CONFIG = {
   baseURL: "http://localhost:5000/api",
@@ -633,7 +675,7 @@ class RankingManager {
   }
 
   /**
-   * Atualiza a lista de ranking
+   * CORRIGIDO: Atualiza a lista de ranking com lógica de foto correta
    */
   static async updateRankingList(currentUser) {
     try {
@@ -654,12 +696,13 @@ class RankingManager {
 
       rankingList.innerHTML = "";
 
-      // CORREÇÃO: Filtrar usuários corretamente e identificar usuário atual
+      // CORREÇÃO: Obter foto do usuário atual antes do loop
       const usersToShow = rankingData.users.filter((user) => user.rank >= 4);
       const currentUserId = currentUser?.id;
+      const currentUserPhoto = getCurrentUserPhoto(); // NOVA FUNÇÃO
 
       usersToShow.forEach((user) => {
-        // CORREÇÃO: Comparação mais robusta para identificar usuário atual
+        // Identificar se é o usuário atual
         const isCurrentUser =
           currentUserId &&
           (user._id === currentUserId ||
@@ -675,25 +718,37 @@ class RankingManager {
 
         const balance = user.balance || user.coins || 0;
         const displayName = user.displayName || user.name || "Usuário";
-
-        // Adicionar variáveis para foto
         const userInitials = getUserInitials(displayName);
-        const userPhotoId = isCurrentUser ? "" : getUserPhotoId(displayName);
+
+        // CORREÇÃO PRINCIPAL: Lógica de foto
+        let avatarContent;
+        if (isCurrentUser && currentUserPhoto) {
+          // Para o usuário atual: usar foto real
+          const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+          avatarContent = `
+            <img
+              data-user-photo
+              class="profile-image"
+              src="${fullPhotoUrl}"
+              alt="Foto do Perfil"
+              onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+            />
+          `;
+        } else {
+          // Para outros usuários: usar avatar com iniciais
+          avatarContent = `
+            <img
+              class="profile-image"
+              src="https://placehold.co/50x50/666/ffffff?text=${userInitials}"
+              alt="Avatar"
+            />
+          `;
+        }
 
         rankItem.innerHTML = `
           <div class="rank-position">${user.rank}</div>
           <div class="rank-avatar ${isCurrentUser ? "highlighted" : ""}">
-            <img
-              ${
-                isCurrentUser
-                  ? "data-user-photo"
-                  : `data-user-photo="${userPhotoId}"`
-              }
-              class="profile-image"
-              src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
-              alt="Foto do Perfil"
-              onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
-            />
+            ${avatarContent}
           </div>
           <div class="rank-info">
             <div class="rank-name">${displayName}${
@@ -719,7 +774,11 @@ class RankingManager {
       );
 
       if (currentUser && !userFoundInList) {
-        this.addCurrentUserToList(currentUser, rankingData.currentUserRank);
+        this.addCurrentUserToList(
+          currentUser,
+          rankingData.currentUserRank,
+          currentUserPhoto
+        );
       }
 
       console.log("✓ Lista de ranking atualizada com sucesso");
@@ -731,9 +790,9 @@ class RankingManager {
   }
 
   /**
-   * Adiciona usuário atual na lista se não estiver presente
+   * CORRIGIDO: Adiciona usuário atual na lista se não estiver presente COM FOTO
    */
-  static addCurrentUserToList(currentUser, rank) {
+  static addCurrentUserToList(currentUser, rank, currentUserPhoto = null) {
     const rankingList = document.querySelector(".ranking-list");
     if (!rankingList) return;
 
@@ -744,16 +803,34 @@ class RankingManager {
     const displayName = currentUser.fullName || currentUser.name;
     const userInitials = getUserInitials(displayName);
 
-    rankItem.innerHTML = `
-      <div class="rank-position">${rank}</div>
-      <div class="rank-avatar highlighted">
+    // CORREÇÃO: Lógica de foto para usuário atual
+    let avatarContent;
+    if (currentUserPhoto) {
+      const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+      avatarContent = `
+        <img
+          data-user-photo
+          class="profile-image"
+          src="${fullPhotoUrl}"
+          alt="Foto do Perfil"
+          onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+        />
+      `;
+    } else {
+      avatarContent = `
         <img
           data-user-photo
           class="profile-image"
           src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
           alt="Foto do Perfil"
-          onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
         />
+      `;
+    }
+
+    rankItem.innerHTML = `
+      <div class="rank-position">${rank}</div>
+      <div class="rank-avatar highlighted">
+        ${avatarContent}
       </div>
       <div class="rank-info">
         <div class="rank-name">${displayName} (Você)</div>
@@ -768,7 +845,7 @@ class RankingManager {
   }
 
   /**
-   * Atualiza lista com dados fornecidos (fallback)
+   * CORRIGIDO: Atualiza lista com dados fornecidos (fallback) COM CORREÇÃO DE FOTO
    */
   static updateRankingListWithData(users, currentUser) {
     const rankingList = document.querySelector(".ranking-list");
@@ -776,6 +853,7 @@ class RankingManager {
 
     rankingList.innerHTML = "";
     const currentUserId = currentUser?.id;
+    const currentUserPhoto = getCurrentUserPhoto(); // NOVA FUNÇÃO
 
     users.forEach((user) => {
       // CORREÇÃO: Melhor identificação do usuário atual
@@ -794,25 +872,37 @@ class RankingManager {
 
       const balance = user.balance || user.coins || 0;
       const displayName = user.displayName || user.name;
-
-      // Adicionar variáveis para foto
       const userInitials = getUserInitials(displayName);
-      const userPhotoId = isCurrentUser ? "" : getUserPhotoId(displayName);
+
+      // CORREÇÃO: Lógica de foto
+      let avatarContent;
+      if (isCurrentUser && currentUserPhoto) {
+        // Para o usuário atual: usar foto real
+        const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+        avatarContent = `
+          <img
+            data-user-photo
+            class="profile-image"
+            src="${fullPhotoUrl}"
+            alt="Foto do Perfil"
+            onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+          />
+        `;
+      } else {
+        // Para outros usuários: usar avatar com iniciais
+        avatarContent = `
+          <img
+            class="profile-image"
+            src="https://placehold.co/50x50/666/ffffff?text=${userInitials}"
+            alt="Avatar"
+          />
+        `;
+      }
 
       rankItem.innerHTML = `
         <div class="rank-position">${user.rank}</div>
         <div class="rank-avatar ${isCurrentUser ? "highlighted" : ""}">
-          <img
-            ${
-              isCurrentUser
-                ? "data-user-photo"
-                : `data-user-photo="${userPhotoId}"`
-            }
-            class="profile-image"
-            src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
-            alt="Foto do Perfil"
-            onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
-          />
+          ${avatarContent}
         </div>
         <div class="rank-info">
           <div class="rank-name">${displayName}${
