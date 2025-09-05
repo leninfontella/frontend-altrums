@@ -156,11 +156,8 @@ const UserSystem = {
         imageUrl = `http://localhost:5000/${newPhotoUrl}`;
       }
 
-      const urlWithTimestamp = imageUrl.includes("?")
-        ? `${imageUrl}&t=${Date.now()}`
-        : `${imageUrl}?t=${Date.now()}`;
+      img.src = imageUrl; // ✅ URL limpa, sem timestamp
 
-      img.src = urlWithTimestamp;
       img.style.display = "block";
       icon.style.display = "none";
 

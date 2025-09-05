@@ -341,9 +341,7 @@
             }
 
             // Adicionar timestamp para evitar cache
-            imageUrl = imageUrl.includes("?")
-              ? `${imageUrl}&t=${Date.now()}`
-              : `${imageUrl}?t=${Date.now()}`;
+            imageUrl = imageUrl;
 
             // Definir função para executar quando DOM estiver pronto
             document.addEventListener("DOMContentLoaded", function () {
