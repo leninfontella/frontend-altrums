@@ -128,7 +128,7 @@
       return;
     }
 
-    // 🔧 CORREÇÃO: Construir URL correta SEM o timestamp
+    // A URL final deve ser apenas a URL base, sem o timestamp
     let imageUrl;
     if (photoUrl.startsWith("http")) {
       imageUrl = photoUrl;
@@ -143,7 +143,7 @@
       imageUrl = photoUrl;
     }
 
-    // ✅ CORREÇÃO: A URL final é agora a URL base, sem o timestamp
+    // ✅ CORREÇÃO: Remover a lógica que adiciona o ?t=
     const finalUrl = imageUrl;
 
     console.log("📸 URL final da imagem:", finalUrl);
