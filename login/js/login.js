@@ -242,6 +242,27 @@ function clearError(fieldId) {
   }
 }
 
+// Mostrar loader pós-login antes de redirecionar
+function showPostLoginLoader() {
+  const loader = document.getElementById("postLoginLoader");
+  const phoneContainer = document.querySelector(".phone-container");
+
+  if (phoneContainer) {
+    // Suavizar desaparecimento
+    phoneContainer.style.opacity = "0";
+    setTimeout(() => {
+      phoneContainer.style.display = "none";
+    }, 500); // tempo da transição do CSS
+  }
+
+  if (loader) {
+    loader.style.display = "flex";
+    setTimeout(() => {
+      loader.style.opacity = "1";
+    }, 50); // pequeno delay para aplicar transição
+  }
+}
+
 // Mostrar loading
 function showLoading(show) {
   const { loadingOverlay } = window.elements;
@@ -350,7 +371,9 @@ async function handleLogin(e) {
       // await Auth.getProfile(); // REMOVIDO - causava perda da foto
 
       // Redirecionar para o dashboard
-      console.log("🔄 Redirecionando para dashboard...");
+      console.log("🔄 Mostrando loader pós-login...");
+      showPostLoginLoader();
+
       setTimeout(() => {
         window.location.href = CONFIG.UI.pages.dashboard;
       }, CONFIG.UI.redirectDelay);
