@@ -514,7 +514,7 @@ function createSearchModal() {
       <div class="modal-backdrop" onclick="closeSearchModal()"></div>
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Buscar doador</h3>
+          <h3>Buscar usuário</h3>
           <button class="close-btn" onclick="closeSearchModal()">✕</button>
         </div>
         
