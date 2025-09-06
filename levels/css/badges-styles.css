@@ -255,17 +255,13 @@ body {
 
 /* Card do nível atual */
 .current-level-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 2px solid rgba(0, 212, 255, 0.3);
-  border-radius: 20px;
-  padding: 24px;
-  animation: slideInUp 0.6s ease-out;
-  animation-delay: 0.1s;
-  animation-fill-mode: both;
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   position: relative;
-  overflow: hidden;
+
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
 }
 
 .current-level-card::before {
@@ -329,6 +325,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 2px;
 }
 
 .current-name {
