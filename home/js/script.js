@@ -273,6 +273,8 @@ const UserSystem = {
 };
 
 // Sistema de níveis baseado no saldo
+
+// Sistema de níveis baseado no saldo
 const LevelSystem = {
   levels: {
     1: { min: 0, max: 99, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
@@ -362,30 +364,192 @@ const LevelSystem = {
 
         levelBadge.innerHTML = `
           <div class="level-info" style="
-            background: linear-gradient(135deg, ${levelInfo.color}20, ${
+            background: linear-gradient(135deg, ${levelInfo.color}12, ${
           levelInfo.color
-        }40);
-            border: 1px solid ${levelInfo.color}60;
-            border-radius: 12px;
-            padding: 8px 12px;
-            margin-top: 8px;
-            text-align: center;
-          ">
-            <div style="color: ${
-              levelInfo.color
-            }; font-size: 14px; font-weight: 600;">
-              ${levelInfo.icon} ${levelInfo.name}
+        }20);
+            backdrop-filter: blur(8px);
+            border: 1.5px solid ${levelInfo.color}35;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            box-shadow: 
+              0 4px 20px ${levelInfo.color}18,
+              0 2px 8px rgba(0, 0, 0, 0.08),
+              inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+          " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 24px ${
+            levelInfo.color
+          }22, 0 3px 10px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.15)'" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px ${
+               levelInfo.color
+             }18, 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1)'">
+            
+            <!-- Shimmer effect -->
+            <div style="
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+              animation: shimmer 2s ease-in-out infinite;
+            "></div>
+            
+            <!-- Header section: Icon + Name + Level -->
+            <div style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              margin-bottom: 12px;
+            ">
+              <div style="
+                font-size: 20px;
+                filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+                line-height: 1;
+              ">
+                ${levelInfo.icon}
+              </div>
+              <div style="
+                color: ${levelInfo.color};
+                font-size: 16px;
+                font-weight: 600;
+                text-shadow: 0 0.5px 1px rgba(0,0,0,0.1);
+                letter-spacing: 0.3px;
+                flex: 1;
+              ">
+                ${levelInfo.name}
+              </div>
+              <div style="
+                background: ${levelInfo.color}20;
+                color: ${levelInfo.color};
+                font-size: 12px;
+                font-weight: 700;
+                padding: 4px 8px;
+                border-radius: 8px;
+                border: 1px solid ${levelInfo.color}30;
+                line-height: 1;
+              ">
+                Nível ${levelInfo.level}
+              </div>
             </div>
-            <div style="color: #888; font-size: 11px;">
-              Nivel ${levelInfo.level} • ${Math.round(levelInfo.progress)}%
+            
+            <!-- Progress bar section -->
+            <div style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            ">
+              <!-- Progress bar container -->
+              <div style="
+                flex: 1;
+                height: 10px;
+                background: ${levelInfo.color}15;
+                border-radius: 12px;
+                border: 1px solid ${levelInfo.color}20;
+                overflow: hidden;
+                position: relative;
+                box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+                display: block;
+              ">
+                <!-- Progress bar fill -->
+                <div style="
+                  height: 100%;
+                  width: ${levelInfo.progress}%;
+                  background: linear-gradient(90deg, ${levelInfo.color}, ${
+          levelInfo.color
+        }dd);
+                  border-radius: 12px;
+                  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                  position: relative;
+                  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                  animation: progressGlow 2s ease-in-out infinite alternate;
+                "></div>
+                
+                <!-- Progress bar shine effect -->
+                <div style="
+                  position: absolute;
+                  top: 0;
+                  left: -100%;
+                  width: 100%;
+                  height: 100%;
+                  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                  animation: progressShine 3s ease-in-out infinite;
+                "></div>
+              </div>
+              
+              <!-- Percentage text -->
+              <div style="
+                color: ${levelInfo.color};
+                font-size: 13px;
+                font-weight: 600;
+                text-shadow: 0 0.5px 1px rgba(0,0,0,0.1);
+                min-width: 40px;
+                text-align: right;
+              ">
+                ${Math.round(levelInfo.progress)}%
+              </div>
             </div>
           </div>
         `;
 
-        console.log("Badge de nivel adicionado:", levelInfo);
+        // Adicionar animação de entrada suave
+        const levelInfoElement = levelBadge.querySelector(".level-info");
+        levelInfoElement.style.animation =
+          "horizontalBadgeEntrance 0.5s ease-out forwards";
+
+        // Adicionar keyframes se não existirem
+        if (!document.querySelector("#horizontalBadgeKeyframes")) {
+          const style = document.createElement("style");
+          style.id = "horizontalBadgeKeyframes";
+          style.textContent = `
+            @keyframes horizontalBadgeEntrance {
+              0% {
+                opacity: 0;
+                transform: translateY(15px) scale(0.9);
+              }
+              100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+              }
+            }
+            
+            @keyframes shimmer {
+              0% { left: -100%; }
+              50% { left: 100%; }
+              100% { left: 100%; }
+            }
+            
+            @keyframes progressGlow {
+              0% { 
+                filter: brightness(1);
+                box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+              }
+              100% { 
+                filter: brightness(1.1);
+                box-shadow: 0 1px 4px rgba(0,0,0,0.15), 0 0 8px ${levelInfo.color}25;
+              }
+            }
+            
+            @keyframes progressShine {
+              0% { left: -100%; }
+              20% { left: -100%; }
+              40% { left: 100%; }
+              100% { left: 100%; }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        console.log(
+          "Badge de nível com barra de progresso horizontal adicionado:",
+          levelInfo
+        );
       }
     } catch (error) {
-      console.error("Erro ao adicionar badge de nivel:", error);
+      console.error("Erro ao adicionar badge de nível:", error);
     }
   },
 };
