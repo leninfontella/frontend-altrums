@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Níveis do Badge - Living Coins</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/styles.css" />
+    <link rel="stylesheet" href="../css/levels.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="app-screen">
+        <header class="header">
+          <div class="status-bar">
+            <span id="status-time"></span>
+            <div class="status-icons">
+              <i class="fas fa-signal"></i>
+              <i class="fas fa-wifi"></i>
+              <i class="fas fa-battery-full"></i>
+            </div>
+          </div>
+        </header>
+
+        <div class="levels-header">
+          <button id="back-button" class="back-button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <h1 class="page-title">Níveis do Badge</h1>
+        </div>
+
+        <main class="levels-container">
+          <p class="description-text">
+            Para subir de nível, você precisa acumular pontos de reputação. Cada
+            nível corresponde a uma faixa de pontos, e você evolui
+            automaticamente ao atingir a pontuação mínima do próximo nível.
+          </p>
+
+          <div id="levels-list" class="levels-list"></div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../../config-edit/js/globalInit.js"></script>
+    <script src="../js/levels.js"></script>
+  </body>
+</html>

@@ -277,8 +277,8 @@ const UserSystem = {
 // Sistema de níveis baseado no saldo
 const LevelSystem = {
   levels: {
-    1: { min: 0, max: 99, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
-    2: { min: 100, max: 499, name: "Explorador", color: "#06B6D4", icon: "🔍" },
+    1: { min: 0, max: 199, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
+    2: { min: 200, max: 499, name: "Explorador", color: "#06B6D4", icon: "🔍" },
     3: {
       min: 500,
       max: 999,
