@@ -416,3 +416,15 @@ window.addEventListener("offline", () => {
 console.log(
   "✅ Login.js carregado - versão corrigida para preservar foto de perfil"
 );
+
+// Loader inicial - esconde após carregar a página
+window.addEventListener("load", () => {
+  const initialLoader = document.getElementById("initialLoader");
+  if (initialLoader) {
+    setTimeout(() => {
+      initialLoader.style.opacity = "0";
+      initialLoader.style.transition = "opacity 0.5s ease";
+      setTimeout(() => initialLoader.remove(), 500);
+    }, 600); // pequeno delay para suavizar
+  }
+});

@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="../css/login.css" />
   </head>
   <body>
+    <!-- Loader Inicial (antes da página carregar) -->
+    <div class="initial-loader" id="initialLoader">
+      <div class="loading-spinner"></div>
+    </div>
+
     <div class="phone-container">
       <div class="design-label">LOGIN COINS</div>
       <div class="screen">
@@ -127,14 +132,15 @@
     </div>
 
     <!-- Feedback de Sucesso -->
-    <div class="success-feedback" id="successFeedback">
+    <!-- <div class="success-feedback" id="successFeedback">
       <i class="fas fa-check-circle"></i>
       <span>Login realizado com sucesso!</span>
-      <div class="coin-balance">
+      <!-- <div class="coin-balance">
         <i class="fas fa-coins"></i>
         <span id="userBalance">0</span>
-      </div>
-    </div>
+      </div> -->
+    <!-- </div> -->
+    -->
 
     <script src="../../js/auth.js"></script>
     <script src="../js/config.js"></script>
