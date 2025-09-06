@@ -476,7 +476,7 @@ const LevelSystem = {
                   width: 100%;
                   height: 100%;
                   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-                  animation: progressShine 3s ease-in-out infinite;
+              
                 "></div>
               </div>
               
