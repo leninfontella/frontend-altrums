@@ -437,10 +437,12 @@ const LevelSystem = {
             </div>
             
             <!-- Progress bar section -->
-            <div style="
+            <div onclick="window.location.href='/levels/html/badges.html'"
+            style="
               display: flex;
               align-items: center;
               gap: 12px;
+              cursor: pointer;
             ">
               <!-- Progress bar container -->
               <div style="

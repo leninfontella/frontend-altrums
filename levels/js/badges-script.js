@@ -296,6 +296,11 @@ function goBack() {
   // window.history.back() ou navegação do framework
 }
 
+const goHome = document.getElementById("go-home");
+goHome.onclick = () => {
+  window.location.href = "../../home/html/index.html";
+};
+
 // Função para simular diferentes quantidades de pontos (para demonstração)
 function simulateProgress() {
   const scenarios = [
