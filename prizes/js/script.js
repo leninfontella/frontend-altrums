@@ -5,6 +5,13 @@ function goBack() {
   // Por exemplo: history.back() ou window.location.href = 'home.html'
 }
 
+// Botão doar
+
+const ctaButton = document.getElementById("cta-button");
+ctaButton.onclick = () => {
+  window.location.href = "../../home/html/index.html";
+};
+
 // Função para iniciar doações
 function startDonating() {
   // Efeito de ripple no botão
