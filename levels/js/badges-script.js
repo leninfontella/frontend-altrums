@@ -1,4 +1,25 @@
-// Definição dos níveis de badge
+// Sistema de Badges Integrado com Auth e API Unificados - Living Coins
+
+// Aguardar carregamento dos módulos de dependência
+function waitForDependencies() {
+  return new Promise((resolve) => {
+    const checkDependencies = () => {
+      if (window.Auth && window.api) {
+        console.log("✅ Dependências carregadas: Auth e API");
+        resolve();
+      } else {
+        console.log("🔄 Aguardando dependências...", {
+          Auth: !!window.Auth,
+          API: !!window.api,
+        });
+        setTimeout(checkDependencies, 100);
+      }
+    };
+    checkDependencies();
+  });
+}
+
+// Definição dos níveis de badge - baseado nos dados do backend
 const levels = {
   1: { min: 0, max: 199, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
   2: { min: 200, max: 499, name: "Explorador", color: "#06B6D4", icon: "🔍" },
@@ -24,8 +45,122 @@ const levels = {
   },
 };
 
-// Pontos atuais do usuário (simulado - em um app real viria do backend)
-let currentPoints = 750; // Exemplo: usuário no nível Aventureiro
+// Variáveis para armazenar dados do usuário
+let currentUserData = null;
+let currentPoints = 0;
+
+// Função para buscar dados do usuário atual usando a rota unificada de badges
+async function fetchUserData() {
+  try {
+    console.log("🔄 Carregando dados do usuário via /api/badges...");
+
+    const response = await api.get("/api/badges");
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error("Falha ao carregar dados do usuário");
+    }
+
+    // Estrutura correta da resposta
+    const data = result.data || {};
+
+    // Alteração 1: Acessar a propriedade correta para os dados do usuário
+    const userDataFromApi = data.user || {};
+
+    currentUserData = {
+      ...userDataFromApi,
+      coins: userDataFromApi.coins || 0,
+      totalDonated: userDataFromApi.totalDonated || 0,
+      totalReceived: userDataFromApi.totalReceived || 0,
+      // Alteração 2: Acessar a propriedade de nível correta do backend
+      level: userDataFromApi.level,
+      profilePhotoUrl: userDataFromApi.profilePhotoUrl,
+    };
+
+    // Alteração 3: Acessar as propriedades de badges do backend
+    const badgesData = data.badges || {};
+    const currentLevelData = badgesData.currentLevel || {};
+
+    // Alteração 4: Corrigir a lógica para pegar pontos e progresso
+    currentPoints = badgesData.currentPoints || 0;
+
+    console.log("✅ Dados do usuário carregados:", {
+      name: currentUserData.name,
+      points: currentPoints,
+      coins: currentUserData.coins,
+    });
+
+    return currentUserData;
+  } catch (error) {
+    console.error("❌ Erro ao buscar dados do usuário:", error);
+
+    currentPoints = 0;
+    currentUserData = {
+      name: "Usuário",
+      coins: 0,
+      totalDonated: 0,
+      totalReceived: 0,
+      level: 1,
+    };
+
+    showErrorMessage("Erro ao carregar dados. Verifique sua conexão.");
+    return currentUserData;
+  }
+}
+
+// Função para mostrar mensagem de erro
+function showErrorMessage(message) {
+  const errorDiv = document.createElement("div");
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid #fca5a5;
+    z-index: 10000;
+    max-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: slideInRight 0.3s ease-out;
+  `;
+
+  errorDiv.innerHTML = `
+    <div style="font-weight: 600; margin-bottom: 4px;">Aviso</div>
+    <div style="font-size: 14px;">${message}</div>
+  `;
+
+  document.body.appendChild(errorDiv);
+
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.style.animation = "slideOutRight 0.3s ease-out";
+      setTimeout(() => errorDiv.remove(), 300);
+    }
+  }, 5000);
+}
+
+// Função para buscar dados específicos de badges via API unificada (se disponível)
+
+async function fetchBadgeProgressFromAPI() {
+  try {
+    // Tentar usar endpoint específico de badges se disponível
+    if (window.api && window.api.getBadgeProgress) {
+      const response = await window.api.getBadgeProgress();
+      if (response.success) {
+        return response.data;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.warn(
+      "Endpoint de badges não disponível, usando dados do Auth:",
+      error.message
+    );
+    return null;
+  }
+}
 
 // Função para determinar o nível atual baseado nos pontos
 function getCurrentLevel(points) {
@@ -68,7 +203,7 @@ function formatNumber(num) {
   return num.toString();
 }
 
-// Função para renderizar o card do nível atual
+// Função para renderizar o card do nível atual com dados reais
 function renderCurrentLevelCard() {
   const currentLevel = getCurrentLevel(currentPoints);
   const nextLevel = getNextLevel(currentLevel.level);
@@ -92,6 +227,20 @@ function renderCurrentLevelCard() {
   if (currentPointsEl)
     currentPointsEl.textContent = `${formatNumber(currentPoints)} pontos`;
 
+  // Atualizar informações do usuário se disponível
+  if (currentUserData) {
+    const userInfoEl = document.getElementById("userInfo");
+    if (userInfoEl) {
+      userInfoEl.innerHTML = `
+        <div style="font-size: 14px; color: #888; margin-top: 8px;">
+          ${currentUserData.name || "Usuário"} • ${formatNumber(
+        currentUserData.coins || 0
+      )} moedas
+        </div>
+      `;
+    }
+  }
+
   // Atualizar cor do badge atual
   if (currentBadge) {
     currentBadge.style.background = `linear-gradient(135deg, ${currentLevel.color}80, ${currentLevel.color}40)`;
@@ -100,7 +249,7 @@ function renderCurrentLevelCard() {
 
   // Atualizar barra de progresso
   if (progressFill) {
-    progressFill.style.width = `${Math.max(5, progress)}%`; // Mínimo de 5% para visibilidade
+    progressFill.style.width = `${Math.max(5, progress)}%`;
     progressFill.style.background = `linear-gradient(90deg, ${currentLevel.color}, ${currentLevel.color}CC)`;
   }
 
@@ -132,8 +281,12 @@ function renderCurrentLevelCard() {
 // Função para renderizar o grid de badges
 function renderBadgesGrid() {
   const badgesGrid = document.getElementById("badgesGrid");
-  const currentLevel = getCurrentLevel(currentPoints);
+  if (!badgesGrid) {
+    console.warn("Elemento badgesGrid não encontrado");
+    return;
+  }
 
+  const currentLevel = getCurrentLevel(currentPoints);
   badgesGrid.innerHTML = "";
 
   for (let levelNum in levels) {
@@ -200,26 +353,8 @@ function renderBadgesGrid() {
   }
 }
 
-// Função para simular ganho de pontos (para demonstração)
-function addPoints(amount) {
-  const oldLevel = getCurrentLevel(currentPoints);
-  currentPoints += amount;
-  const newLevel = getCurrentLevel(currentPoints);
-
-  updateDisplay();
-
-  // Verificar se subiu de nível
-  if (newLevel.level > oldLevel.level) {
-    showLevelUpNotification(newLevel);
-  }
-
-  // Adicionar feedback visual
-  showPointsGain(amount);
-}
-
 // Função para mostrar notificação de subida de nível
 function showLevelUpNotification(newLevel) {
-  // Criar elemento de notificação
   const notification = document.createElement("div");
   notification.style.cssText = `
     position: fixed;
@@ -248,7 +383,6 @@ function showLevelUpNotification(newLevel) {
 
   document.body.appendChild(notification);
 
-  // Remover após a animação
   setTimeout(() => {
     if (notification.parentNode) {
       notification.parentNode.removeChild(notification);
@@ -256,175 +390,139 @@ function showLevelUpNotification(newLevel) {
   }, 3000);
 }
 
-// Função para mostrar ganho de pontos
-function showPointsGain(amount) {
-  const pointsElement = document.createElement("div");
-  pointsElement.textContent = `+${formatNumber(amount)}`;
-  pointsElement.style.cssText = `
-    position: fixed;
-    top: 30%;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #00d4ff;
-    font-size: 24px;
-    font-weight: 800;
-    z-index: 9999;
-    pointer-events: none;
-    animation: pointsGainAnimation 2s ease-out forwards;
-    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-  `;
+// Função para atualizar toda a exibição
+async function updateDisplay() {
+  try {
+    console.log("🔄 Atualizando display de badges...");
 
-  document.body.appendChild(pointsElement);
+    // Mostrar loading
+    showLoadingState();
 
-  setTimeout(() => {
-    if (pointsElement.parentNode) {
-      pointsElement.parentNode.removeChild(pointsElement);
+    // Buscar dados atualizados via Auth integrado
+    await fetchUserData();
+
+    // Tentar buscar dados específicos de badges da API
+    const badgeProgress = await fetchBadgeProgressFromAPI();
+    if (badgeProgress) {
+      currentPoints = badgeProgress.points || currentPoints;
+      console.log("📊 Dados de badge da API:", badgeProgress);
     }
-  }, 2000);
+
+    // Renderizar interface
+    renderCurrentLevelCard();
+    renderBadgesGrid();
+
+    // Esconder loading
+    hideLoadingState();
+
+    console.log("✅ Display atualizado com sucesso");
+  } catch (error) {
+    console.error("❌ Erro ao atualizar display:", error);
+    hideLoadingState();
+
+    // Tentar renderizar com dados locais
+    if (currentUserData) {
+      renderCurrentLevelCard();
+      renderBadgesGrid();
+    }
+  }
 }
 
-// Função para atualizar toda a exibição
-function updateDisplay() {
+// Funções de loading state
+function showLoadingState() {
+  const loadingOverlay = document.createElement("div");
+  loadingOverlay.id = "loadingOverlay";
+  loadingOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+  `;
+
+  loadingOverlay.innerHTML = `
+    <div style="
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px 32px;
+      text-align: center;
+      color: white;
+    ">
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 3px solid #333;
+        border-top: 3px solid #00d4ff;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        animation: spin 1s linear infinite;
+      "></div>
+      <div style="font-weight: 600;">Atualizando badges...</div>
+    </div>
+  `;
+
+  document.body.appendChild(loadingOverlay);
+}
+
+function hideLoadingState() {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  if (loadingOverlay) {
+    loadingOverlay.style.animation = "fadeOut 0.3s ease-out";
+    setTimeout(() => loadingOverlay.remove(), 300);
+  }
+}
+
+// Função para atualizar dados em tempo real (chamada quando houver mudanças)
+async function refreshUserData() {
+  const oldLevel = getCurrentLevel(currentPoints);
+
+  await fetchUserData();
+
+  // Tentar buscar dados específicos de badges
+  const badgeProgress = await fetchBadgeProgressFromAPI();
+  if (badgeProgress) {
+    currentPoints = badgeProgress.points || currentPoints;
+  }
+
+  const newLevel = getCurrentLevel(currentPoints);
+
+  // Verificar se subiu de nível
+  if (newLevel.level > oldLevel.level) {
+    showLevelUpNotification(newLevel);
+  }
+
+  // Atualizar display
   renderCurrentLevelCard();
   renderBadgesGrid();
 }
 
-// Função de voltar (placeholder)
+// Função de voltar
 function goBack() {
-  // Em um app real, isso navegaria para a página anterior
   console.log("Voltando para a página anterior...");
-  // window.history.back() ou navegação do framework
-}
-
-const goHome = document.getElementById("go-home");
-goHome.onclick = () => {
-  window.location.href = "../../home/html/index.html";
-};
-
-// Função para simular diferentes quantidades de pontos (para demonstração)
-function simulateProgress() {
-  const scenarios = [
-    { points: 150, desc: "Novo usuário" },
-    { points: 350, desc: "Usuário ativo" },
-    { points: 750, desc: "Contribuidor regular" },
-    { points: 2500, desc: "Benfeitor ativo" },
-    { points: 7500, desc: "Grande doador" },
-    { points: 25000, desc: "Filantropo" },
-    { points: 75000, desc: "Magnata" },
-    { points: 250000, desc: "Lenda viva" },
-    { points: 750000, desc: "Mito da comunidade" },
-    { points: 1500000, desc: "Status divino" },
-  ];
-
-  let currentScenario = 0;
-
-  // Criar botão de teste (remover em produção)
-  const testButton = document.createElement("button");
-  testButton.textContent = "Simular Progresso";
-  testButton.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #00d4ff, #0099cc);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 1000;
-    box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
-    transition: all 0.3s ease;
-  `;
-
-  testButton.addEventListener("click", () => {
-    const scenario = scenarios[currentScenario];
-    currentPoints = scenario.points;
-    updateDisplay();
-
-    // Mostrar cenário atual
-    console.log(
-      `Cenário: ${scenario.desc} (${formatNumber(scenario.points)} pontos)`
-    );
-
-    currentScenario = (currentScenario + 1) % scenarios.length;
-  });
-
-  // Adicionar apenas em desenvolvimento
-  if (
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-  ) {
-    document.body.appendChild(testButton);
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    // Usar Auth para redirecionamento consistente
+    Auth.redirectToDashboard();
   }
 }
 
-// Adicionar estilos para animações
-const styles = document.createElement("style");
-styles.textContent = `
-  @keyframes levelUpAnimation {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.5);
-    }
-    20% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1.1);
-    }
-    90% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.9);
-    }
+// Configurar botão de voltar
+function setupBackButton() {
+  const goHome = document.getElementById("go-home");
+  if (goHome) {
+    goHome.onclick = () => {
+      Auth.redirectToDashboard();
+    };
   }
-  
-  @keyframes pointsGainAnimation {
-    0% {
-      opacity: 0;
-      transform: translateX(-50%) translateY(20px);
-    }
-    20% {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0px);
-    }
-    80% {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-10px);
-    }
-    100% {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-30px);
-    }
-  }
-  
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-      transform: translateY(0);
-    }
-    40% {
-      transform: translateY(-10px);
-    }
-    60% {
-      transform: translateY(-5px);
-    }
-  }
-`;
-document.head.appendChild(styles);
-
-// Função para adicionar interatividade aos cards de badge
-function addBadgeInteractivity() {
-  // Adicionar clique nos badges para mostrar detalhes
-  document.addEventListener("click", (e) => {
-    const badgeCard = e.target.closest(".badge-card");
-    if (badgeCard && !badgeCard.classList.contains("locked")) {
-      const badgeLevel =
-        Array.from(badgeCard.parentNode.children).indexOf(badgeCard) + 1;
-      showBadgeDetails(badgeLevel);
-    }
-  });
 }
 
 // Função para mostrar detalhes do badge
@@ -513,37 +611,246 @@ function showBadgeDetails(levelNumber) {
   });
 }
 
-// Inicialização quando o DOM estiver carregado
-document.addEventListener("DOMContentLoaded", () => {
-  updateDisplay();
-  addBadgeInteractivity();
-  simulateProgress(); // Remover em produção
+// Função para adicionar interatividade aos cards de badge
+function addBadgeInteractivity() {
+  document.addEventListener("click", (e) => {
+    const badgeCard = e.target.closest(".badge-card");
+    if (badgeCard && !badgeCard.classList.contains("locked")) {
+      const badgeLevel =
+        Array.from(badgeCard.parentNode.children).indexOf(badgeCard) + 1;
+      showBadgeDetails(badgeLevel);
+    }
+  });
+}
 
-  // Adicionar animação de entrada suave
-  document.body.style.opacity = "0";
-  setTimeout(() => {
-    document.body.style.transition = "opacity 0.5s ease-out";
-    document.body.style.opacity = "1";
-  }, 100);
-});
+// Adicionar estilos para animações
+function addAnimationStyles() {
+  if (document.getElementById("badgeAnimationStyles")) {
+    return; // Já foi adicionado
+  }
 
-// Função para atualizar pontos em tempo real (seria conectada ao backend)
-function updatePointsFromServer(newPoints) {
-  const oldLevel = getCurrentLevel(currentPoints);
-  currentPoints = newPoints;
-  const newLevel = getCurrentLevel(currentPoints);
+  const styles = document.createElement("style");
+  styles.id = "badgeAnimationStyles";
+  styles.textContent = `
+    @keyframes levelUpAnimation {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+      90% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-10px);
+      }
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(styles);
+}
 
-  updateDisplay();
+// Função principal de inicialização
+async function initializeBadgesSystem() {
+  try {
+    console.log("🚀 Inicializando sistema de badges integrado...");
 
-  if (newLevel.level > oldLevel.level) {
-    showLevelUpNotification(newLevel);
+    // Aguardar dependências
+    await waitForDependencies();
+
+    // Verificar autenticação
+    if (!Auth.isLoggedIn()) {
+      console.warn("Usuário não está logado, redirecionando...");
+      Auth.redirectToLogin();
+      return;
+    }
+
+    // Adicionar estilos de animação
+    addAnimationStyles();
+
+    // Configurar botão de voltar
+    setupBackButton();
+
+    // Carregar dados iniciais e renderizar
+    await updateDisplay();
+
+    // Adicionar interatividade
+    addBadgeInteractivity();
+
+    // Animação de entrada suave
+    document.body.style.opacity = "0";
+    setTimeout(() => {
+      document.body.style.transition = "opacity 0.5s ease-out";
+      document.body.style.opacity = "1";
+    }, 100);
+
+    console.log("✅ Sistema de badges inicializado com sucesso");
+
+    // Configurar listeners para atualizações em tempo real
+    window.addEventListener("userChanged", refreshUserData);
+    window.addEventListener("profileUpdated", refreshUserData);
+    window.addEventListener("balanceUpdated", refreshUserData);
+  } catch (error) {
+    console.error("❌ Erro na inicialização:", error);
+    showErrorMessage("Erro ao inicializar sistema de badges");
   }
 }
 
-// Exportar funções para uso externo (se necessário)
+// Função para atualizar pontos em tempo real usando API integrada
+async function updatePointsFromServer() {
+  try {
+    const progressData = await fetchBadgeProgressFromAPI();
+
+    if (progressData) {
+      const oldLevel = getCurrentLevel(currentPoints);
+      currentPoints =
+        progressData.points || progressData.totalDonated || currentPoints;
+      const newLevel = getCurrentLevel(currentPoints);
+
+      // Verificar se subiu de nível
+      if (newLevel.level > oldLevel.level) {
+        showLevelUpNotification(newLevel);
+      }
+
+      // Atualizar display
+      renderCurrentLevelCard();
+      renderBadgesGrid();
+
+      console.log("Dados de badges atualizados via API");
+      return true;
+    }
+
+    // Fallback: usar dados do Auth
+    await refreshUserData();
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar dados do servidor:", error);
+    return false;
+  }
+}
+
+// Polling para atualizar dados periodicamente (opcional)
+let updateInterval;
+
+function startPeriodicUpdate(intervalMs = 30000) {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
+
+  updateInterval = setInterval(async () => {
+    try {
+      const success = await updatePointsFromServer();
+      if (success) {
+        console.log("🔄 Dados atualizados automaticamente");
+      }
+    } catch (error) {
+      console.warn("⚠️ Falha na atualização automática:", error);
+    }
+  }, intervalMs);
+}
+
+function stopPeriodicUpdate() {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+    updateInterval = null;
+  }
+}
+
+// Exportar funções para uso externo
 window.BadgesSystem = {
-  addPoints,
   updatePointsFromServer,
+  refreshUserData,
   getCurrentLevel: () => getCurrentLevel(currentPoints),
   getCurrentPoints: () => currentPoints,
+  getCurrentUserData: () => currentUserData,
+  startPeriodicUpdate,
+  stopPeriodicUpdate,
+  initializeBadgesSystem,
 };
+
+// Inicialização quando o DOM estiver carregado
+document.addEventListener("DOMContentLoaded", initializeBadgesSystem);
+
+// Cleanup ao sair da página
+window.addEventListener("beforeunload", () => {
+  stopPeriodicUpdate();
+});
+
+// Listener para mudanças de autenticação
+window.addEventListener("storage", (event) => {
+  if (event.key === "authToken" || event.key === "userData") {
+    console.log("🔄 Mudança de autenticação detectada, atualizando badges...");
+    setTimeout(refreshUserData, 1000); // Aguardar estabilização
+  }
+});
+
+// Verificar se Auth já existe, senão aguardar
+if (typeof window.Auth !== "undefined" && typeof window.api !== "undefined") {
+  console.log("✅ Dependências já carregadas");
+} else {
+  console.log("⏳ Aguardando carregamento das dependências...");
+}

@@ -378,3 +378,14 @@ if (typeof module !== "undefined" && module.exports) {
 
 console.log("API Config Unificado carregado - Base URL:", apiConfig.baseURL);
 console.log("Token disponível:", !!apiConfig.token);
+
+// apiConfig.js
+
+// Cria a instância única
+const api = new ApiConfig();
+
+// Exporta para o escopo global
+window.api = api;
+
+console.log("API Config Unificado carregado - Base URL:", api.baseURL);
+console.log("Token disponível:", !!api.token);
