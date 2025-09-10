@@ -5,7 +5,7 @@ function toggleSwitch(element) {
 
 // Função para carregar e exibir dados do usuário
 function loadUserData() {
-  console.log("🔄 Carregando dados do usuário...");
+  console.log("📄 Carregando dados do usuário...");
 
   // Tentar múltiplas fontes de dados
   let userName = null;
@@ -60,7 +60,7 @@ function loadUserData() {
         const userData = JSON.parse(userDataString);
         userName = userData.name || userData.fullName || userData.displayName;
         userEmail = userData.email;
-        console.log("🔍 Dados encontrados em userData:", {
+        console.log("📋 Dados encontrados em userData:", {
           userName,
           userEmail,
         });
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (userInfoElements.length > 0) {
               console.log(
-                "🔄 Novos elementos detectados, atualizando dados..."
+                "📄 Novos elementos detectados, atualizando dados..."
               );
               setTimeout(() => loadUserData(), 100);
             }

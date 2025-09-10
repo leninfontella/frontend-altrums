@@ -110,23 +110,6 @@
                 <i class="fas fa-chevron-right setting-arrow"></i>
               </div>
             </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-wallet"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Carteira Digital</div>
-                    <div class="setting-subtitle">
-                      Métodos de pagamento e histórico
-                    </div>
-                  </div>
-                </div>
-                <i class="fas fa-chevron-right setting-arrow"></i>
-              </div>
-            </div>
           </div>
 
           <!-- Configurações de Notificação -->
@@ -191,49 +174,6 @@
             </div>
           </div>
 
-          <!-- Configurações de Privacidade -->
-          <div class="settings-section">
-            <h2 class="section-title">Privacidade</h2>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-eye-slash"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Doações Anônimas</div>
-                    <div class="setting-subtitle">
-                      Ocultar identidade nas doações
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch active" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-chart-line"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Analytics</div>
-                    <div class="setting-subtitle">
-                      Compartilhar dados de uso
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Configurações do App -->
           <div class="settings-section">
             <h2 class="section-title">Aplicativo</h2>
@@ -269,21 +209,24 @@
                 <i class="fas fa-chevron-right setting-arrow"></i>
               </div>
             </div>
+          </div>
+
+          <!-- Dados e Backup -->
+          <div class="settings-section">
+            <h2 class="section-title">Dados e Backup</h2>
 
             <div class="setting-item">
               <div class="setting-content">
                 <div class="setting-left">
                   <div class="setting-icon">
-                    <i class="fas fa-download"></i>
+                    <i class="fas fa-trash-alt"></i>
                   </div>
                   <div class="setting-text">
-                    <div class="setting-title">Auto-sync</div>
-                    <div class="setting-subtitle">Sincronização automática</div>
+                    <div class="setting-title">Limpar Cache</div>
+                    <div class="setting-subtitle">Liberar 125MB de espaço</div>
                   </div>
                 </div>
-                <div class="toggle-switch active" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
+                <i class="fas fa-chevron-right setting-arrow"></i>
               </div>
             </div>
           </div>
@@ -355,221 +298,6 @@
             </div>
           </div>
 
-          <!-- Recursos Avançados -->
-          <div class="settings-section">
-            <h2 class="section-title">Recursos Avançados</h2>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-robot"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">IA de Doações</div>
-                    <div class="setting-subtitle">
-                      Sugestões inteligentes de causas
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch active" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-coins"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Doação Automática</div>
-                    <div class="setting-subtitle">
-                      Valor fixo mensal para causas
-                    </div>
-                  </div>
-                </div>
-                <i class="fas fa-chevron-right setting-arrow"></i>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-leaf"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Impacto Carbono</div>
-                    <div class="setting-subtitle">
-                      Compensação automática CO²
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dados e Backup -->
-          <div class="settings-section">
-            <h2 class="section-title">Dados e Backup</h2>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Backup na Nuvem</div>
-                    <div class="setting-subtitle">
-                      Última sincronização: hoje às 14:32
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch active" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-download"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Exportar Dados</div>
-                    <div class="setting-subtitle">
-                      Download do histórico completo
-                    </div>
-                  </div>
-                </div>
-                <i class="fas fa-chevron-right setting-arrow"></i>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-trash-alt"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Limpar Cache</div>
-                    <div class="setting-subtitle">Liberar 125MB de espaço</div>
-                  </div>
-                </div>
-                <i class="fas fa-chevron-right setting-arrow"></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Acessibilidade -->
-          <div class="settings-section">
-            <h2 class="section-title">Acessibilidade</h2>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-text-height"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Tamanho da Fonte</div>
-                    <div class="setting-subtitle">
-                      Padrão • Pequeno • Médio • Grande
-                    </div>
-                  </div>
-                </div>
-                <i class="fas fa-chevron-right setting-arrow"></i>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-volume-up"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Audio Feedback</div>
-                    <div class="setting-subtitle">Sons de confirmação</div>
-                  </div>
-                </div>
-                <div class="toggle-switch" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Vibração</div>
-                    <div class="setting-subtitle">Feedback tátil nas ações</div>
-                  </div>
-                </div>
-                <div class="toggle-switch active" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Beta e Desenvolvimento -->
-          <div class="settings-section">
-            <h2 class="section-title">Beta Features</h2>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-flask"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Recursos Beta</div>
-                    <div class="setting-subtitle">
-                      Testar novas funcionalidades
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-content">
-                <div class="setting-left">
-                  <div class="setting-icon">
-                    <i class="fas fa-bug"></i>
-                  </div>
-                  <div class="setting-text">
-                    <div class="setting-title">Relatório de Bugs</div>
-                    <div class="setting-subtitle">
-                      Enviar logs automaticamente
-                    </div>
-                  </div>
-                </div>
-                <div class="toggle-switch active" onclick="toggleSwitch(this)">
-                  <div class="toggle-slider"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Ações da Conta -->
           <div class="settings-section">
             <h2 class="section-title">Conta</h2>
@@ -631,29 +359,6 @@
             </div>
           </div>
 
-          <!-- Footer com estatísticas
-          <div class="stats-footer">
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-value">R$ 2.847,50</div>
-                <div class="stat-label">Total Doado</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">47</div>
-                <div class="stat-label">Causas Apoiadas</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">156</div>
-                <div class="stat-label">Vidas Impactadas</div>
-              </div>
-            </div>
-            <div class="impact-badge">
-              <i class="fas fa-heart"></i>
-              <span>Você é um Doador Platinum!</span>
-            </div>
-          </div>
-          -->
-
           <div class="version-info">
             <div class="version-text">CoinFuture versão</div>
             <div class="app-version">2.1.0 (Build 421)</div>
@@ -666,17 +371,10 @@
     </div>
 
     <script src="../../js/auth.js"></script>
-
     <script src="../../login/js/config.js"></script>
-    <!-- 1º - Configurações base -->
     <script src="../../config-edit/js/apiConfig.js"></script>
-    <!-- 2º - API config -->
     <script src="../../configuracao/js/script.js"></script>
-    <!-- 3º - Scripts principais -->
     <script src="../../config-edit/js/userService.js"></script>
-    <!-- 4º - Serviços -->
     <script src="../../config-edit/js/globalInit.js"></script>
-    <!-- 5º - Inicialização -->
-    <!-- Depois os scripts específicos da página -->
   </body>
 </html>
