@@ -936,19 +936,19 @@ class RankingManager {
 
     /* 1º lugar - Ouro */
     .podium-item.first .podium-profile-image {
-      border: 3px solid #FFD700 !important;
+      border: 1px solid #FFD700 !important;
       box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4) !important;
     }
 
     /* 2º lugar - Prata */
     .podium-item.second .podium-profile-image {
-      border: 3px solid #C0C0C0 !important;
+      border: 1px solid #C0C0C0 !important;
       box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4) !important;
     }
 
     /* 3º lugar - Bronze */
     .podium-item.third .podium-profile-image {
-      border: 3px solid #CD7F32 !important;
+      border: 1px solid #CD7F32 !important;
       box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4) !important;
     }
 
