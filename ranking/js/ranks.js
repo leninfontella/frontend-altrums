@@ -72,6 +72,75 @@ function getFullImageUrl(photoUrl) {
   return photoUrl;
 }
 
+/**
+ * NOVA FUNÇÃO: Validar se a URL da foto é válida
+ */
+function isValidPhotoUrl(photoUrl) {
+  if (
+    !photoUrl ||
+    photoUrl.trim() === "" ||
+    photoUrl === "null" ||
+    photoUrl === "undefined"
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * NOVA FUNÇÃO: Gerar avatar com foto real ou iniciais
+ */
+function generateAvatarHtml(
+  user,
+  isCurrentUser = false,
+  currentUserPhoto = null
+) {
+  const displayName = user.displayName || user.name || "Usuário";
+  const userInitials = getUserInitials(displayName);
+
+  // Para o usuário atual, priorizar foto do currentUserPhoto
+  if (isCurrentUser && currentUserPhoto && isValidPhotoUrl(currentUserPhoto)) {
+    const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+    return `
+      <img
+        data-user-photo
+        class="profile-image"
+        src="${fullPhotoUrl}"
+        alt="Foto do Perfil"
+        onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+      />
+    `;
+  }
+
+  // Para qualquer usuário (incluindo atual) com profilePhotoUrl da API
+  if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
+    const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
+    const avatarClass = isCurrentUser ? "profile-image" : "profile-image";
+    const fallbackColor = isCurrentUser ? "00d4ff" : "666";
+
+    return `
+      <img
+        ${isCurrentUser ? "data-user-photo" : ""}
+        class="${avatarClass}"
+        src="${fullPhotoUrl}"
+        alt="${isCurrentUser ? "Foto do Perfil" : "Foto do Usuário"}"
+        onerror="this.src='https://placehold.co/50x50/${fallbackColor}/ffffff?text=${userInitials}'"
+      />
+    `;
+  }
+
+  // Fallback: avatar com iniciais
+  const fallbackColor = isCurrentUser ? "00d4ff" : "666";
+  return `
+    <img
+      ${isCurrentUser ? "data-user-photo" : ""}
+      class="profile-image"
+      src="https://placehold.co/50x50/${fallbackColor}/ffffff?text=${userInitials}"
+      alt="${isCurrentUser ? "Foto do Perfil" : "Avatar"}"
+    />
+  `;
+}
+
 // ========== CONFIGURAÇÃO DA API ==========
 const API_CONFIG = {
   baseURL: "http://localhost:5000/api",
@@ -293,10 +362,11 @@ class UserService {
           avatar: userObj.avatar,
           totalDonated: userObj.totalDonated || 0,
           totalReceived: userObj.totalReceived || 0,
+          profilePhotoUrl: userObj.profilePhotoUrl || null, // NOVO: incluir foto
         };
 
         console.log("✅ Dados do usuário processados da API:", processedData);
-        console.log(`📝 Nome completo extraído: "${fullName}"`);
+        console.log(`📋 Nome completo extraído: "${fullName}"`);
         return processedData;
       }
 
@@ -364,10 +434,11 @@ class UserService {
           avatar: userData.avatar,
           totalDonated: userData.totalDonated || 0,
           totalReceived: userData.totalReceived || 0,
+          profilePhotoUrl: userData.profilePhotoUrl || null, // NOVO: incluir foto
         };
 
         console.log("✅ Dados do localStorage processados:", processedData);
-        console.log(`📝 Nome completo extraído: "${fullName}"`);
+        console.log(`📋 Nome completo extraído: "${fullName}"`);
         return processedData;
       }
 
@@ -410,6 +481,7 @@ class UserService {
         rank: 0,
         level: "Iniciante",
         id: "demo-user",
+        profilePhotoUrl: null,
       };
 
       return userData;
@@ -527,6 +599,7 @@ class RankingManager {
           coins: 4890,
           rank: 1,
           level: "Lenda",
+          profilePhotoUrl: null,
         },
         {
           name: "Ana Silva",
@@ -535,6 +608,7 @@ class RankingManager {
           coins: 3240,
           rank: 2,
           level: "Magnata",
+          profilePhotoUrl: null,
         },
         {
           name: "Maria Costa",
@@ -543,6 +617,7 @@ class RankingManager {
           coins: 2850,
           rank: 3,
           level: "Filantropo",
+          profilePhotoUrl: null,
         },
         {
           name: "Carlos Lima",
@@ -551,6 +626,7 @@ class RankingManager {
           coins: 2640,
           rank: 4,
           level: "Filantropo",
+          profilePhotoUrl: null,
         },
         {
           name: "Lucia Mendes",
@@ -559,6 +635,7 @@ class RankingManager {
           coins: 2480,
           rank: 5,
           level: "Generoso",
+          profilePhotoUrl: null,
         },
         {
           name: "Roberto Ferreira",
@@ -567,6 +644,7 @@ class RankingManager {
           coins: 2320,
           rank: 6,
           level: "Generoso",
+          profilePhotoUrl: null,
         },
         {
           name: "Amanda Silva",
@@ -575,6 +653,7 @@ class RankingManager {
           coins: 2180,
           rank: 7,
           level: "Benfeitor",
+          profilePhotoUrl: null,
         },
         {
           name: "Felipe Costa",
@@ -583,6 +662,7 @@ class RankingManager {
           coins: 1890,
           rank: 9,
           level: "Benfeitor",
+          profilePhotoUrl: null,
         },
         {
           name: "Beatriz Alves",
@@ -591,6 +671,7 @@ class RankingManager {
           coins: 1750,
           rank: 10,
           level: "Aventureiro",
+          profilePhotoUrl: null,
         },
       ],
       totalUsers: 156,
@@ -599,7 +680,13 @@ class RankingManager {
   }
 
   /**
-   * Atualiza o pódium com dados reais
+   * CORRIGIDO: Atualiza o pódium com dados reais e fotos
+   */
+  /**
+   * CORREÇÃO: Atualiza o pódium com dados reais e fotos proporcionais
+   */
+  /**
+   * CORREÇÃO: Atualiza o pódium com cores de medalhas (ouro, prata, bronze)
    */
   static async updatePodium() {
     try {
@@ -614,9 +701,10 @@ class RankingManager {
         return;
       }
 
-      // Ordem do pódium: [2º, 1º, 3º]
+      // Ordem do pódium: [2º, 1º, 3º] com cores específicas
       const podiumOrder = [top3[1], top3[0], top3[2]];
       const podiumPositions = ["second", "first", "third"];
+      const medalColors = ["#C0C0C0", "#FFD700", "#CD7F32"]; // Prata, Ouro, Bronze
 
       podiumOrder.forEach((user, index) => {
         if (!user) return;
@@ -628,6 +716,7 @@ class RankingManager {
 
         const nameElement = podiumItem.querySelector(".podium-name");
         const balanceElement = podiumItem.querySelector(".podium-balance span");
+        const avatarElement = podiumItem.querySelector(".podium-avatar");
 
         if (nameElement) {
           nameElement.textContent = user.displayName || user.name;
@@ -636,9 +725,77 @@ class RankingManager {
           const balance = user.balance || user.coins || 0;
           balanceElement.textContent = balance.toLocaleString();
         }
+
+        // CORREÇÃO: Avatar com cor de medalha específica
+        if (avatarElement) {
+          const displayName = user.displayName || user.name || "Usuário";
+          const userInitials = getUserInitials(displayName);
+          const borderColor = medalColors[index];
+
+          if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
+            const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
+            avatarElement.innerHTML = `
+            <img
+              class="podium-profile-image"
+              src="${fullPhotoUrl}"
+              alt="Foto do Usuário"
+              onerror="this.src='https://placehold.co/80x80/${borderColor.replace(
+                "#",
+                ""
+              )}/ffffff?text=${userInitials}'"
+              style="
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                object-position: center;
+                border: 3px solid ${borderColor};
+                background: #f0f0f0;
+                display: block;
+                margin: 0 auto;
+                box-shadow: 0 4px 12px rgba(${
+                  borderColor === "#FFD700"
+                    ? "255, 215, 0"
+                    : borderColor === "#C0C0C0"
+                    ? "192, 192, 192"
+                    : "205, 127, 50"
+                }, 0.3);
+              "
+            />
+          `;
+          } else {
+            // Fallback: avatar com iniciais e cor de medalha
+            avatarElement.innerHTML = `
+            <img
+              class="podium-profile-image"
+              src="https://placehold.co/80x80/${borderColor.replace(
+                "#",
+                ""
+              )}/ffffff?text=${userInitials}"
+              alt="Avatar"
+              style="
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid ${borderColor};
+                display: block;
+                margin: 0 auto;
+                box-shadow: 0 4px 12px rgba(${
+                  borderColor === "#FFD700"
+                    ? "255, 215, 0"
+                    : borderColor === "#C0C0C0"
+                    ? "192, 192, 192"
+                    : "205, 127, 50"
+                }, 0.3);
+              "
+            />
+          `;
+          }
+        }
       });
 
-      console.log("✓ Pódium atualizado com sucesso");
+      console.log("✓ Pódium atualizado com cores de medalhas");
     } catch (error) {
       console.error("Erro ao atualizar pódium:", error);
       const mockData = this.getMockRankingData();
@@ -647,11 +804,12 @@ class RankingManager {
   }
 
   /**
-   * Atualiza pódium com dados fornecidos
+   * CORREÇÃO: Atualiza pódium com dados fornecidos - versão com cores de medalhas
    */
   static updatePodiumWithData(top3) {
     const podiumOrder = [top3[1], top3[0], top3[2]];
     const podiumPositions = ["second", "first", "third"];
+    const medalColors = ["#C0C0C0", "#FFD700", "#CD7F32"]; // Prata, Ouro, Bronze
 
     podiumOrder.forEach((user, index) => {
       if (!user) return;
@@ -663,6 +821,7 @@ class RankingManager {
 
       const nameElement = podiumItem.querySelector(".podium-name");
       const balanceElement = podiumItem.querySelector(".podium-balance span");
+      const avatarElement = podiumItem.querySelector(".podium-avatar");
 
       if (nameElement) {
         nameElement.textContent = user.displayName || user.name;
@@ -671,7 +830,148 @@ class RankingManager {
         const balance = user.balance || user.coins || 0;
         balanceElement.textContent = balance.toLocaleString();
       }
+
+      // Avatar com cor de medalha específica
+      if (avatarElement) {
+        const displayName = user.displayName || user.name || "Usuário";
+        const userInitials = getUserInitials(displayName);
+        const borderColor = medalColors[index];
+
+        if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
+          const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
+          avatarElement.innerHTML = `
+          <img
+            class="podium-profile-image"
+            src="${fullPhotoUrl}"
+            alt="Foto do Usuário"
+            onerror="this.src='https://placehold.co/80x80/${borderColor.replace(
+              "#",
+              ""
+            )}/ffffff?text=${userInitials}'"
+            style="
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              object-fit: cover;
+              object-position: center;
+              border: 3px solid ${borderColor};
+              background: #f0f0f0;
+              display: block;
+              margin: 0 auto;
+              box-shadow: 0 4px 12px rgba(${
+                borderColor === "#FFD700"
+                  ? "255, 215, 0"
+                  : borderColor === "#C0C0C0"
+                  ? "192, 192, 192"
+                  : "205, 127, 50"
+              }, 0.3);
+            "
+          />
+        `;
+        } else {
+          // Fallback: avatar com iniciais e cor de medalha
+          avatarElement.innerHTML = `
+          <img
+            class="podium-profile-image"
+            src="https://placehold.co/80x80/${borderColor.replace(
+              "#",
+              ""
+            )}/ffffff?text=${userInitials}"
+            alt="Avatar"
+            style="
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 3px solid ${borderColor};
+              display: block;
+              margin: 0 auto;
+              box-shadow: 0 4px 12px rgba(${
+                borderColor === "#FFD700"
+                  ? "255, 215, 0"
+                  : borderColor === "#C0C0C0"
+                  ? "192, 192, 192"
+                  : "205, 127, 50"
+              }, 0.3);
+            "
+          />
+        `;
+        }
+      }
     });
+  }
+
+  /**
+   * Função para aplicar CSS corretivo globalmente com cores de medalhas
+   */
+  static addPodiumCSS() {
+    // Verificar se o CSS já foi adicionado
+    if (document.getElementById("podium-fix-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "podium-fix-styles";
+    style.textContent = `
+    /* CSS corretivo para fotos do pódio com cores de medalhas */
+    .podium-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px auto;
+      width: 86px;
+      height: 86px;
+    }
+
+    /* Estilo geral para todas as posições */
+    .podium-profile-image {
+      width: 80px !important;
+      height: 80px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      background: #f0f0f0 !important;
+      display: block !important;
+      margin: 0 auto !important;
+      transition: transform 0.3s ease !important;
+    }
+
+    /* 1º lugar - Ouro */
+    .podium-item.first .podium-profile-image {
+      border: 3px solid #FFD700 !important;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4) !important;
+    }
+
+    /* 2º lugar - Prata */
+    .podium-item.second .podium-profile-image {
+      border: 3px solid #C0C0C0 !important;
+      box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4) !important;
+    }
+
+    /* 3º lugar - Bronze */
+    .podium-item.third .podium-profile-image {
+      border: 3px solid #CD7F32 !important;
+      box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4) !important;
+    }
+
+    .podium-profile-image:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .podium-profile-image {
+        width: 60px !important;
+        height: 60px !important;
+        border-width: 2px !important;
+      }
+      
+      .podium-avatar {
+        width: 66px;
+        height: 66px;
+      }
+    }
+  `;
+
+    document.head.appendChild(style);
+    console.log("✓ CSS do pódio com cores de medalhas aplicado");
   }
 
   /**
@@ -718,32 +1018,13 @@ class RankingManager {
 
         const balance = user.balance || user.coins || 0;
         const displayName = user.displayName || user.name || "Usuário";
-        const userInitials = getUserInitials(displayName);
 
-        // CORREÇÃO PRINCIPAL: Lógica de foto
-        let avatarContent;
-        if (isCurrentUser && currentUserPhoto) {
-          // Para o usuário atual: usar foto real
-          const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
-          avatarContent = `
-            <img
-              data-user-photo
-              class="profile-image"
-              src="${fullPhotoUrl}"
-              alt="Foto do Perfil"
-              onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
-            />
-          `;
-        } else {
-          // Para outros usuários: usar avatar com iniciais
-          avatarContent = `
-            <img
-              class="profile-image"
-              src="https://placehold.co/50x50/666/ffffff?text=${userInitials}"
-              alt="Avatar"
-            />
-          `;
-        }
+        // CORREÇÃO PRINCIPAL: Usar função generateAvatarHtml
+        const avatarContent = generateAvatarHtml(
+          user,
+          isCurrentUser,
+          currentUserPhoto
+        );
 
         rankItem.innerHTML = `
           <div class="rank-position">${user.rank}</div>
@@ -801,31 +1082,14 @@ class RankingManager {
 
     const balance = currentUser.coins || currentUser.balance || 0;
     const displayName = currentUser.fullName || currentUser.name;
-    const userInitials = getUserInitials(displayName);
 
-    // CORREÇÃO: Lógica de foto para usuário atual
-    let avatarContent;
-    if (currentUserPhoto) {
-      const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
-      avatarContent = `
-        <img
-          data-user-photo
-          class="profile-image"
-          src="${fullPhotoUrl}"
-          alt="Foto do Perfil"
-          onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
-        />
-      `;
-    } else {
-      avatarContent = `
-        <img
-          data-user-photo
-          class="profile-image"
-          src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
-          alt="Foto do Perfil"
-        />
-      `;
-    }
+    // CORREÇÃO: Usar função generateAvatarHtml
+    const user = {
+      ...currentUser,
+      displayName: displayName,
+      profilePhotoUrl: currentUser.profilePhotoUrl,
+    };
+    const avatarContent = generateAvatarHtml(user, true, currentUserPhoto);
 
     rankItem.innerHTML = `
       <div class="rank-position">${rank}</div>
@@ -872,32 +1136,13 @@ class RankingManager {
 
       const balance = user.balance || user.coins || 0;
       const displayName = user.displayName || user.name;
-      const userInitials = getUserInitials(displayName);
 
-      // CORREÇÃO: Lógica de foto
-      let avatarContent;
-      if (isCurrentUser && currentUserPhoto) {
-        // Para o usuário atual: usar foto real
-        const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
-        avatarContent = `
-          <img
-            data-user-photo
-            class="profile-image"
-            src="${fullPhotoUrl}"
-            alt="Foto do Perfil"
-            onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
-          />
-        `;
-      } else {
-        // Para outros usuários: usar avatar com iniciais
-        avatarContent = `
-          <img
-            class="profile-image"
-            src="https://placehold.co/50x50/666/ffffff?text=${userInitials}"
-            alt="Avatar"
-          />
-        `;
-      }
+      // CORREÇÃO: Usar função generateAvatarHtml
+      const avatarContent = generateAvatarHtml(
+        user,
+        isCurrentUser,
+        currentUserPhoto
+      );
 
       rankItem.innerHTML = `
         <div class="rank-position">${user.rank}</div>
@@ -940,13 +1185,14 @@ class UIManager {
         const displayName =
           userData.fullName || userData.name || userData.firstName || "Usuário";
 
-        console.log("📝 Dados do usuário para exibição:", {
+        console.log("📋 Dados do usuário para exibição:", {
           fullName: userData.fullName,
           name: userData.name,
           firstName: userData.firstName,
           displayName: displayName,
           balance: userBalance,
           rank: userRank,
+          profilePhotoUrl: userData.profilePhotoUrl,
         });
 
         // Atualizar card do usuário com NOME COMPLETO
@@ -1193,6 +1439,7 @@ class Utils {
       level: "Generoso",
       id: "68a647a0150337a0f1668e86",
       registeredAt: new Date().toISOString(),
+      profilePhotoUrl: null,
     };
 
     const testToken = "test_jwt_token_" + Date.now();
@@ -1238,7 +1485,7 @@ class Utils {
     console.log(`
 === SISTEMA DE RANKING - DEBUG INFO ===
 📊 API Base: ${API_CONFIG.baseURL}
-🔐 Token: ${token ? "Presente" : "Ausente"}
+🔑 Token: ${token ? "Presente" : "Ausente"}
 ✅ Token Válido: ${isValidToken ? "Sim" : "Não"}
 📁 Dados no localStorage: ${localStorage.getItem("currentUser") ? "Sim" : "Não"}
 
@@ -1364,6 +1611,7 @@ class RanksApp {
       }
 
       NavigationManager.setupNavigation();
+      RankingManager.addPodiumCSS();
       await UIManager.updateUserInterface();
 
       console.log("🎉 Aplicação de ranking carregada com sucesso!");
@@ -1412,8 +1660,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const userNameElement = document.getElementById("user-name");
   if (
     userNameElement &&
-    (userNameElement.textContent === "UsuÃƒÂ¡rio" ||
-      userNameElement.textContent === "UsuÃ¡rio")
+    (userNameElement.textContent === "UsuÃƒÆ'Ã‚Â¡rio" ||
+      userNameElement.textContent === "UsuÃƒÂ¡rio")
   ) {
     userNameElement.textContent = "Carregando...";
   }
@@ -1421,7 +1669,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const userNameInListElement = document.getElementById("user-name-in-list");
   if (
     userNameInListElement &&
-    userNameInListElement.textContent.includes("UsuÃƒÂ¡rio")
+    userNameInListElement.textContent.includes("UsuÃƒÆ'Ã‚Â¡rio")
   ) {
     userNameInListElement.textContent = "Carregando... (Você)";
   }
@@ -1439,8 +1687,8 @@ setInterval(() => {
   if (userNameElement) {
     const currentText = userNameElement.textContent;
     if (
+      currentText === "UsuÃƒÆ'Ã‚Â¡rio" ||
       currentText === "UsuÃƒÂ¡rio" ||
-      currentText === "UsuÃ¡rio" ||
       currentText === "..."
     ) {
       const userData = JSON.parse(localStorage.getItem("currentUser") || "{}");
@@ -1477,6 +1725,12 @@ if (typeof window !== "undefined") {
   window.forceReload = Utils.forceReload;
   window.runDiagnostic = Utils.runDiagnostic;
   window.reinit = RanksApp.reinitialize;
+
+  // NOVAS FUNÇÕES EXPOSTAS PARA DEBUG
+  window.generateAvatarHtml = generateAvatarHtml;
+  window.isValidPhotoUrl = isValidPhotoUrl;
+  window.getFullImageUrl = getFullImageUrl;
+  window.getCurrentUserPhoto = getCurrentUserPhoto;
 }
 
 // ========== FUNÇÕES DE CALLBACK (COMPATIBILIDADE) ==========
