@@ -1,14 +1,11 @@
-// ========== FUNÇÕES AUXILIARES PARA FOTOS - VERSÃO CORRIGIDA ==========
-
+// ========== FUNÇÕES AUXILIARES PARA FOTOS ==========
 /**
  * Função auxiliar para gerar iniciais do nome
  */
 function getUserInitials(name) {
-  if (!name || name.trim() === "") return "U";
+  if (!name) return "U";
   return name
-    .trim()
     .split(" ")
-    .filter((part) => part.length > 0) // Filtrar partes vazias
     .map((n) => n[0])
     .join("")
     .toUpperCase()
@@ -19,10 +16,9 @@ function getUserInitials(name) {
  * Função auxiliar para gerar ID do usuário para foto
  */
 function getUserPhotoId(name) {
-  if (!name || name.trim() === "") return "user";
+  if (!name) return "user";
   return name
     .toLowerCase()
-    .trim()
     .replace(/[áàãâä]/g, "a")
     .replace(/[éèêë]/g, "e")
     .replace(/[íìîï]/g, "i")
@@ -35,390 +31,45 @@ function getUserPhotoId(name) {
 }
 
 /**
- * FUNÇÃO CORRIGIDA: Obter a foto do usuário atual (apenas para o usuário logado)
+ * NOVA FUNÇÃO: Obter a foto do usuário atual (apenas para o usuário logado)
  */
 function getCurrentUserPhoto() {
-  try {
-    // Tentar obter a foto do userService
-    if (
-      window.userService &&
-      typeof window.userService.getUserPhoto === "function"
-    ) {
-      const photo = window.userService.getUserPhoto();
-      if (photo && isValidPhotoUrl(photo)) return photo;
-    }
-
-    // Tentar obter do userData
-    const userData = getUserData();
-    if (
-      userData &&
-      userData.profilePhotoUrl &&
-      isValidPhotoUrl(userData.profilePhotoUrl)
-    ) {
-      return userData.profilePhotoUrl;
-    }
-
-    // Tentar obter do localStorage
-    const storedPhoto = localStorage.getItem("userProfilePhoto");
-    if (storedPhoto && isValidPhotoUrl(storedPhoto)) return storedPhoto;
-
-    return null;
-  } catch (error) {
-    console.error("Erro ao obter foto do usuário atual:", error);
-    return null;
-  }
-}
-
-/**
- * NOVA FUNÇÃO: Validar se a URL da foto é válida
- */
-function isValidPhotoUrl(url) {
-  if (!url || typeof url !== "string") return false;
-
-  // Não aceitar emojis ou caracteres especiais problemáticos
-  if (url.includes("👤") || url.includes("🖼️") || url.includes("📸"))
-    return false;
-
-  // Deve ser uma URL válida ou caminho válido
-  return (
-    url.startsWith("http") ||
-    url.startsWith("/uploads/") ||
-    url.startsWith("./uploads/")
-  );
-}
-
-/**
- * FUNÇÃO TOTALMENTE CORRIGIDA: Processar dados de profilePhoto da API
- */
-function processProfilePhoto(user) {
-  console.log(
-    `🔍 Processando foto para usuário: ${user.name || user.displayName}`
-  );
-  console.log(`📸 Dados do profilePhoto:`, user.profilePhoto);
-
-  // Se já tem profilePhotoUrl válida, usar ela
-  if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
-    console.log(`✅ ProfilePhotoUrl já válida: ${user.profilePhotoUrl}`);
-    return user.profilePhotoUrl;
+  // Tentar obter a foto do userService
+  if (window.userService && window.userService.getUserPhoto) {
+    const photo = window.userService.getUserPhoto();
+    if (photo) return photo;
   }
 
-  // Se tem profilePhoto com estrutura válida da API
-  if (user.profilePhoto && typeof user.profilePhoto === "object") {
-    const { filename, path } = user.profilePhoto;
-
-    // Se tem filename válido, construir URL
-    if (filename && filename !== null && filename !== "null") {
-      const photoUrl = `http://localhost:5000/uploads/profiles/${filename}`;
-      console.log(`✅ URL construída a partir do filename: ${photoUrl}`);
-      return photoUrl;
-    }
-
-    // Se tem path válido, usar ele
-    if (path && path !== null && path !== "null") {
-      const photoUrl = path.startsWith("http")
-        ? path
-        : `http://localhost:5000${path}`;
-      console.log(`✅ URL construída a partir do path: ${photoUrl}`);
-      return photoUrl;
-    }
+  // Tentar obter do userData
+  const userData = getUserData();
+  if (userData && userData.profilePhotoUrl) {
+    return userData.profilePhotoUrl;
   }
 
-  // Fallback: verificar se profilePhoto é uma string
-  if (
-    typeof user.profilePhoto === "string" &&
-    user.profilePhoto !== "null" &&
-    user.profilePhoto.trim() !== ""
-  ) {
-    if (isValidPhotoUrl(user.profilePhoto)) {
-      console.log(`✅ ProfilePhoto como string válida: ${user.profilePhoto}`);
-      return user.profilePhoto;
-    }
-  }
+  // Tentar obter do localStorage
+  const storedPhoto = localStorage.getItem("userProfilePhoto");
+  if (storedPhoto) return storedPhoto;
 
-  // Verificar avatar como fallback
-  if (user.avatar && isValidPhotoUrl(user.avatar)) {
-    console.log(`✅ Avatar como fallback: ${user.avatar}`);
-    return user.avatar;
-  }
-
-  console.log(
-    `❌ Nenhuma foto válida encontrada para ${user.name || user.displayName}`
-  );
   return null;
 }
 
 /**
- * FUNÇÃO CORRIGIDA: Gerar URL completa da imagem
+ * NOVA FUNÇÃO: Gerar URL completa da imagem
  */
 function getFullImageUrl(photoUrl) {
-  if (!photoUrl || !isValidPhotoUrl(photoUrl)) return null;
+  if (!photoUrl) return null;
 
-  try {
-    // Se já é uma URL completa, retorna como está
-    if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://")) {
-      return photoUrl;
-    }
-
-    // Se é um caminho relativo para uploads
-    if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads/")) {
-      const cleanPath = photoUrl.startsWith("/") ? photoUrl : `/${photoUrl}`;
-      return `http://localhost:5000${cleanPath}`;
-    }
-
-    // Se não tem nenhum dos padrões esperados, assumir que é um nome de arquivo
-    if (!photoUrl.startsWith("/") && !photoUrl.includes("/")) {
-      return `http://localhost:5000/uploads/profiles/${photoUrl}`;
-    }
-
+  if (photoUrl.startsWith("http")) {
     return photoUrl;
-  } catch (error) {
-    console.error("Erro ao processar URL da imagem:", error);
-    return null;
-  }
-}
-
-/**
- * NOVA FUNÇÃO: Verificar se imagem existe no servidor
- */
-async function checkImageExists(url) {
-  try {
-    const response = await fetch(url, { method: "HEAD" });
-    return response.ok;
-  } catch (error) {
-    console.warn(`Imagem não encontrada: ${url}`);
-    return false;
-  }
-}
-
-/**
- * FUNÇÃO CORRIGIDA: Buscar foto de perfil de usuário específico da API
- */
-async function getUserProfilePhoto(userId) {
-  try {
-    if (!userId) return null;
-
-    const response = await UserService.makeAuthenticatedRequest(
-      `/users/${userId}/photo`
-    );
-
-    if (
-      response &&
-      response.success &&
-      response.data &&
-      response.data.profilePhoto
-    ) {
-      const photoUrl = getFullImageUrl(response.data.profilePhoto);
-
-      // Verificar se a imagem existe antes de retornar
-      if (photoUrl && (await checkImageExists(photoUrl))) {
-        return photoUrl;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.warn(`Erro ao buscar foto do usuário ${userId}:`, error);
-    return null;
-  }
-}
-
-/**
- * FUNÇÃO CORRIGIDA: Criar elemento de imagem com fallback melhorado
- */
-function createImageElement(
-  photoUrl,
-  userName,
-  size = 50,
-  isCurrentUser = false
-) {
-  const img = document.createElement("img");
-  const userInitials = getUserInitials(userName || "Usuario");
-
-  // Configurar classe CSS
-  img.className = "profile-image";
-  if (isCurrentUser) {
-    img.setAttribute("data-user-photo", "");
   }
 
-  // Se tem foto válida, tentar usar ela com verificação assíncrona
-  if (photoUrl && isValidPhotoUrl(photoUrl)) {
-    const fullUrl = getFullImageUrl(photoUrl);
-    if (fullUrl) {
-      img.src = fullUrl;
-      img.alt = "Foto do Perfil";
-
-      // Fallback melhorado em caso de erro ao carregar
-      img.onerror = function () {
-        console.warn("Imagem não encontrada, usando placeholder:", fullUrl);
-        this.src = `https://placehold.co/${size}x${size}/${
-          isCurrentUser ? "00d4ff" : "666"
-        }/ffffff?text=${encodeURIComponent(userInitials)}`;
-        this.alt = "Avatar";
-        this.onerror = null; // Prevenir loop infinito
-      };
-
-      // Adicionar loading="lazy" para melhor performance
-      img.loading = "lazy";
-
-      return img;
-    }
+  if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
+    return `http://localhost:5000${
+      photoUrl.startsWith("/") ? "" : "/"
+    }${photoUrl}`;
   }
 
-  // Usar placeholder com iniciais como padrão
-  img.src = `https://placehold.co/${size}x${size}/${
-    isCurrentUser ? "00d4ff" : "666"
-  }/ffffff?text=${encodeURIComponent(userInitials)}`;
-  img.alt = "Avatar";
-
-  return img;
-}
-
-/**
- * FUNÇÃO CORRIGIDA: Atualizar avatar existente no DOM
- */
-function updateAvatarElement(
-  avatarElement,
-  photoUrl,
-  userName,
-  isCurrentUser = false
-) {
-  if (!avatarElement) return;
-
-  const userInitials = getUserInitials(userName || "Usuario");
-
-  // Se tem foto válida
-  if (photoUrl && isValidPhotoUrl(photoUrl)) {
-    const fullUrl = getFullImageUrl(photoUrl);
-    if (fullUrl) {
-      avatarElement.src = fullUrl;
-      avatarElement.alt = "Foto do Perfil";
-
-      // Atualizar onerror com melhor tratamento
-      avatarElement.onerror = function () {
-        console.warn("Erro ao carregar foto, usando fallback:", fullUrl);
-        this.src = `https://placehold.co/50x50/${
-          isCurrentUser ? "00d4ff" : "666"
-        }/ffffff?text=${encodeURIComponent(userInitials)}`;
-        this.alt = "Avatar";
-        this.onerror = null; // Prevenir loop infinito
-      };
-
-      return;
-    }
-  }
-
-  // Usar placeholder com iniciais
-  avatarElement.src = `https://placehold.co/50x50/${
-    isCurrentUser ? "00d4ff" : "666"
-  }/ffffff?text=${encodeURIComponent(userInitials)}`;
-  avatarElement.alt = "Avatar";
-  avatarElement.onerror = null; // Remover handler de erro
-}
-
-/**
- * Cache de fotos de usuários - Versão melhorada
- */
-class PhotoCache {
-  constructor() {
-    this.cache = new Map();
-    this.maxAge = 10 * 60 * 1000; // 10 minutos
-    this.maxSize = 100; // Máximo 100 fotos em cache
-    this.failedUrls = new Set(); // Cache de URLs que falharam
-  }
-
-  get(userId) {
-    const cached = this.cache.get(userId);
-    if (cached && Date.now() - cached.timestamp < this.maxAge) {
-      return cached.photoUrl;
-    }
-
-    // Remover entrada expirada
-    if (cached) {
-      this.cache.delete(userId);
-    }
-
-    return null;
-  }
-
-  set(userId, photoUrl) {
-    // Limitar tamanho do cache
-    if (this.cache.size >= this.maxSize) {
-      // Remover entradas mais antigas
-      const entries = Array.from(this.cache.entries());
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-      const toRemove = entries.slice(0, Math.floor(this.maxSize * 0.3));
-      toRemove.forEach(([key]) => this.cache.delete(key));
-    }
-
-    this.cache.set(userId, {
-      photoUrl,
-      timestamp: Date.now(),
-    });
-  }
-
-  markFailed(url) {
-    this.failedUrls.add(url);
-    // Limpar URLs falidas antigas (máximo 50)
-    if (this.failedUrls.size > 50) {
-      const urlsArray = Array.from(this.failedUrls);
-      urlsArray.slice(0, 25).forEach((url) => this.failedUrls.delete(url));
-    }
-  }
-
-  hasFailed(url) {
-    return this.failedUrls.has(url);
-  }
-
-  clear() {
-    const size = this.cache.size;
-    this.cache.clear();
-    this.failedUrls.clear();
-    return size;
-  }
-
-  getStats() {
-    return {
-      size: this.cache.size,
-      maxSize: this.maxSize,
-      maxAge: this.maxAge,
-      failedUrls: this.failedUrls.size,
-    };
-  }
-}
-
-// Instância global do cache de fotos
-const photoCache = new PhotoCache();
-
-// ========== FUNÇÃO UTILITÁRIA PARA DEBUG ==========
-
-/**
- * Função para debug de problemas com fotos
- */
-function debugPhotoIssues(userName, photoUrl, userId) {
-  console.group(`🔍 DEBUG: Problemas com foto`);
-  console.log(`👤 Nome do usuário: "${userName}"`);
-  console.log(`🆔 User ID: "${userId}"`);
-  console.log(`📷 URL da foto original: "${photoUrl}"`);
-  console.log(`✅ URL é válida: ${isValidPhotoUrl(photoUrl)}`);
-  console.log(`🔄 URL completa gerada: "${getFullImageUrl(photoUrl)}"`);
-  console.log(`🅰️ Iniciais geradas: "${getUserInitials(userName)}"`);
-  console.log(`💾 Foto no cache: ${photoCache.get(userId) ? "Sim" : "Não"}`);
-  console.log(
-    `❌ URL falhou antes: ${photoCache.hasFailed(photoUrl) ? "Sim" : "Não"}`
-  );
-  console.groupEnd();
-}
-
-// Exposição global para debug
-if (typeof window !== "undefined") {
-  window.debugPhotoIssues = debugPhotoIssues;
-  window.getUserInitials = getUserInitials;
-  window.isValidPhotoUrl = isValidPhotoUrl;
-  window.getFullImageUrl = getFullImageUrl;
-  window.createImageElement = createImageElement;
-  window.updateAvatarElement = updateAvatarElement;
-  window.processProfilePhoto = processProfilePhoto;
-  window.checkImageExists = checkImageExists;
+  return photoUrl;
 }
 
 // ========== CONFIGURAÇÃO DA API ==========
@@ -430,7 +81,6 @@ const API_CONFIG = {
     myPosition: "/ranking/my-position",
     aroundMe: "/ranking/around-me",
     userProfile: "/users/profile",
-    userPhoto: "/users",
   },
 };
 
@@ -641,8 +291,6 @@ class UserService {
           level: userObj.level || "Iniciante",
           id: userObj.id || userObj._id,
           avatar: userObj.avatar,
-          profilePhoto: userObj.profilePhoto,
-          profilePhotoUrl: processProfilePhoto(userObj), // CORRIGIDO: processar foto
           totalDonated: userObj.totalDonated || 0,
           totalReceived: userObj.totalReceived || 0,
         };
@@ -714,8 +362,6 @@ class UserService {
           level: userData.level || "Iniciante",
           id: userData.id || userData._id,
           avatar: userData.avatar,
-          profilePhoto: userData.profilePhoto,
-          profilePhotoUrl: userData.profilePhotoUrl,
           totalDonated: userData.totalDonated || 0,
           totalReceived: userData.totalReceived || 0,
         };
@@ -779,92 +425,28 @@ class UserService {
   }
 }
 
-// ========== CLASSE PARA GERENCIAR RANKING - VERSÃO TOTALMENTE CORRIGIDA ==========
+// ========== CLASSE PARA GERENCIAR RANKING ==========
 class RankingManager {
   /**
-   * TOTALMENTE CORRIGIDO: Busca dados completos de ranking com fotos da API
+   * Busca dados completos de ranking da API
    */
   static async getRankingFromAPI() {
     try {
       console.log("Buscando ranking da API...");
       const response = await UserService.makeAuthenticatedRequest(
-        `${API_CONFIG.endpoints.ranking}?limit=50&includePhotos=true`
+        `${API_CONFIG.endpoints.ranking}?limit=50`
       );
 
       if (response && response.success !== false) {
         const data = response.data || response;
-        console.log("🎯 Dados brutos recebidos da API:", data);
-
-        // Processar usuários com fotos (TOTALMENTE CORRIGIDO)
-        let users = data.users || data.ranking || [];
-        console.log(`👥 Processando ${users.length} usuários...`);
-
-        users = await Promise.all(
-          users.map(async (user) => {
-            console.log(
-              `\n🔄 Processando usuário: ${user.name || user.displayName}`
-            );
-
-            // Validar e limpar dados do usuário
-            const cleanUser = {
-              ...user,
-              name: user.name || user.fullName || user.displayName || "Usuário",
-              displayName:
-                user.displayName || user.fullName || user.name || "Usuário",
-              profilePhotoUrl: null,
-            };
-
-            // NOVA LÓGICA: Processar foto usando a função corrigida
-            const processedPhotoUrl = processProfilePhoto(user);
-            if (processedPhotoUrl) {
-              // Verificar se a imagem existe no servidor
-              const imageExists = await checkImageExists(processedPhotoUrl);
-              if (imageExists) {
-                cleanUser.profilePhotoUrl = processedPhotoUrl;
-                console.log(
-                  `✅ Foto processada e verificada para ${cleanUser.name}: ${processedPhotoUrl}`
-                );
-
-                // Cache da foto processada
-                if (user._id || user.id) {
-                  photoCache.set(user._id || user.id, processedPhotoUrl);
-                }
-              } else {
-                console.log(
-                  `❌ Imagem não encontrada no servidor para ${cleanUser.name}`
-                );
-                photoCache.markFailed(processedPhotoUrl);
-              }
-            } else {
-              console.log(`❌ Nenhuma foto válida para ${cleanUser.name}`);
-            }
-
-            return cleanUser;
-          })
-        );
-
         const result = {
-          users: users,
+          users: data.users || data.ranking || [],
           totalUsers: data.totalUsers || data.total || 0,
           currentUserRank: data.currentUserRank || data.userRank || 0,
           currentUser: data.currentUser || data.user || null,
         };
 
-        // Processar foto do usuário atual também
-        if (result.currentUser) {
-          const currentUserPhotoUrl = processProfilePhoto(result.currentUser);
-          if (
-            currentUserPhotoUrl &&
-            (await checkImageExists(currentUserPhotoUrl))
-          ) {
-            result.currentUser.profilePhotoUrl = currentUserPhotoUrl;
-          }
-        }
-
-        console.log("✅ Dados de ranking processados com fotos:", result);
-        console.log(`📊 Total de usuários: ${result.totalUsers}`);
-        console.log(`👤 Posição atual: ${result.currentUserRank}`);
-
+        console.log("✓ Dados de ranking obtidos:", result);
         return result;
       }
 
@@ -882,46 +464,21 @@ class RankingManager {
   }
 
   /**
-   * CORRIGIDO: Busca apenas o top 10 com fotos da API
+   * Busca apenas o top 10 da API
    */
   static async getTop10FromAPI() {
     try {
       console.log("Buscando top 10 da API...");
       const response = await UserService.makeAuthenticatedRequest(
-        `${API_CONFIG.endpoints.top10}?includePhotos=true`
+        API_CONFIG.endpoints.top10
       );
 
       if (response && response.success !== false) {
         const data = response.data || response;
-        let users = data.users || data.top10 || data;
+        const users = data.users || data.top10 || data;
 
         if (Array.isArray(users) && users.length > 0) {
-          // Processar fotos para o top 10 com verificação assíncrona
-          users = await Promise.all(
-            users.map(async (user) => {
-              const cleanUser = {
-                ...user,
-                name:
-                  user.name || user.fullName || user.displayName || "Usuário",
-                displayName:
-                  user.displayName || user.fullName || user.name || "Usuário",
-                profilePhotoUrl: null,
-              };
-
-              // Processar foto
-              const processedPhotoUrl = processProfilePhoto(user);
-              if (
-                processedPhotoUrl &&
-                (await checkImageExists(processedPhotoUrl))
-              ) {
-                cleanUser.profilePhotoUrl = processedPhotoUrl;
-              }
-
-              return cleanUser;
-            })
-          );
-
-          console.log("✅ Top 10 obtido com fotos processadas:", users);
+          console.log("✓ Top 10 obtido:", users);
           return users;
         }
       }
@@ -946,7 +503,7 @@ class RankingManager {
 
       if (response && response.success !== false) {
         const data = response.data || response;
-        console.log("✅ Posição do usuário obtida:", data);
+        console.log("✓ Posição do usuário obtida:", data);
         return data;
       }
 
@@ -958,7 +515,7 @@ class RankingManager {
   }
 
   /**
-   * Dados mock para fallback - SEM emojis problemáticos
+   * Dados mock para fallback
    */
   static getMockRankingData() {
     return {
@@ -970,7 +527,6 @@ class RankingManager {
           coins: 4890,
           rank: 1,
           level: "Lenda",
-          profilePhotoUrl: null,
         },
         {
           name: "Ana Silva",
@@ -979,7 +535,6 @@ class RankingManager {
           coins: 3240,
           rank: 2,
           level: "Magnata",
-          profilePhotoUrl: null,
         },
         {
           name: "Maria Costa",
@@ -988,7 +543,6 @@ class RankingManager {
           coins: 2850,
           rank: 3,
           level: "Filantropo",
-          profilePhotoUrl: null,
         },
         {
           name: "Carlos Lima",
@@ -997,7 +551,6 @@ class RankingManager {
           coins: 2640,
           rank: 4,
           level: "Filantropo",
-          profilePhotoUrl: null,
         },
         {
           name: "Lucia Mendes",
@@ -1006,7 +559,6 @@ class RankingManager {
           coins: 2480,
           rank: 5,
           level: "Generoso",
-          profilePhotoUrl: null,
         },
         {
           name: "Roberto Ferreira",
@@ -1015,7 +567,6 @@ class RankingManager {
           coins: 2320,
           rank: 6,
           level: "Generoso",
-          profilePhotoUrl: null,
         },
         {
           name: "Amanda Silva",
@@ -1024,34 +575,22 @@ class RankingManager {
           coins: 2180,
           rank: 7,
           level: "Benfeitor",
-          profilePhotoUrl: null,
         },
         {
           name: "Felipe Costa",
           displayName: "Felipe Costa",
           balance: 1890,
           coins: 1890,
-          rank: 8,
+          rank: 9,
           level: "Benfeitor",
-          profilePhotoUrl: null,
         },
         {
           name: "Beatriz Alves",
           displayName: "Beatriz Alves",
           balance: 1750,
           coins: 1750,
-          rank: 9,
-          level: "Aventureiro",
-          profilePhotoUrl: null,
-        },
-        {
-          name: "Pedro Santos",
-          displayName: "Pedro Santos",
-          balance: 1650,
-          coins: 1650,
           rank: 10,
           level: "Aventureiro",
-          profilePhotoUrl: null,
         },
       ],
       totalUsers: 156,
@@ -1060,7 +599,7 @@ class RankingManager {
   }
 
   /**
-   * CORRIGIDO: Atualiza o pódium com dados reais e fotos
+   * Atualiza o pódium com dados reais
    */
   static async updatePodium() {
     try {
@@ -1089,29 +628,17 @@ class RankingManager {
 
         const nameElement = podiumItem.querySelector(".podium-name");
         const balanceElement = podiumItem.querySelector(".podium-balance span");
-        const avatarElement = podiumItem.querySelector(".podium-avatar img");
 
         if (nameElement) {
           nameElement.textContent = user.displayName || user.name;
         }
-
         if (balanceElement) {
           const balance = user.balance || user.coins || 0;
           balanceElement.textContent = balance.toLocaleString();
         }
-
-        // CORRIGIDO: Atualizar avatar com foto real processada
-        if (avatarElement) {
-          updateAvatarElement(
-            avatarElement,
-            user.profilePhotoUrl,
-            user.displayName || user.name,
-            false
-          );
-        }
       });
 
-      console.log("✅ Pódium atualizado com sucesso");
+      console.log("✓ Pódium atualizado com sucesso");
     } catch (error) {
       console.error("Erro ao atualizar pódium:", error);
       const mockData = this.getMockRankingData();
@@ -1120,7 +647,7 @@ class RankingManager {
   }
 
   /**
-   * CORRIGIDO: Atualiza pódium com dados fornecidos e fotos
+   * Atualiza pódium com dados fornecidos
    */
   static updatePodiumWithData(top3) {
     const podiumOrder = [top3[1], top3[0], top3[2]];
@@ -1136,31 +663,19 @@ class RankingManager {
 
       const nameElement = podiumItem.querySelector(".podium-name");
       const balanceElement = podiumItem.querySelector(".podium-balance span");
-      const avatarElement = podiumItem.querySelector(".podium-avatar img");
 
       if (nameElement) {
         nameElement.textContent = user.displayName || user.name;
       }
-
       if (balanceElement) {
         const balance = user.balance || user.coins || 0;
         balanceElement.textContent = balance.toLocaleString();
-      }
-
-      // CORRIGIDO: Atualizar avatar com foto
-      if (avatarElement) {
-        updateAvatarElement(
-          avatarElement,
-          user.profilePhotoUrl,
-          user.displayName || user.name,
-          false
-        );
       }
     });
   }
 
   /**
-   * TOTALMENTE CORRIGIDO: Atualiza a lista de ranking com fotos reais da API
+   * CORRIGIDO: Atualiza a lista de ranking com lógica de foto correta
    */
   static async updateRankingList(currentUser) {
     try {
@@ -1179,15 +694,12 @@ class RankingManager {
         totalUsersElement.textContent = `${rankingData.totalUsers} usuários`;
       }
 
-      rankingList.innerHTML = ""; // Limpar lista
+      rankingList.innerHTML = "";
 
-      // Obter usuários para mostrar (a partir do 4º lugar)
+      // CORREÇÃO: Obter foto do usuário atual antes do loop
       const usersToShow = rankingData.users.filter((user) => user.rank >= 4);
       const currentUserId = currentUser?.id;
-
-      console.log(
-        `📝 Exibindo ${usersToShow.length} usuários na lista (rank >= 4)`
-      );
+      const currentUserPhoto = getCurrentUserPhoto(); // NOVA FUNÇÃO
 
       usersToShow.forEach((user) => {
         // Identificar se é o usuário atual
@@ -1206,23 +718,37 @@ class RankingManager {
 
         const balance = user.balance || user.coins || 0;
         const displayName = user.displayName || user.name || "Usuário";
+        const userInitials = getUserInitials(displayName);
 
-        // CORRIGIDA: Usar foto processada
-        const photoUrl = user.profilePhotoUrl;
-        console.log(`📸 Foto para ${displayName}: ${photoUrl}`);
-
-        // Criar elemento de imagem com foto processada
-        const avatarImg = createImageElement(
-          photoUrl,
-          displayName,
-          50,
-          isCurrentUser
-        );
+        // CORREÇÃO PRINCIPAL: Lógica de foto
+        let avatarContent;
+        if (isCurrentUser && currentUserPhoto) {
+          // Para o usuário atual: usar foto real
+          const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+          avatarContent = `
+            <img
+              data-user-photo
+              class="profile-image"
+              src="${fullPhotoUrl}"
+              alt="Foto do Perfil"
+              onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+            />
+          `;
+        } else {
+          // Para outros usuários: usar avatar com iniciais
+          avatarContent = `
+            <img
+              class="profile-image"
+              src="https://placehold.co/50x50/666/ffffff?text=${userInitials}"
+              alt="Avatar"
+            />
+          `;
+        }
 
         rankItem.innerHTML = `
           <div class="rank-position">${user.rank}</div>
           <div class="rank-avatar ${isCurrentUser ? "highlighted" : ""}">
-            ${avatarImg.outerHTML}
+            ${avatarContent}
           </div>
           <div class="rank-info">
             <div class="rank-name">${displayName}${
@@ -1238,60 +764,28 @@ class RankingManager {
         rankingList.appendChild(rankItem);
       });
 
-      // Se não encontrou o usuário logado na lista, adicionar separadamente
-      if (
-        currentUser &&
-        !usersToShow.find(
-          (u) => u._id === currentUserId || u.id === currentUserId
-        )
-      ) {
-        // Buscar dados do usuário atual do ranking completo
-        const currentUserDataFromRanking = rankingData.users.find(
-          (u) => u._id === currentUserId || u.id === currentUserId
+      // Se não encontrou o usuário atual na lista, adiciona
+      const userFoundInList = usersToShow.some(
+        (u) =>
+          currentUserId &&
+          (u._id === currentUserId ||
+            u.id === currentUserId ||
+            (u.name === currentUser.fullName && u.coins === currentUser.coins))
+      );
+
+      if (currentUser && !userFoundInList) {
+        this.addCurrentUserToList(
+          currentUser,
+          rankingData.currentUserRank,
+          currentUserPhoto
         );
-
-        if (currentUserDataFromRanking || rankingData.currentUser) {
-          const userToShow =
-            currentUserDataFromRanking || rankingData.currentUser;
-          const rankItem = document.createElement("div");
-          rankItem.classList.add("rank-item", "current-user", "user-in-list");
-
-          const balance = userToShow.balance || userToShow.coins || 0;
-          const displayName =
-            userToShow.displayName || userToShow.name || "Usuário";
-
-          // Processar foto do usuário atual
-          let photoUrl = userToShow.profilePhotoUrl;
-          if (!photoUrl && userToShow.profilePhoto) {
-            photoUrl = processProfilePhoto(userToShow);
-          }
-
-          const avatarImg = createImageElement(photoUrl, displayName, 50, true);
-
-          rankItem.innerHTML = `
-            <div class="rank-position">${userToShow.rank}</div>
-            <div class="rank-avatar highlighted">
-              ${avatarImg.outerHTML}
-            </div>
-            <div class="rank-info">
-              <div class="rank-name">${displayName} (Você)</div>
-            </div>
-            <div class="rank-balance">
-              <div class="coin-icon">₿</div>
-              <span>${balance.toLocaleString()}</span>
-            </div>
-          `;
-
-          rankingList.appendChild(rankItem);
-        }
       }
 
-      console.log("✅ Lista de ranking atualizada com sucesso");
+      console.log("✓ Lista de ranking atualizada com sucesso");
     } catch (error) {
       console.error("Erro ao atualizar lista de ranking:", error);
       const mockData = this.getMockRankingData();
-      const mockUsers = mockData.users.filter((user) => user.rank >= 4);
-      this.updateRankingListWithData(mockUsers, mockData);
+      this.updateRankingListWithData(mockData.users.slice(3), currentUser);
     }
   }
 
@@ -1307,25 +801,36 @@ class RankingManager {
 
     const balance = currentUser.coins || currentUser.balance || 0;
     const displayName = currentUser.fullName || currentUser.name;
+    const userInitials = getUserInitials(displayName);
 
-    // CORRIGIDA: Lógica de foto para usuário atual
-    let photoToUse = null;
-    if (currentUserPhoto && isValidPhotoUrl(currentUserPhoto)) {
-      photoToUse = getFullImageUrl(currentUserPhoto);
-    } else if (
-      currentUser.profilePhotoUrl &&
-      isValidPhotoUrl(currentUser.profilePhotoUrl)
-    ) {
-      photoToUse = currentUser.profilePhotoUrl;
+    // CORREÇÃO: Lógica de foto para usuário atual
+    let avatarContent;
+    if (currentUserPhoto) {
+      const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+      avatarContent = `
+        <img
+          data-user-photo
+          class="profile-image"
+          src="${fullPhotoUrl}"
+          alt="Foto do Perfil"
+          onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+        />
+      `;
+    } else {
+      avatarContent = `
+        <img
+          data-user-photo
+          class="profile-image"
+          src="https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}"
+          alt="Foto do Perfil"
+        />
+      `;
     }
-
-    // Criar elemento de imagem
-    const avatarImg = createImageElement(photoToUse, displayName, 50, true);
 
     rankItem.innerHTML = `
       <div class="rank-position">${rank}</div>
       <div class="rank-avatar highlighted">
-        ${avatarImg.outerHTML}
+        ${avatarContent}
       </div>
       <div class="rank-info">
         <div class="rank-name">${displayName} (Você)</div>
@@ -1340,43 +845,69 @@ class RankingManager {
   }
 
   /**
-   * CORRIGIDO: Atualiza lista com dados fornecidos (fallback) COM FOTOS
+   * CORRIGIDO: Atualiza lista com dados fornecidos (fallback) COM CORREÇÃO DE FOTO
    */
-  static updateRankingListWithData(users, data = {}) {
+  static updateRankingListWithData(users, currentUser) {
     const rankingList = document.querySelector(".ranking-list");
-    if (!rankingList) {
-      console.warn("Elemento .ranking-list não encontrado");
-      return;
-    }
-
-    const totalUsersElement = document.querySelector(".total-users");
-    if (totalUsersElement) {
-      totalUsersElement.textContent = `${
-        data.totalUsers || users.length
-      } usuários`;
-    }
+    if (!rankingList) return;
 
     rankingList.innerHTML = "";
+    const currentUserId = currentUser?.id;
+    const currentUserPhoto = getCurrentUserPhoto(); // NOVA FUNÇÃO
 
     users.forEach((user) => {
-      if (!user) return;
+      // CORREÇÃO: Melhor identificação do usuário atual
+      const isCurrentUser =
+        currentUserId &&
+        (user._id === currentUserId ||
+          user.id === currentUserId ||
+          (user.name === currentUser.fullName &&
+            user.coins === currentUser.coins));
 
       const rankItem = document.createElement("div");
       rankItem.classList.add("rank-item");
+      if (isCurrentUser) {
+        rankItem.classList.add("current-user");
+      }
 
       const balance = user.balance || user.coins || 0;
-      const displayName = user.displayName || user.name || "Usuário";
-      const photoUrl = user.profilePhotoUrl;
+      const displayName = user.displayName || user.name;
+      const userInitials = getUserInitials(displayName);
 
-      const avatarImg = createImageElement(photoUrl, displayName, 50, false);
+      // CORREÇÃO: Lógica de foto
+      let avatarContent;
+      if (isCurrentUser && currentUserPhoto) {
+        // Para o usuário atual: usar foto real
+        const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
+        avatarContent = `
+          <img
+            data-user-photo
+            class="profile-image"
+            src="${fullPhotoUrl}"
+            alt="Foto do Perfil"
+            onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
+          />
+        `;
+      } else {
+        // Para outros usuários: usar avatar com iniciais
+        avatarContent = `
+          <img
+            class="profile-image"
+            src="https://placehold.co/50x50/666/ffffff?text=${userInitials}"
+            alt="Avatar"
+          />
+        `;
+      }
 
       rankItem.innerHTML = `
         <div class="rank-position">${user.rank}</div>
-        <div class="rank-avatar">
-          ${avatarImg.outerHTML}
+        <div class="rank-avatar ${isCurrentUser ? "highlighted" : ""}">
+          ${avatarContent}
         </div>
         <div class="rank-info">
-          <div class="rank-name">${displayName}</div>
+          <div class="rank-name">${displayName}${
+        isCurrentUser ? " (Você)" : ""
+      }</div>
         </div>
         <div class="rank-balance">
           <div class="coin-icon">₿</div>
@@ -1405,7 +936,7 @@ class UIManager {
         const userRank = positionData?.user?.rank || userData.rank || 0;
         const userBalance = userData.coins || userData.balance || 0;
 
-        // Sempre priorizar nome completo
+        // CORREÇÃO: Sempre priorizar nome completo
         const displayName =
           userData.fullName || userData.name || userData.firstName || "Usuário";
 
@@ -1416,8 +947,6 @@ class UIManager {
           displayName: displayName,
           balance: userBalance,
           rank: userRank,
-          profilePhoto: userData.profilePhoto,
-          profilePhotoUrl: userData.profilePhotoUrl,
         });
 
         // Atualizar card do usuário com NOME COMPLETO
@@ -1425,55 +954,15 @@ class UIManager {
         this.updateElement("user-balance", userBalance.toLocaleString());
         this.updateElement("user-position", userRank);
 
-        // CORRIGIDO: Atualizar foto do usuário atual no card
-        const userAvatarElement = document.querySelector("[data-user-photo]");
-        if (userAvatarElement) {
-          const userInitials = getUserInitials(displayName);
-          const currentUserPhoto =
-            userData.profilePhotoUrl || getCurrentUserPhoto();
-
-          if (currentUserPhoto && isValidPhotoUrl(currentUserPhoto)) {
-            const fullPhotoUrl = getFullImageUrl(currentUserPhoto);
-
-            // Verificar se a imagem existe antes de definir
-            const imageExists = await checkImageExists(fullPhotoUrl);
-            if (imageExists) {
-              userAvatarElement.src = fullPhotoUrl;
-              userAvatarElement.alt = "Foto do Perfil";
-              userAvatarElement.onerror = function () {
-                console.warn(
-                  "Erro ao carregar foto do usuário atual, usando fallback"
-                );
-                this.src = `https://placehold.co/50x50/00d4ff/ffffff?text=${encodeURIComponent(
-                  userInitials
-                )}`;
-                this.alt = "Avatar";
-                this.onerror = null;
-              };
-            } else {
-              // Imagem não existe, usar placeholder diretamente
-              userAvatarElement.src = `https://placehold.co/50x50/00d4ff/ffffff?text=${encodeURIComponent(
-                userInitials
-              )}`;
-              userAvatarElement.alt = "Avatar";
-            }
-          } else {
-            userAvatarElement.src = `https://placehold.co/50x50/00d4ff/ffffff?text=${encodeURIComponent(
-              userInitials
-            )}`;
-            userAvatarElement.alt = "Avatar";
-          }
-        }
-
-        // Elementos que podem não existir no HTML
+        // CORREÇÃO: Elementos que podem não existir no HTML
         this.safeUpdateElement("user-name-in-list", `${displayName} (Você)`);
         this.safeUpdateElement(
           "user-balance-in-list",
           userBalance.toLocaleString()
         );
 
-        console.log("✅ Interface do usuário atualizada com sucesso");
-        console.log(`✅ Nome exibido: "${displayName}"`);
+        console.log("✓ Interface do usuário atualizada com sucesso");
+        console.log(`✓ Nome exibido: "${displayName}"`);
       }
 
       await RankingManager.updatePodium();
@@ -1549,7 +1038,7 @@ class UIManager {
   }
 
   /**
-   * Atualiza elemento apenas se existir (sem warning)
+   * CORREÇÃO: Atualiza elemento apenas se existir (sem warning)
    */
   static safeUpdateElement(elementId, content) {
     const element = document.getElementById(elementId);
@@ -1557,6 +1046,7 @@ class UIManager {
       element.textContent = content;
       console.log(`✅ Elemento '${elementId}' atualizado: "${content}"`);
     }
+    // Não mostra warning se elemento não existir
   }
 
   /**
@@ -1702,8 +1192,6 @@ class Utils {
       rank: 8,
       level: "Generoso",
       id: "68a647a0150337a0f1668e86",
-      profilePhoto: null,
-      profilePhotoUrl: null,
       registeredAt: new Date().toISOString(),
     };
 
@@ -1713,7 +1201,7 @@ class Utils {
     localStorage.setItem("token", testToken);
     localStorage.setItem("authToken", testToken);
 
-    console.log("✅ Dados de teste salvos:");
+    console.log("✓ Dados de teste salvos:");
     console.log("  - Usuário:", testUser);
     console.log("  - Token:", testToken);
     console.log(`  - Nome completo: "${testUser.fullName}"`);
@@ -1733,7 +1221,6 @@ class Utils {
       "jwtToken",
       "bearerToken",
       "userToken",
-      "userProfilePhoto",
     ];
 
     keysToRemove.forEach((key) => {
@@ -1741,25 +1228,19 @@ class Utils {
       sessionStorage.removeItem(key);
     });
 
-    // Limpar cache de fotos
-    photoCache.clear();
-
-    console.log("✅ Dados do usuário limpos");
+    console.log("✓ Dados do usuário limpos");
   }
 
   static debugInfo() {
     const token = UserService.getAuthToken();
     const isValidToken = UserService.validateToken(token);
-    const cacheStats = photoCache.getStats();
 
     console.log(`
 === SISTEMA DE RANKING - DEBUG INFO ===
 📊 API Base: ${API_CONFIG.baseURL}
-🔑 Token: ${token ? "Presente" : "Ausente"}
+🔐 Token: ${token ? "Presente" : "Ausente"}
 ✅ Token Válido: ${isValidToken ? "Sim" : "Não"}
 📁 Dados no localStorage: ${localStorage.getItem("currentUser") ? "Sim" : "Não"}
-🖼️ Cache de Fotos: ${cacheStats.size}/${cacheStats.maxSize}
-❌ URLs que falharam: ${cacheStats.failedUrls}
 
 🛠️ COMANDOS DISPONÍVEIS:
    • testUser() - Cria usuário de teste com token
@@ -1767,29 +1248,17 @@ class Utils {
    • checkAPI() - Verifica conexão com API
    • debugInfo() - Mostra informações do sistema
    • forceReload() - Força recarregamento da interface
-   • clearPhotoCache() - Limpa cache de fotos
-   • debugPhotoProcessing() - Debug do processamento de fotos
-   • runDiagnostic() - Executa diagnóstico completo
    
 🔧 CLASSES PRINCIPAIS:
    • UserService - Gerencia autenticação e dados do usuário
-   • RankingManager - Gerencia dados de ranking COM FOTOS
+   • RankingManager - Gerencia dados de ranking
    • UIManager - Gerencia interface do usuário
    • NavigationManager - Gerencia navegação
-   • PhotoCache - Cache de fotos de perfil
    
-💡 PRINCIPAIS CORREÇÕES:
-   ✅ Verificação assíncrona de existência de imagens
-   ✅ Cache melhorado com URLs que falharam
-   ✅ Fallback inteligente para placeholders
-   ✅ Processamento assíncrono de fotos
-   ✅ Melhor tratamento de erros 404
-   
-💡 DICA: Se imagens não carregam:
-   1. Verifique se arquivos existem em /uploads/profiles/
-   2. Use debugPhotoProcessing() para testar
-   3. Verifique logs do servidor para erros 404
-   4. Cache automaticamente usa placeholder se imagem não existe
+💡 DICA: Se não estiver funcionando, tente:
+   1. testUser() para criar dados de teste
+   2. Verificar se a API está rodando
+   3. Verificar console para erros específicos
 ==========================================
     `);
   }
@@ -1799,65 +1268,11 @@ class Utils {
     try {
       UIManager.showLoading();
       await UIManager.updateUserInterface();
-      console.log("✅ Interface recarregada com sucesso");
+      console.log("✓ Interface recarregada com sucesso");
     } catch (error) {
       console.error("❌ Erro ao recarregar interface:", error);
       UIManager.showConnectionError();
     }
-  }
-
-  static clearPhotoCache() {
-    const cleared = photoCache.clear();
-    console.log(`🧹 Cache de fotos limpo (${cleared} entradas removidas)`);
-    console.log("Cache de URLs falidas também foi limpo");
-  }
-
-  static debugPhotoProcessing() {
-    console.log("🔍 Testando processamento de fotos...");
-
-    // Simular dados da API como no teste cURL
-    const testUsers = [
-      {
-        name: "Sol Cazzeri",
-        profilePhoto: {
-          filename: "profile-68b6324b601d026ad790d698-1756770937150.webp",
-          path: "/uploads/profiles/profile-68b6324b601d026ad790d698-1756770937150.webp",
-          uploadDate: "2025-09-01T23:55:37.318Z",
-        },
-      },
-      {
-        name: "Carol Santana",
-        profilePhoto: {
-          filename: "profile-68b7713053c601a84c025f8a-1757283419454.webp",
-          path: "/uploads/profiles/profile-68b7713053c601a84c025f8a-1757283419454.webp",
-          uploadDate: "2025-09-07T22:16:59.552Z",
-        },
-      },
-      {
-        name: "Usuário Sem Foto",
-        profilePhoto: {
-          filename: null,
-          path: null,
-          uploadDate: null,
-        },
-      },
-    ];
-
-    testUsers.forEach(async (user) => {
-      console.log(`\n--- Testando: ${user.name} ---`);
-      const processedUrl = processProfilePhoto(user);
-      console.log(`URL processada: ${processedUrl}`);
-
-      if (processedUrl) {
-        const exists = await checkImageExists(processedUrl);
-        console.log(`Imagem existe no servidor: ${exists ? "Sim" : "Não"}`);
-
-        if (!exists) {
-          console.log(`❌ Arquivo não encontrado: ${processedUrl}`);
-          console.log("💡 Será usado placeholder automaticamente");
-        }
-      }
-    });
   }
 
   static async runDiagnostic() {
@@ -1868,12 +1283,10 @@ class Utils {
       tokenValid: UserService.validateToken(UserService.getAuthToken()),
       apiConnection: await Utils.checkAPIConnection(),
       localStorageData: !!localStorage.getItem("currentUser"),
-      photoCacheStats: photoCache.getStats(),
       domElements: {
         userCard: !!document.getElementById("user-name"),
         rankingList: !!document.querySelector(".ranking-list"),
         podium: !!document.querySelector(".podium-item"),
-        userPhoto: !!document.querySelector("[data-user-photo]"),
       },
     };
 
@@ -1893,12 +1306,6 @@ class Utils {
       suggestions.push("⚠️ Sem dados locais - dependendo da API");
     if (!results.domElements.userCard)
       suggestions.push("❌ Elementos DOM não encontrados - verifique HTML");
-    if (!results.domElements.userPhoto)
-      suggestions.push("⚠️ Elemento de foto do usuário não encontrado");
-    if (results.photoCacheStats.failedUrls > 0)
-      suggestions.push(
-        `⚠️ ${results.photoCacheStats.failedUrls} URLs de imagem falharam - verifique arquivos no servidor`
-      );
 
     if (suggestions.length > 0) {
       console.log("\n🔧 SUGESTÕES:");
@@ -1960,9 +1367,6 @@ class RanksApp {
       await UIManager.updateUserInterface();
 
       console.log("🎉 Aplicação de ranking carregada com sucesso!");
-      console.log(
-        "📸 Sistema de processamento de fotos com verificação assíncrona ativo!"
-      );
     } catch (error) {
       console.error("💥 Erro crítico ao inicializar aplicação:", error);
 
@@ -2008,8 +1412,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const userNameElement = document.getElementById("user-name");
   if (
     userNameElement &&
-    (userNameElement.textContent === "UsuÃƒÆ'Ã‚Â¡rio" ||
-      userNameElement.textContent === "UsuÃƒÂ¡rio")
+    (userNameElement.textContent === "UsuÃƒÂ¡rio" ||
+      userNameElement.textContent === "UsuÃ¡rio")
   ) {
     userNameElement.textContent = "Carregando...";
   }
@@ -2017,7 +1421,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const userNameInListElement = document.getElementById("user-name-in-list");
   if (
     userNameInListElement &&
-    userNameInListElement.textContent.includes("UsuÃƒÆ'Ã‚Â¡rio")
+    userNameInListElement.textContent.includes("UsuÃƒÂ¡rio")
   ) {
     userNameInListElement.textContent = "Carregando... (Você)";
   }
@@ -2035,8 +1439,8 @@ setInterval(() => {
   if (userNameElement) {
     const currentText = userNameElement.textContent;
     if (
-      currentText === "UsuÃƒÆ'Ã‚Â¡rio" ||
       currentText === "UsuÃƒÂ¡rio" ||
+      currentText === "UsuÃ¡rio" ||
       currentText === "..."
     ) {
       const userData = JSON.parse(localStorage.getItem("currentUser") || "{}");
@@ -2065,10 +1469,7 @@ if (typeof window !== "undefined") {
   window.NavigationManager = NavigationManager;
   window.Utils = Utils;
   window.RanksApp = RanksApp;
-  window.PhotoCache = PhotoCache;
-  window.photoCache = photoCache;
 
-  // Funções de utilidade
   window.testUser = Utils.generateTestUser;
   window.clearData = Utils.clearUserData;
   window.checkAPI = Utils.checkAPIConnection;
@@ -2076,8 +1477,6 @@ if (typeof window !== "undefined") {
   window.forceReload = Utils.forceReload;
   window.runDiagnostic = Utils.runDiagnostic;
   window.reinit = RanksApp.reinitialize;
-  window.clearPhotoCache = Utils.clearPhotoCache;
-  window.debugPhotoProcessing = Utils.debugPhotoProcessing;
 }
 
 // ========== FUNÇÕES DE CALLBACK (COMPATIBILIDADE) ==========
