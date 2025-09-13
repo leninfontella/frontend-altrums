@@ -711,6 +711,51 @@ function createSearchModal() {
 function createDonationModal(user) {
   const currentBalance = getCurrentUserBalance();
 
+  // Criar avatar real ou iniciais para o modal de doação
+  let recipientAvatarHTML;
+  const photoUrl = user.profilePhoto || user.photo;
+
+  if (photoUrl) {
+    // Construir URL completa se necessário
+    const fullPhotoUrl = photoUrl.startsWith("http")
+      ? photoUrl
+      : `http://localhost:5000${
+          photoUrl.startsWith("/") ? photoUrl : "/" + photoUrl
+        }`;
+
+    recipientAvatarHTML = `
+      <div class="recipient-avatar" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #667eea;">
+        <img 
+          src="${fullPhotoUrl}" 
+          alt="${user.name}"
+          style="width: 100%; height: 100%; object-fit: cover;"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+        <div style="width: 100%; height: 100%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 20px;">
+          ${user.name
+            .split(" ")
+            .map((word) => word[0])
+            .join("")
+            .toUpperCase()
+            .substring(0, 2)}
+        </div>
+      </div>
+    `;
+  } else {
+    // Apenas iniciais
+    const initials = user.name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+    recipientAvatarHTML = `
+      <div class="recipient-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
+        ${initials}
+      </div>
+    `;
+  }
+
   const modalHTML = `
     <div id="donation-modal" class="donation-modal">
       <div class="modal-backdrop" onclick="closeDonationModal()"></div>
@@ -722,12 +767,15 @@ function createDonationModal(user) {
         
         <div class="donation-info">
           <div class="recipient-info">
-            <div class="recipient-avatar">${user.avatar || "👤"}</div>
+            ${recipientAvatarHTML}
             <div class="recipient-details">
               <h4>${user.name}</h4>
               <p class="username">${
                 user.username ||
-                `${user.email.toLowerCase().replace(/\s+/g, "_")}`
+                `${
+                  user.email?.toLowerCase().replace(/\s+/g, "_") ||
+                  user.name.toLowerCase().replace(/\s+/g, "_")
+                }`
               }</p>
               <p class="institution">${user.institution || "Nível atual:"}</p>
               <div class="level-badge ${(user.level || "iniciante")
@@ -800,33 +848,79 @@ function renderSearchResults(users) {
 
   if (users.length === 0) {
     resultsContainer.innerHTML =
-      '<div class="no-results">Nenhum usuario encontrado</div>';
+      '<div class="no-results">Nenhum usuário encontrado</div>';
     return;
   }
 
   const resultsHTML = users
-    .map(
-      (user) => `
-    <div class="user-result" onclick="openDonationModal('${user.id}')">
-      <div class="user-avatar">${user.avatar || "👤"}</div>
-      <div class="user-info">
-        <h4>${user.name}</h4>
-        <p class="username">${
-          user.username || `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
-        }</p>      
-        <div class="user-stats">
-          <span class="coins-count">${(
-            user.coins || 0
-          ).toLocaleString()} 🪙</span>
-          <span class="level-badge ${(user.level || "iniciante")
-            .toLowerCase()
-            .replace(" ", "-")}">${user.level || "Iniciante"}</span>
+    .map((user) => {
+      // Criar avatar real ou iniciais
+      let avatarHTML;
+      const photoUrl = user.profilePhoto || user.photo;
+
+      if (photoUrl) {
+        // Construir URL completa se necessário
+        const fullPhotoUrl = photoUrl.startsWith("http")
+          ? photoUrl
+          : `http://localhost:5000${
+              photoUrl.startsWith("/") ? photoUrl : "/" + photoUrl
+            }`;
+
+        avatarHTML = `
+          <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #667eea;">
+            <img 
+              src="${fullPhotoUrl}" 
+              alt="${user.name}"
+              style="width: 100%; height: 100%; object-fit: cover;"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div style="width: 100%; height: 100%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 14px;">
+              ${user.name
+                .split(" ")
+                .map((word) => word[0])
+                .join("")
+                .toUpperCase()
+                .substring(0, 2)}
+            </div>
+          </div>
+        `;
+      } else {
+        // Apenas iniciais
+        const initials = user.name
+          .split(" ")
+          .map((word) => word[0])
+          .join("")
+          .toUpperCase()
+          .substring(0, 2);
+        avatarHTML = `
+          <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+            ${initials}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="user-result" onclick="openDonationModal('${user.id}')">
+          ${avatarHTML}
+          <div class="user-info">
+            <h4>${user.name}</h4>
+            <p class="username">${
+              user.username ||
+              `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
+            }</p>      
+            <div class="user-stats">
+              <span class="coins-count">${(
+                user.coins || 0
+              ).toLocaleString()} 🪙</span>
+              <span class="level-badge ${(user.level || "iniciante")
+                .toLowerCase()
+                .replace(" ", "-")}">${user.level || "Iniciante"}</span>
+            </div>
+          </div>
+          <div class="donate-icon">💝</div>
         </div>
-      </div>
-      <div class="donate-icon">💝</div>
-    </div>
-  `
-    )
+      `;
+    })
     .join("");
 
   resultsContainer.innerHTML = resultsHTML;
