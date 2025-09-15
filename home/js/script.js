@@ -211,7 +211,7 @@ const UserSystem = {
       console.log("📊 Atualizando estatísticas na interface:", stats);
 
       const statsMap = [
-        { id: "earned-coins-card", value: stats.totalEarned },
+        { id: "earned-coins-card", value: stats.totalReceived },
         { id: "donated-coins-card", value: stats.totalDonated },
         { id: "bonus-coins-card", value: stats.bonusCoins },
         { id: "monthly-coins-card", value: stats.monthlyCoins },

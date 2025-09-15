@@ -301,6 +301,10 @@ body {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
+  white-space: nowrap; /* Impede a quebra de linha */
+  overflow: hidden; /* Esconde o texto que ultrapassa o limite */
+  text-overflow: ellipsis; /* Adiciona as reticências (...) ao texto escondido */
+  max-width: 150px; /* Defina uma largura máxima para o elemento */
 }
 
 .podium-balance {

@@ -176,7 +176,7 @@ async function loadUserDataFromAPI() {
       // ✅ CRÍTICO: Atualizar localStorage apenas com dados do usuário atual
       localStorage.setItem("userData", JSON.stringify(userData));
 
-      showMessage("Dados carregados com sucesso", "success");
+      // showMessage("Dados carregados com sucesso", "success");
     } else {
       throw new Error("Dados não recebidos da API");
     }
