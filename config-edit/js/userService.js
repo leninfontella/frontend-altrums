@@ -74,6 +74,14 @@ class GlobalUserService {
     }
   }
 
+  // ✨ FUNÇÃO ADICIONADA: Gerar a URL do placeholder com as iniciais do usuário
+  getInitialsPlaceholderUrl(userName) {
+    const nameToPass = userName && typeof userName === "string" ? userName : "";
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      nameToPass
+    )}&background=00d4ff&color=fff&size=120`;
+  }
+
   // Atualizar todas as imagens de perfil na página atual
   updateProfilePhotoEverywhere(photoUrl) {
     const profileImages = document.querySelectorAll(
@@ -94,8 +102,11 @@ class GlobalUserService {
         }, 150);
 
         // Fallback para erro
-        img.onerror = function () {
-          this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+        img.onerror = () => {
+          // Usar a nova função para gerar o placeholder correto
+          this.src = this.getInitialsPlaceholderUrl(
+            this.getUserData()?.name || this.getUserData()?.fullName || ""
+          );
         };
       } else if (img.style) {
         // Para elementos com backgroundImage
@@ -127,7 +138,10 @@ class GlobalUserService {
   // Obter URL completa da imagem
   getImageUrl(photoUrl) {
     if (!photoUrl) {
-      return "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+      const userData = this.getUserData();
+      return this.getInitialsPlaceholderUrl(
+        userData?.name || userData?.fullName || ""
+      );
     }
     if (photoUrl.startsWith("http")) {
       // A URL já é completa, retorne-a como está.

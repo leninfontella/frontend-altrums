@@ -114,8 +114,15 @@
     }
   }
 
-  // ✅ FUNÇÃO CORRIGIDA: Função para carregar foto de perfil em elementos específicos
+  // ✨ FUNÇÃO ADICIONADA: Gerar a URL do placeholder com as iniciais do usuário
+  function getInitialsPlaceholderUrl(userName) {
+    const nameToPass = userName && typeof userName === "string" ? userName : "";
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      nameToPass
+    )}&background=00d4ff&color=fff&size=120`;
+  }
 
+  // ✅ FUNÇÃO CORRIGIDA: Função para carregar foto de perfil em elementos específicos
   function loadProfilePhotos() {
     const userData = getUserData();
     if (!userData) return;
@@ -123,29 +130,28 @@
     console.log("🔄 Carregando fotos de perfil:", userData.profilePhotoUrl);
 
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
-    if (!photoUrl) {
-      console.log("📷 Nenhuma foto de perfil encontrada");
-      return;
-    }
 
-    // A URL final deve ser apenas a URL base, sem o timestamp
-    let imageUrl;
-    if (photoUrl.startsWith("http")) {
-      imageUrl = photoUrl;
-    } else if (
-      photoUrl.startsWith("/uploads/") ||
-      photoUrl.includes("uploads")
-    ) {
-      imageUrl = `http://localhost:5000${
-        photoUrl.startsWith("/") ? "" : "/"
-      }${photoUrl}`;
+    // A URL final deve ser a URL da foto ou o placeholder
+    let finalUrl;
+    if (photoUrl) {
+      if (photoUrl.startsWith("http")) {
+        finalUrl = photoUrl;
+      } else if (
+        photoUrl.startsWith("/uploads/") ||
+        photoUrl.includes("uploads")
+      ) {
+        finalUrl = `http://localhost:5000${
+          photoUrl.startsWith("/") ? "" : "/"
+        }${photoUrl}`;
+      } else {
+        finalUrl = photoUrl;
+      }
     } else {
-      imageUrl = photoUrl;
+      // Usar a nova função de placeholder se não houver foto
+      finalUrl = getInitialsPlaceholderUrl(userData.name || userData.fullName);
     }
 
     // ✅ CORREÇÃO: Remover a lógica que adiciona o ?t=
-    const finalUrl = imageUrl;
-
     console.log("📸 URL final da imagem:", finalUrl);
     const profileImages = document.querySelectorAll(
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
@@ -161,7 +167,9 @@
         img.src = finalUrl;
         img.onerror = function () {
           console.error("❌ Erro ao carregar imagem:", finalUrl);
-          this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+          this.src = getInitialsPlaceholderUrl(
+            userData.name || userData.fullName
+          );
         };
         img.style.transition = "opacity 0.3s ease";
         img.style.opacity = "0.7";
@@ -302,7 +310,7 @@
     );
 
     profileImages.forEach((img) => {
-      img.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+      img.src = getInitialsPlaceholderUrl(userData.name || userData.fullName);
     });
   });
 

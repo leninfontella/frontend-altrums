@@ -19,6 +19,16 @@ function showMessage(message, type = "success") {
   }, 3000);
 }
 
+// ✨ FUNÇÃO CORRIGIDA: Gerar a URL do placeholder com as iniciais do usuário
+function getInitialsPlaceholderUrl(userName) {
+  // Se o nome não for uma string válida, use uma string vazia para as iniciais.
+  // A API ui-avatars.com irá gerar um círculo sem texto.
+  const nameToPass = userName && typeof userName === "string" ? userName : "";
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    nameToPass
+  )}&background=00d4ff&color=fff&size=120`;
+}
+
 // Função para atualizar a exibição da foto de perfil
 function updateProfilePhotoDisplay(photoUrl) {
   const profileImage = document.getElementById("profile-image");
@@ -36,12 +46,6 @@ function updateProfilePhotoDisplay(photoUrl) {
       imageUrl = window.apiConfig.baseURL + photoUrl;
     }
 
-    // 🚫 REMOVER ESTA LINHA QUE ESTÁ CAUSANDO O PROBLEMA:
-    // const urlWithTimestamp = imageUrl.includes("?")
-    //   ? `${imageUrl}&t=${Date.now()}`
-    //   : `${imageUrl}?t=${Date.now()}`;
-
-    // ✅ USAR DIRETAMENTE A URL SEM TIMESTAMP:
     profileImage.src = imageUrl;
 
     // Efeito visual de atualização
@@ -53,11 +57,14 @@ function updateProfilePhotoDisplay(photoUrl) {
     // Fallback em caso de erro
     profileImage.onerror = function () {
       console.log("Erro ao carregar imagem:", imageUrl);
-      this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+      this.src = getInitialsPlaceholderUrl("");
     };
   } else {
     // Se não há foto, usar placeholder
-    profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    profileImage.src = getInitialsPlaceholderUrl(
+      JSON.parse(localStorage.getItem("userData"))?.name ||
+        JSON.parse(localStorage.getItem("userData"))?.fullName
+    );
   }
 }
 
@@ -92,7 +99,7 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
       profileImage.style.opacity = "1";
     }, 300);
 
-    // Fallback melhorado
+    // ✅ CORREÇÃO: Fallback melhorado
     profileImage.onerror = function () {
       console.warn("Erro ao carregar:", imageUrl);
 
@@ -104,11 +111,16 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
         return;
       }
 
-      // Fallback final
-      this.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+      // Fallback final usando a nova função com as iniciais
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const userName = userData.name || userData.fullName || "";
+      this.src = getInitialsPlaceholderUrl(userName);
     };
   } else {
-    profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    // Usar a nova função
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+    const userName = userData.name || userData.fullName || "";
+    profileImage.src = getInitialsPlaceholderUrl(userName);
   }
 }
 
@@ -126,9 +138,9 @@ function clearUserData() {
   if (emailInput) emailInput.value = "";
   if (phoneInput) phoneInput.value = "";
 
-  // Limpar foto para placeholder
+  // Usar um placeholder genérico, pois não temos o nome do usuário nesta função
   if (profileImage) {
-    profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+    profileImage.src = getInitialsPlaceholderUrl("");
   }
 
   // Limpar dados originais
@@ -136,7 +148,6 @@ function clearUserData() {
 }
 
 // 🔧 FUNÇÃO MELHORADA: Carregar dados da API com limpeza prévia
-
 async function loadUserDataFromAPI() {
   try {
     console.log("📄 PRIORIDADE: Carregando dados da API...");
@@ -175,8 +186,6 @@ async function loadUserDataFromAPI() {
 
       // ✅ CRÍTICO: Atualizar localStorage apenas com dados do usuário atual
       localStorage.setItem("userData", JSON.stringify(userData));
-
-      // showMessage("Dados carregados com sucesso", "success");
     } else {
       throw new Error("Dados não recebidos da API");
     }
@@ -202,27 +211,27 @@ async function loadUserDataFromAPI() {
 }
 
 // Função para preencher formulário com dados específicos
-
 function populateFormWithData(userData) {
   console.log("📝 Preenchendo formulário com dados:", userData);
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
   const phoneInput = document.getElementById("phone");
+  const profileImage = document.getElementById("profile-image");
 
   if (nameInput) nameInput.value = userData.name || userData.fullName || "";
   if (emailInput) emailInput.value = userData.email || "";
   if (phoneInput) phoneInput.value = userData.phone || "";
 
-  // ✅ CORRIGIR: Atualizar foto SEM forçar cache bust no carregamento inicial
-  if (userData.profilePhotoUrl) {
-    updateProfilePhotoDisplayFixed(userData.profilePhotoUrl, false); // false = sem cache bust
-  } else if (userData.avatar) {
-    updateProfilePhotoDisplayFixed(userData.avatar, false);
-  } else {
-    const profileImage = document.getElementById("profile-image");
-    if (profileImage) {
-      profileImage.src = "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+  // 🐛 CORREÇÃO CRÍTICA: Lógica para exibir a foto ou o placeholder
+  if (profileImage) {
+    const photoUrl = userData.profilePhotoUrl || userData.avatar;
+    if (photoUrl) {
+      updateProfilePhotoDisplayFixed(photoUrl, false);
+    } else {
+      profileImage.src = getInitialsPlaceholderUrl(
+        userData.name || userData.fullName
+      );
     }
   }
 }
@@ -798,8 +807,10 @@ async function removeProfilePhotoWithoutConfirm() {
       // Atualizar imagem para placeholder
       const profileImage = document.getElementById("profile-image");
       if (profileImage) {
-        profileImage.src =
-          "https://placehold.co/120x120/00d4ff/ffffff?text=User";
+        // Usar a nova função para gerar o placeholder com as iniciais
+        const userData = JSON.parse(localStorage.getItem("userData")) || {};
+        const userName = userData.name || userData.fullName || "";
+        profileImage.src = getInitialsPlaceholderUrl(userName);
 
         // Efeito visual de remoção
         profileImage.style.opacity = "0.5";
