@@ -786,3 +786,61 @@ console.log("💡 Dicas:", {
   Debug: "Execute window.debugUserData() no console para verificar dados",
   Logout: "Clique em 'Sair da Conta' para testar o logout",
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const langSetting = document.getElementById("language-setting");
+  const langModal = document.getElementById("language-modal");
+  const closeBtn = document.getElementById("close-language-modal");
+  const langSubtitle = document.getElementById("current-language");
+
+  if (langSetting && langModal) {
+    langSetting.addEventListener("click", () => {
+      langModal.classList.remove("hidden");
+      const content = langModal.querySelector(".modal-content");
+      content.style.animation = "fadeInCenter 0.4s ease forwards";
+    });
+  }
+
+  function closeLangModal() {
+    const content = langModal.querySelector(".modal-content");
+    content.style.animation = "fadeOutCenter 0.3s ease forwards";
+    setTimeout(() => langModal.classList.add("hidden"), 300);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeLangModal);
+  }
+
+  langModal.addEventListener("click", (e) => {
+    if (e.target === langModal) {
+      closeLangModal();
+    }
+  });
+
+  langModal.querySelectorAll("li").forEach((li) => {
+    li.addEventListener("click", () => {
+      const lang = li.getAttribute("data-lang");
+      const text = li.textContent;
+
+      // Atualiza visualmente
+      langSubtitle.textContent = text;
+
+      // Salva escolha
+      localStorage.setItem("appLanguage", lang);
+
+      // Fecha modal
+      langModal.classList.add("hidden");
+
+      console.log("🌍 Idioma selecionado:", lang);
+    });
+  });
+
+  // Carregar idioma salvo
+  const savedLang = localStorage.getItem("appLanguage");
+  if (savedLang) {
+    const selected = langModal.querySelector(`li[data-lang="${savedLang}"]`);
+    if (selected) {
+      langSubtitle.textContent = selected.textContent;
+    }
+  }
+});

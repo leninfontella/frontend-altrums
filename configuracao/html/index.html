@@ -195,7 +195,7 @@
               </div>
             </div>
 
-            <div class="setting-item">
+            <div class="setting-item" id="language-setting">
               <div class="setting-content">
                 <div class="setting-left">
                   <div class="setting-icon">
@@ -203,7 +203,9 @@
                   </div>
                   <div class="setting-text">
                     <div class="setting-title">Idioma</div>
-                    <div class="setting-subtitle">Português (Brasil)</div>
+                    <div class="setting-subtitle" id="current-language">
+                      Português (Brasil)
+                    </div>
                   </div>
                 </div>
                 <i class="fas fa-chevron-right setting-arrow"></i>
@@ -361,5 +363,18 @@
     <script src="../../configuracao/js/script.js"></script>
     <script src="../../config-edit/js/userService.js"></script>
     <script src="../../config-edit/js/globalInit.js"></script>
+
+    <div id="language-modal" class="custom-modal hidden">
+      <div class="modal-content">
+        <h3>Escolha o idioma</h3>
+        <ul>
+          <li data-lang="pt-BR">🇧🇷 Português (Brasil)</li>
+          <li data-lang="en-US">🇺🇸 English (US)</li>
+          <li data-lang="es-ES">🇪🇸 Español (España)</li>
+          <li data-lang="fr-FR">🇫🇷 Français</li>
+        </ul>
+        <button id="close-language-modal">Cancelar</button>
+      </div>
+    </div>
   </body>
 </html>
