@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fale com o Suporte - 1lênin1dev</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../assets/css/support-suporte.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">SUPORTE SCREEN</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="floating-particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+        </div>
+
+        <div id="go-home" class="support-container">
+          <button id="go-home-button" class="back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+
+          <div class="header-section">
+            <div class="logo-container">
+              <i class="fas fa-headset logo-icon"></i>
+            </div>
+            <h1 class="app-title">Suporte</h1>
+            <p class="app-subtitle">Estamos aqui para ajudar você sempre.</p>
+          </div>
+
+          <div class="support-options">
+            <a href="#" class="support-option" onclick="openWhatsApp()">
+              <div class="option-icon">
+                <i class="fab fa-whatsapp"></i>
+              </div>
+              <div class="option-content">
+                <div class="option-title">WhatsApp</div>
+                <div class="option-description">
+                  Converse conosco pelo WhatsApp para suporte rápido
+                </div>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" class="support-option" onclick="openEmail()">
+              <div class="option-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="option-content">
+                <div class="option-title">E-mail</div>
+                <div class="option-description">
+                  Envie um e-mail para suporte@leninfontella.com
+                </div>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" class="support-option" onclick="toggleContactForm()">
+              <div class="option-icon">
+                <i class="fas fa-comment-dots"></i>
+              </div>
+              <div class="option-content">
+                <div class="option-title">Formulário</div>
+                <div class="option-description">
+                  Preencha nosso formulário de contato
+                </div>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+
+            <a href="#" class="support-option" onclick="openFAQ()">
+              <div class="option-icon">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <div class="option-content">
+                <div class="option-title">FAQ</div>
+                <div class="option-description">
+                  Perguntas frequentes e respostas rápidas
+                </div>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+          </div>
+
+          <div class="contact-form" id="contactForm">
+            <div class="form-header">
+              <button class="form-back-button" onclick="closeContactForm()">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div class="form-title">Formulário de Contato</div>
+            </div>
+            <form onsubmit="submitForm(event)">
+              <div class="input-group">
+                <label class="input-label">Nome</label>
+                <input
+                  type="text"
+                  class="input-field"
+                  placeholder="Digite seu nome completo"
+                  required
+                />
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">E-mail</label>
+                <input
+                  type="email"
+                  class="input-field"
+                  placeholder="Digite seu e-mail"
+                  required
+                />
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Assunto</label>
+                <input
+                  type="text"
+                  class="input-field"
+                  placeholder="Descreva o assunto"
+                  required
+                />
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Mensagem</label>
+                <textarea
+                  class="textarea-field"
+                  placeholder="Descreva detalhadamente sua dúvida ou problema"
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" class="submit-button">
+                Enviar Mensagem
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../assets/js/support-suporte.js"></script>
+  </body>
+</html>

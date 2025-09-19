@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile - 1lênin1dev</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../../assets/css/profile-profile.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="design-label">FIGMA DESIGN</div>
+      <div class="screen">
+        <div class="notch"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="header">
+          <button id="go-back" class="back-button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <div id="go-settings" class="header-title">Meu perfil</div>
+          <button id="go-settings-button" class="settings-button">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+
+        <div class="main-content">
+          <div class="profile-card">
+            <div class="profile-avatar">
+              <img
+                data-user-photo
+                class="profile-image"
+                alt="Foto do Perfil"
+                src=""
+              />
+            </div>
+            <!-- Aqui com IDs para atualizar dinamicamente -->
+            <div id="profile-name" class="profile-name">Lênin Fontella</div>
+            <div id="profile-email" class="profile-username">@lenin_sci</div>
+
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div id="user-coins" class="stat-value">2.547</div>
+                <div class="stat-label">Moedas</div>
+              </div>
+              <div class="stat-item">
+                <div id="user-donations" class="stat-value">45</div>
+                <div class="stat-label">Doações</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-section">
+            <h3 class="section-title">
+              <i class="fas fa-chart-line" style="color: #00d4ff"></i>
+              Dashboard
+            </h3>
+
+            <!-- Novo highlight card para usuário com maior interação -->
+            <div class="highlight-card">
+              <div class="highlight-icon top-user">
+                <i class="fas fa-crown"></i>
+              </div>
+              <div class="highlight-text">
+                <div class="highlight-title">Maior Interação</div>
+                <div id="top-interacting-user" class="highlight-name">
+                  Ana Silva
+                </div>
+                <div id="top-user-interactions" class="highlight-desc">
+                  12 interações este mês
+                </div>
+              </div>
+            </div>
+
+            <div class="highlight-card">
+              <div class="highlight-icon">
+                <i class="fas fa-coins"></i>
+              </div>
+              <div class="highlight-text">
+                <div class="highlight-title">Última Doação</div>
+                <div id="last-donation-amount" class="highlight-name">
+                  50 moedas
+                </div>
+                <div id="last-donation-date" class="highlight-desc">
+                  há 2 dias
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Doações - Este Mês</h4>
+              </div>
+              <div class="chart-container">
+                <div class="chart-legend">
+                  <div class="legend-item">
+                    <div class="legend-color donated"></div>
+                    <span id="donated-count">Doadas: 15</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color received"></div>
+                    <span id="received-count">Recebidas: 8</span>
+                  </div>
+                </div>
+                <div class="mini-chart">
+                  <div
+                    id="donated-bar"
+                    class="chart-bar donated"
+                    style="height: 65%"
+                  ></div>
+                  <div
+                    id="received-bar"
+                    class="chart-bar received"
+                    style="height: 35%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="goals-section">
+            <h3 class="section-title">
+              <i class="fas fa-target" style="color: #00ff88"></i>
+              Metas Atuais
+            </h3>
+            <div class="goals-container">
+              <div class="goal-item">
+                <div class="goal-header">
+                  <div class="goal-info">
+                    <div class="goal-title">Doar moedas este mês</div>
+                    <div id="goal-progress-text" class="goal-progress-text">
+                      45/100
+                    </div>
+                  </div>
+                  <button
+                    id="edit-goal-btn"
+                    class="edit-goal-btn"
+                    type="button"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+                <div class="goal-progress">
+                  <div
+                    id="goal-progress-bar"
+                    class="progress-bar"
+                    style="width: 45%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal para definir meta - movido para fora da section -->
+          <div id="goal-modal" class="goal-modal">
+            <div class="goal-modal-content">
+              <div class="modal-header">
+                <h4>Definir Meta de Doação</h4>
+                <button id="close-modal" class="close-modal" type="button">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="modal-body">
+                <label for="goal-amount">Valor da meta (moedas):</label>
+                <select id="goal-amount" class="goal-select">
+                  <option value="50">50 moedas</option>
+                  <option value="100" selected="selected">100 moedas</option>
+                  <option value="200">200 moedas</option>
+                  <option value="500">500 moedas</option>
+                  <option value="1000">1000 moedas</option>
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button id="save-goal" class="save-goal-btn" type="button">
+                  Salvar Meta
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-section">
+            <button class="menu-item" type="button">
+              <div class="menu-icon transactions">
+                <i class="fas fa-history"></i>
+              </div>
+              <div class="menu-text">
+                <div class="menu-title">Histórico</div>
+                <div class="menu-subtitle">Ver todas as transações</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+
+            <button class="menu-item" type="button">
+              <div class="menu-icon security">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="menu-text">
+                <div class="menu-title">Segurança</div>
+                <div class="menu-subtitle">Configurações de privacidade</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+
+            <button class="menu-item" type="button">
+              <div class="menu-icon help">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <div id="go-support" class="menu-text">
+                <div class="menu-title">Suporte</div>
+                <div class="menu-subtitle">Ajuda e contato</div>
+              </div>
+              <i class="fas fa-chevron-right menu-arrow"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div id="go-home" class="nav-item" data-tab="home">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+          </div>
+          <div id="go-timeline" class="nav-item" data-tab="timeline">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </div>
+          <div id="go-ranks" class="nav-item" data-tab="ranks">
+            <i class="fas fa-trophy"></i>
+            <span>Ranking</span>
+          </div>
+          <div class="nav-item active" data-tab="profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Perfil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../../assets/js/auth.js"></script>
+    <!-- 1º - Base de autenticação -->
+    <script src="../../../../assets/js/config-edit-apiConfig.js"></script>
+    <!-- 2º - Config da API -->
+    <script src="../../../../assets/js/config-edit-userService.js"></script>
+    <!-- 3º - Serviços (usa apiConfig) -->
+    <script src="../../../../assets/js/config-edit-globalInit.js"></script>
+    <!-- 4º - Inicialização -->
+    <script src="../../../../assets/js/profile-profile.js"></script>
+    <!-- 5º - Lógica da página -->
+    <script src="../../../../assets/js/profile-pull-to-refresh.js"></script>
+    <!-- 6º - Funcionalidades extras -->
+  </body>
+</html>

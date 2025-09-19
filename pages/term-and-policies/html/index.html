@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Termos de Uso - 1lênin1dev</title>
+    <!-- Fonte "Inter" é uma boa alternativa para o "SF Pro Display" -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <!-- Font Awesome para ícones -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <!-- Link para o arquivo CSS externo -->
+    <link rel="stylesheet" href="../../../assets/css/term-and-policies-style.css" />
+  </head>
+  <body>
+    <div class="phone-container">
+      <div class="screen">
+        <!-- Barra de Status do iOS -->
+        <div class="status-bar">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <i class="fas fa-signal" style="font-size: 12px"></i>
+            <i class="fas fa-wifi" style="font-size: 12px"></i>
+            <i
+              class="fas fa-battery-three-quarters"
+              style="font-size: 12px"
+            ></i>
+          </div>
+        </div>
+
+        <div class="notch"></div>
+
+        <div class="login-container">
+          <!-- Seção do Cabeçalho -->
+          <div class="header-section">
+            <div class="logo-container">
+              <i class="fas fa-coins logo-icon"></i>
+            </div>
+            <h1 class="app-title">Altrums Coins</h1>
+            <p class="app-subtitle">Termos de Uso e Política de Privacidade</p>
+          </div>
+
+          <!-- Seção de Conteúdo dos Termos -->
+          <div class="agreement-content">
+            <h3>1. Aceitação dos Termos</h3>
+            <p>
+              Ao se registrar ou utilizar o serviço Altrums, você concorda com
+              estes Termos de Uso e com nossa Política de Privacidade. Caso não
+              concorde, por favor, não utilize a plataforma. A Altrums se
+              reserva o direito de alterar estes termos a qualquer momento, e o
+              uso contínuo da plataforma após as alterações constitui aceitação
+              dos novos termos.
+            </p>
+
+            <h3>2. Uso do Serviço</h3>
+            <p>
+              O Altrums é uma plataforma de simulação de negociação de ativos
+              digitais para fins educacionais e de entretenimento. Os resultados
+              obtidos na plataforma não garantem resultados reais em mercados de
+              criptomoedas.
+            </p>
+            <p>
+              Você é responsável por manter a confidencialidade de sua conta e
+              senha e por todas as atividades que ocorrem em sua conta.
+            </p>
+
+            <h3>3. Política de Privacidade</h3>
+            <p>
+              Coletamos informações pessoais como nome, e-mail e dados de uso
+              para melhorar nossos serviços. Suas informações não serão
+              compartilhadas com terceiros sem seu consentimento explícito,
+              exceto conforme exigido por lei.
+            </p>
+
+            <h3>4. Conteúdo e Propriedade Intelectual</h3>
+            <p>
+              Todo o conteúdo, incluindo textos, gráficos, logotipos e software
+              na plataforma, é de propriedade da Altrums ou de seus
+              licenciadores e está protegido por leis de direitos autorais. O
+              uso não autorizado é estritamente proibido.
+            </p>
+
+            <h3>5. Limitação de Responsabilidade</h3>
+            <p>
+              O Altrums não se responsabiliza por quaisquer perdas ou danos,
+              diretos ou indiretos, decorrentes do uso de nossa plataforma. Você
+              utiliza a plataforma por sua conta e risco.
+            </p>
+          </div>
+
+          <!-- Seção de Checkbox e Botão -->
+          <div class="form-section">
+            <div class="remember-me-container">
+              <div class="checkbox-wrapper">
+                <!-- O input continua invisível -->
+                <input
+                  type="checkbox"
+                  id="agree-terms"
+                  class="checkbox-input"
+                  required
+                />
+                <!-- O span customizado agora tem um ID para ser manipulado pelo JS -->
+                <span class="checkbox-custom" id="agree-custom-checkbox"></span>
+              </div>
+              <!-- O label continua funcional para acessibilidade e usabilidade -->
+              <label for="agree-terms" class="checkbox-label"
+                >Eu concordo com os Termos de Uso e Política de
+                Privacidade.</label
+              >
+            </div>
+            <button
+              type="submit"
+              class="login-button"
+              id="agree-button"
+              disabled
+            >
+              Concordar e Continuar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Mensagem -->
+    <div id="confirmation-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" id="close-modal-btn">&times;</span>
+        <p class="modal-text">Você concordou com os termos e pode continuar!</p>
+        <button class="modal-button" id="continue-btn">OK</button>
+      </div>
+    </div>
+
+    <!-- Link para o arquivo JavaScript externo -->
+    <script src="../../../assets/js/term-and-policies-script.js"></script>
+  </body>
+</html>
