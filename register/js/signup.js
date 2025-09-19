@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         setTimeout(() => {
-          window.location.href = "../../login/html/login.html";
+          window.location.href = "../../login/html/index.html";
         }, 1500);
       } else {
         const errorMessage = data.errors
