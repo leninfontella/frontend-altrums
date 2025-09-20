@@ -325,16 +325,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Enviar dados para o backend
     try {
-      const res = await fetch("https://api-backend-coins.onrender.com/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.fullname,
-          email: formData.email,
-          password: formData.password,
-          confirmPassword: confirmPasswordInput.value, // Adicionar confirmPassword
-        }),
-      });
+      const res = await fetch(
+        "https://api-backend-coins.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.fullname,
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: confirmPasswordInput.value, // Adicionar confirmPassword
+          }),
+        }
+      );
 
       const data = await res.json();
 
