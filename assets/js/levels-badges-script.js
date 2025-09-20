@@ -187,9 +187,7 @@ function showErrorMessage(message) {
 async function fetchBadgeProgressFromAPI() {
   try {
     // Usar endpoint correto /api/badges/progress
-    const response = await api.get(
-      "https://altrums.vercel.app/api/badges/progress"
-    );
+    const response = await api.get("/api/badges/progress");
     const result = await response.json();
 
     if (result.success) {
