@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ========== CONFIGURAÇÃO DA API ==========
-const API_BASE_URL = "http://localhost:5000/api"; // Ajuste conforme seu backend
+const API_BASE_URL = "https://api-backend-coins.onrender.com/api"; // Ajuste conforme seu backend
 
 // Cache para evitar requisições excessivas
 let apiCache = new Map();
