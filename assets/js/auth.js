@@ -8,7 +8,7 @@ const Auth = {
     if (hostname === "localhost" || hostname === "127.0.0.1") {
       return "http://localhost:5000/api";
     } else {
-      return "https://api-backend-coins.onrender.com";
+      return "https://api-backend-coins.onrender.com/";
     }
   })(),
 
