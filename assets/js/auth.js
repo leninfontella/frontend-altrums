@@ -1,10 +1,7 @@
 // Módulo de Autenticação Unificado - Living Coins
 const Auth = {
   // ========== CONFIGURAÇÃO DA API ==========
-  API_BASE:
-    window.location.hostname === "localhost"
-      ? "http://localhost:5000/api"
-      : "https://api-backend-coins.onrender.com/api",
+  API_BASE: "http://localhost:5000/api",
 
   ENDPOINTS: {
     login: "/auth/login",
@@ -454,10 +451,10 @@ const Auth = {
 
     // Se Auth.js está em /js/ global
     if (currentPath.includes("/login/html/")) {
-      redirectPath = "/pages/home/html/index.html";
+      redirectPath = "../../../home/html/index.html";
     } else {
       // Fallback padrão
-      redirectPath = "/pages/home/html/index.html";
+      redirectPath = "../../home/html/index.html";
     }
 
     window.location.href = redirectPath;
@@ -976,7 +973,7 @@ if (typeof window !== "undefined" && !window.CONFIG) {
     UI: {
       pages: {
         login: "../../login/html/login.html",
-        dashboard: "/pages/home/html/index.html",
+        dashboard: "../../home/html/index.html",
       },
     },
     getEndpointURL: (endpoint) => Auth.getEndpointURL(endpoint),
