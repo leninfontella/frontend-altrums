@@ -651,6 +651,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (logoutItem) {
     logoutItem.addEventListener("click", function (e) {
       e.preventDefault();
+      e.stopPropagation();
 
       const confirmModal = document.createElement("div");
       confirmModal.style.cssText = `
@@ -701,59 +702,257 @@ document.addEventListener("DOMContentLoaded", function () {
               cursor: pointer;
               font-size: 14px;
               font-weight: 600;
-            ">Sair</button>
+              position: relative;
+            ">
+              <span id="logout-text">Sair</span>
+              <div id="logout-loading" style="display: none;">
+                <div style="
+                  width: 16px;
+                  height: 16px;
+                  border: 2px solid transparent;
+                  border-top: 2px solid white;
+                  border-radius: 50%;
+                  animation: spin 1s linear infinite;
+                  margin: 0 auto;
+                "></div>
+              </div>
+            </button>
           </div>
         </div>
       `;
 
       document.body.appendChild(confirmModal);
 
+      // Botão cancelar
       document.getElementById("cancel-logout").addEventListener("click", () => {
         confirmModal.remove();
       });
 
+      // Botão confirmar logout
       document
         .getElementById("confirm-logout")
-        .addEventListener("click", () => {
-          confirmModal.remove();
-          if (typeof Auth !== "undefined" && Auth.logout) {
-            Auth.logout();
+        .addEventListener("click", async () => {
+          const logoutButton = document.getElementById("confirm-logout");
+          const logoutText = document.getElementById("logout-text");
+          const logoutLoading = document.getElementById("logout-loading");
+
+          // Desabilitar botão e mostrar loading
+          logoutButton.disabled = true;
+          logoutButton.style.opacity = "0.7";
+          logoutText.style.display = "none";
+          logoutLoading.style.display = "block";
+
+          console.log("🚪 Iniciando processo de logout...");
+
+          try {
+            // 1. Tentar fazer logout via API se disponível
+            let logoutSuccess = false;
+
+            if (typeof Auth !== "undefined" && Auth.logout) {
+              console.log("📡 Fazendo logout via Auth module...");
+              try {
+                await Auth.logout();
+                logoutSuccess = true;
+                console.log("✅ Logout via Auth module concluído");
+              } catch (error) {
+                console.error("❌ Erro no logout via Auth module:", error);
+              }
+            }
+
+            // 2. Tentar fazer logout via fetch para API diretamente
+            if (!logoutSuccess) {
+              console.log("📡 Tentando logout via API fetch...");
+              try {
+                const response = await fetch("/api/auth/logout", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${
+                      sessionStorage.getItem("token") ||
+                      localStorage.getItem("token")
+                    }`,
+                  },
+                  credentials: "include",
+                });
+
+                if (response.ok) {
+                  logoutSuccess = true;
+                  console.log("✅ Logout via API fetch concluído");
+                } else {
+                  console.warn(
+                    "⚠️ Logout via API retornou status:",
+                    response.status
+                  );
+                }
+              } catch (error) {
+                console.warn("⚠️ Erro no logout via API fetch:", error);
+              }
+            }
+
+            // 3. Limpar dados locais independente do sucesso da API
+            console.log("🧹 Limpando dados locais...");
+
+            // Limpar sessionStorage
+            const sessionKeys = [
+              "token",
+              "refreshToken",
+              "userId",
+              "userName",
+              "userEmail",
+              "userData",
+              "name",
+              "fullName",
+              "email",
+            ];
+            sessionKeys.forEach((key) => {
+              sessionStorage.removeItem(key);
+            });
+
+            // Limpar localStorage (dados menos críticos)
+            const localKeys = [
+              "userName",
+              "userEmail",
+              "userData",
+              "name",
+              "fullName",
+              "email",
+              "appLanguage",
+            ];
+            localKeys.forEach((key) => {
+              localStorage.removeItem(key);
+            });
+
+            // Limpar cookies se possível
+            try {
+              document.cookie.split(";").forEach((cookie) => {
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                document.cookie =
+                  name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+              });
+              console.log("🍪 Cookies limpos");
+            } catch (error) {
+              console.warn("⚠️ Erro ao limpar cookies:", error);
+            }
+
+            console.log("✅ Dados locais limpos com sucesso");
+
+            // 4. Aguardar um pouco para garantir que tudo foi processado
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // 5. Fechar modal
+            confirmModal.remove();
+
+            // 6. Redirecionar para página de login
+            console.log("🔄 Redirecionando para página de login...");
+
+            // Forçar limpeza da história do navegador
+            if (window.history && window.history.replaceState) {
+              window.history.replaceState(null, null, "/index.html");
+            }
+
+            // Redirecionar
+            window.location.href = "/index.html";
+          } catch (error) {
+            console.error("❌ Erro crítico durante logout:", error);
+
+            // Mesmo com erro, limpar dados e redirecionar
+            sessionStorage.clear();
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("userId");
+
+            confirmModal.remove();
+            window.location.href = "/index.html";
           }
-          window.location.href = "/index.html";
         });
 
+      // Fechar modal clicando fora
       confirmModal.addEventListener("click", (e) => {
         if (e.target === confirmModal) {
           confirmModal.remove();
         }
       });
+
+      // Fechar modal com ESC
+      const handleEsc = (e) => {
+        if (e.key === "Escape") {
+          confirmModal.remove();
+          document.removeEventListener("keydown", handleEsc);
+        }
+      };
+      document.addEventListener("keydown", handleEsc);
     });
   }
 });
 
-// Adicionar estilos para animações
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes pulse-glow {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+// Função auxiliar para logout programático
+window.performLogout = async function () {
+  console.log("🚪 Logout programático iniciado...");
+
+  try {
+    // Tentar Auth module primeiro
+    if (typeof Auth !== "undefined" && Auth.logout) {
+      try {
+        await Auth.logout();
+        console.log("✅ Logout via Auth module concluído");
+      } catch (error) {
+        console.error("❌ Erro no Auth.logout:", error);
+      }
+    }
+
+    // Tentar API diretamente
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${
+            sessionStorage.getItem("token") || localStorage.getItem("token")
+          }`,
+        },
+        credentials: "include",
+      });
+    } catch (error) {
+      console.warn("⚠️ Erro na API de logout:", error);
+    }
+
+    // Limpar dados locais
+    sessionStorage.clear();
+    [
+      "token",
+      "refreshToken",
+      "userId",
+      "userName",
+      "userEmail",
+      "userData",
+    ].forEach((key) => {
+      localStorage.removeItem(key);
+    });
+
+    // Redirecionar
+    window.location.href = "/index.html";
+  } catch (error) {
+    console.error("❌ Erro no logout programático:", error);
+    // Forçar limpeza e redirecionamento mesmo com erro
+    sessionStorage.clear();
+    window.location.href = "/index.html";
+  }
+};
+
+// Adicionar CSS para animação de loading
+const logoutStyles = document.createElement("style");
+logoutStyles.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
   
-  @keyframes slideUp {
-    from { transform: translate(-50%, 100%); opacity: 0; }
-    to { transform: translate(-50%, 0); opacity: 1; }
-  }
-  
-  @keyframes slideDown {
-    from { transform: translate(-50%, 0); opacity: 1; }
-    to { transform: translate(-50%, 100%); opacity: 0; }
-  }
-  
-  @keyframes ripple-toggle {
-    to { transform: scale(4); opacity: 0; }
+  #confirm-logout:disabled {
+    cursor: not-allowed !important;
   }
 `;
-document.head.appendChild(style);
+document.head.appendChild(logoutStyles);
 
 // Função utilitária para debug
 window.debugUserData = function () {
