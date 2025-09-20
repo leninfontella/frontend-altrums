@@ -559,7 +559,7 @@ const LevelSystem = {
 // ========== SISTEMA DE BUSCA E DOAÇÃO - INTEGRAÇÃO COM API ==========
 
 const UserSearchAPI = {
-  baseUrl: "http://localhost:5000/api",
+  baseUrl: "https://api-backend-coins.onrender.com/api", // Ajuste conforme seu backend
 
   async searchUsers(query) {
     try {
