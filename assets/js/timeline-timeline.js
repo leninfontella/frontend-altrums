@@ -4,7 +4,7 @@
 // ===============================
 
 // Configuração global
-const API_BASE_URL = "https://api-backend-coins.onrender.com/api/profile";
+const API_BASE_URL = "https://api-backend-coins.onrender.com/api/users/profile";
 const CACHE_DURATION = 30000; // 30 segundos
 const PULL_THRESHOLD = 70; // Distância para pull-to-refresh
 
