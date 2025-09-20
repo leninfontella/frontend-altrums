@@ -143,7 +143,7 @@ function generateAvatarHtml(
 
 // ========== CONFIGURAÇÃO DA API ==========
 const API_CONFIG = {
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://api-backend-coins.onrender.com/api",
   endpoints: {
     ranking: "/ranking",
     top10: "/ranking/top10",
