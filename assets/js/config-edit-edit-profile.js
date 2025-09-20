@@ -265,15 +265,18 @@ function loadUserProfile() {
 }
 
 // 🔧 FUNÇÃO CRÍTICA CORRIGIDA: Salvar perfil apenas com dados do usuário atual
-
-// ... (código anterior)
-
-// 🔧 FUNÇÃO CRÍTICA CORRIGIDA: Salvar perfil apenas com dados do usuário atual
 async function saveProfile() {
   try {
     // Verificar autenticação
     if (typeof Auth === "undefined" || !Auth.getToken()) {
       showMessage("Sessão expirada. Faça login novamente.", "error");
+      return;
+    }
+
+    // 🔧 VALIDAÇÃO: Verificar se os dados pertencem ao usuário atual
+    const currentUserData = Auth.getUserData();
+    if (!currentUserData || !currentUserData.id) {
+      showMessage("Dados de usuário inválidos. Faça login novamente.", "error");
       return;
     }
 
@@ -288,26 +291,12 @@ async function saveProfile() {
         : "Salvando...";
     });
 
-    const photoInput = document.getElementById("photo-input");
-    const hasNewPhoto = photoInput && photoInput.files && photoInput.files[0];
-
-    // ✅ LÓGICA CORRIGIDA: Priorizar o upload da foto se ela existir
-    if (hasNewPhoto) {
-      await uploadPhotoOnly();
-    }
-
     // Obter dados do formulário
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
     // 🔧 VALIDAÇÃO CRÍTICA: Verificar se o email pertence ao usuário atual
-    const currentUserData = Auth.getUserData();
-    if (!currentUserData || !currentUserData.id) {
-      showMessage("Dados de usuário inválidos. Faça login novamente.", "error");
-      return;
-    }
-
     if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
       showMessage(
         "Não é possível alterar o email para outro usuário.",
@@ -341,19 +330,68 @@ async function saveProfile() {
       phone,
     };
 
-    // 🔧 CORREÇÃO: Usar Auth.updateProfile para dados sem foto
-    // A foto foi tratada separadamente, então aqui só atualizamos os outros dados.
-    const result = await Auth.updateProfile(profileData);
+    // Verificar se há nova foto
+    const photoInput = document.getElementById("photo-input");
+    if (photoInput && photoInput.files && photoInput.files[0]) {
+      const file = photoInput.files[0];
 
-    if (result.success) {
-      // ✅ Passar os dados mais recentes para a função de sucesso
-      await handleSuccessfulUpdate(result.data, hasNewPhoto);
+      if (!file.type.startsWith("image/")) {
+        showMessage("Por favor, selecione apenas arquivos de imagem", "error");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showMessage("A imagem deve ter menos de 5MB", "error");
+        return;
+      }
+
+      // 🔧 CORREÇÃO: Usar FormData quando há arquivo
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("phone", phone);
+      formData.append("profilePhoto", file);
+
+      // Usar apiConfig diretamente para FormData
+      const response = await window.apiConfig.put("/api/profile", formData);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        await handleSuccessfulUpdate(result.user);
+        photoInput.value = "";
+      } else {
+        throw new Error(result.message || "Erro ao salvar perfil");
+      }
     } else {
-      throw new Error(result.message || "Erro ao salvar perfil");
+      // 🔧 CORREÇÃO: Usar Auth.updateProfile para dados sem foto
+      const result = await Auth.updateProfile(profileData);
+
+      if (result.success) {
+        await handleSuccessfulUpdate(result.data);
+      } else {
+        throw new Error(result.message || "Erro ao salvar perfil");
+      }
     }
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
-    // ... (tratamento de erro)
+
+    if (error.message.includes("401") || error.message.includes("Token")) {
+      showMessage("Sessão expirada. Faça login novamente.", "error");
+      setTimeout(() => {
+        window.location.href = "../../login/html/login.html";
+      }, 2000);
+    } else if (error.message.includes("413")) {
+      showMessage("Arquivo muito grande. Máximo 5MB.", "error");
+    } else if (error.message.includes("400")) {
+      showMessage("Dados inválidos. Verifique as informações.", "error");
+    } else if (error.name === "TypeError" && error.message.includes("fetch")) {
+      showMessage("Erro de conexão. Verifique sua internet.", "error");
+    } else {
+      showMessage(
+        error.message || "Erro inesperado. Tente novamente.",
+        "error"
+      );
+    }
   } finally {
     // Restaurar botões
     const saveButtons = document.querySelectorAll(
@@ -369,20 +407,21 @@ async function saveProfile() {
 }
 
 // Função para tratar atualização bem-sucedida
-async function handleSuccessfulUpdate(
-  updatedUserData,
-  hasPhotoChanged = false
-) {
+async function handleSuccessfulUpdate(updatedUserData) {
   // Atualizar localStorage com dados corretos
   localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
   // ✅ CORRIGIR: Usar forceRefresh=true APENAS quando há nova foto
-  const forceRefresh = hasPhotoChanged;
+  const hasNewPhoto =
+    updatedUserData.profilePhotoUrl &&
+    JSON.parse(localStorage.getItem("userData") || "{}").profilePhotoUrl !==
+      updatedUserData.profilePhotoUrl;
 
   updateProfilePhotoDisplayFixed(
     updatedUserData.profilePhotoUrl || updatedUserData.avatar,
-    forceRefresh
+    hasNewPhoto // Só força refresh se realmente mudou
   );
+
   // Resto da função permanece igual...
   // Sincronização: Usar Auth para atualizar dados globalmente
   if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
