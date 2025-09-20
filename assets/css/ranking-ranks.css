@@ -446,14 +446,19 @@ body {
 /* ========== RESPONSIVIDADE ========== */
 @media (max-width: 420px) {
   .phone-container {
-    width: 100%;
-    height: 100vh;
-    border-radius: 0;
-    padding: 0;
+    width: 390px; /* mantém tamanho fixo */
+    height: 844px;
+    border-radius: 50px; /* mantém a moldura */
+    padding: 8px;
+    margin: 0 auto; /* centraliza */
   }
 
   .screen {
-    border-radius: 0;
+    border-radius: 42px;
+  }
+
+  body {
+    padding: 10px;
   }
 }
 
