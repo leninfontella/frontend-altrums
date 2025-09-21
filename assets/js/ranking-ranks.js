@@ -1407,8 +1407,9 @@ class Utils {
   static async checkAPIConnection() {
     try {
       console.log("Verificando conexão com a API...");
+
       const response = await fetch(
-        `${API_CONFIG.baseURL.replace("/api", "")}/api/health`,
+        `${API_CONFIG.baseURL}/health`, // <-- Corrigido aqui
         {
           method: "GET",
           timeout: 5000,
