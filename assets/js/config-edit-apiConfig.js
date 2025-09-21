@@ -1,4 +1,5 @@
 // Configuração unificada da API - Living Coins
+// Configuração unificada da API - Living Coins
 class ApiConfig {
   constructor() {
     this.baseURL = this.detectApiBaseURL();
@@ -13,19 +14,20 @@ class ApiConfig {
 
     // Se estamos em desenvolvimento local
     if (currentHost === "localhost" || currentHost === "127.0.0.1") {
-      // Se o frontend está na porta 5500 (Live Server), API provavelmente está na 5000
       if (window.location.port === "5500") {
         return `${currentProtocol}//${currentHost}:5000`;
       }
-      // Se está na mesma porta, usar a mesma
       return `${currentProtocol}//${currentHost}:${
         window.location.port || (currentProtocol === "https:" ? "443" : "80")
       }`;
     }
 
-    // Em produção, usar o mesmo domínio
-    return `${currentProtocol}//${currentHost}`;
+    // ✨ CORREÇÃO CRÍTICA: Forçar a URL correta da API em produção
+    // O endereço do servidor da API (Render) é diferente do frontend (Vercel)
+    return "https://api-backend-coins.onrender.com"; // Substitua por sua URL real no Render
   }
+
+  // ... o restante da classe permanece o mesmo
 
   // Obter token de autenticação de múltiplas fontes
   getAuthToken() {

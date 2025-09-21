@@ -50,91 +50,50 @@ let currentUserData = null;
 let currentPoints = 0;
 
 // Função para buscar dados do usuário atual usando a rota unificada de badges
-
 async function fetchUserData() {
   try {
-    console.log("🔄 Carregando dados do usuário via endpoints corretos...");
+    console.log("🔄 Carregando dados do usuário via /api/badges...");
 
-    // 1. Buscar dados do usuário via /api/auth/me (dados básicos)
-    const userResponse = await api.get("/api/auth/me");
-    const userResult = await userResponse.json();
+    const response = await api.get("/api/badges");
+    const result = await response.json();
 
-    if (!userResult.success) {
+    if (!result.success) {
       throw new Error("Falha ao carregar dados do usuário");
     }
 
-    // 2. Buscar progresso de badges via /api/badges/progress
-    const badgesResponse = await api.get("/api/badges/progress");
-    const badgesResult = await badgesResponse.json();
+    // Estrutura correta da resposta
+    const data = result.data || {};
 
-    if (!badgesResult.success) {
-      console.warn(
-        "⚠️ Falha ao carregar progresso de badges, usando dados básicos"
-      );
-    }
-
-    // 3. Combinar dados do usuário
-    const userData = userResult.data || {};
-    const badgesData = badgesResult.success ? badgesResult.data : {};
+    // Alteração 1: Acessar a propriedade correta para os dados do usuário
+    const userDataFromApi = data.user || {};
 
     currentUserData = {
-      ...userData,
-      coins: userData.coins || 0,
-      totalDonated: userData.totalDonated || 0,
-      totalReceived: userData.totalReceived || 0,
-      level: userData.level || 1,
-      profilePhotoUrl: userData.profilePhotoUrl,
-      name: userData.name || userData.username || "Usuário",
+      ...userDataFromApi,
+      coins: userDataFromApi.coins || 0,
+      totalDonated: userDataFromApi.totalDonated || 0,
+      totalReceived: userDataFromApi.totalReceived || 0,
+      // Alteração 2: Acessar a propriedade de nível correta do backend
+      level: userDataFromApi.level,
+      profilePhotoUrl: userDataFromApi.profilePhotoUrl,
     };
 
-    // 4. Definir pontos corretos baseado no progresso de badges
-    currentPoints =
-      badgesData.currentPoints ||
-      badgesData.points ||
-      userData.totalDonated ||
-      0;
+    // Alteração 3: Acessar as propriedades de badges do backend
+    const badgesData = data.badges || {};
+    const currentLevelData = badgesData.currentLevel || {};
+
+    // Alteração 4: Corrigir a lógica para pegar pontos e progresso
+    currentPoints = badgesData.currentPoints || 0;
 
     console.log("✅ Dados do usuário carregados:", {
       name: currentUserData.name,
       points: currentPoints,
       coins: currentUserData.coins,
-      level: currentUserData.level,
     });
 
     return currentUserData;
   } catch (error) {
     console.error("❌ Erro ao buscar dados do usuário:", error);
 
-    // Fallback: tentar apenas dados básicos do usuário
-    try {
-      console.log("🔄 Tentando fallback com dados básicos...");
-
-      const fallbackResponse = await api.get("/api/auth/me");
-      const fallbackResult = await fallbackResponse.json();
-
-      if (fallbackResult.success) {
-        const userData = fallbackResult.data || {};
-
-        currentUserData = {
-          ...userData,
-          coins: userData.coins || 0,
-          totalDonated: userData.totalDonated || 0,
-          totalReceived: userData.totalReceived || 0,
-          level: userData.level || 1,
-          profilePhotoUrl: userData.profilePhotoUrl,
-          name: userData.name || userData.username || "Usuário",
-        };
-
-        currentPoints = userData.totalDonated || 0;
-
-        console.log("✅ Dados básicos carregados via fallback");
-        return currentUserData;
-      }
-    } catch (fallbackError) {
-      console.error("❌ Erro no fallback:", fallbackError);
-    }
-
-    // Último fallback: dados padrão
     currentPoints = 0;
     currentUserData = {
       name: "Usuário",
@@ -186,87 +145,21 @@ function showErrorMessage(message) {
 
 async function fetchBadgeProgressFromAPI() {
   try {
-    // Usar endpoint correto /api/badges/progress
-    const response = await api.get("/api/badges/progress");
-    const result = await response.json();
-
-    if (result.success) {
-      console.log("✅ Progresso de badges carregado via API");
-      return result.data;
-    }
-
-    console.warn("⚠️ API de badges não retornou dados válidos");
-    return null;
-  } catch (error) {
-    console.warn("⚠️ Endpoint de badges não disponível:", error.message);
-
-    // Tentar endpoint alternativo se disponível
-    try {
-      const userResponse = await api.get("/api/auth/me");
-      const userResult = await userResponse.json();
-
-      if (userResult.success && userResult.data) {
-        return {
-          points: userResult.data.totalDonated || 0,
-          currentLevel: userResult.data.level || 1,
-          currentPoints: userResult.data.totalDonated || 0,
-        };
+    // Tentar usar endpoint específico de badges se disponível
+    if (window.api && window.api.getBadgeProgress) {
+      const response = await window.api.getBadgeProgress();
+      if (response.success) {
+        return response.data;
       }
-    } catch (fallbackError) {
-      console.warn("⚠️ Fallback também falhou:", fallbackError.message);
     }
-
-    return null;
-  }
-}
-
-async function refreshBadgesFromServer() {
-  try {
-    console.log("🔄 Atualizando badges no servidor...");
-
-    const response = await api.put("/api/badges/refresh");
-    const result = await response.json();
-
-    if (result.success) {
-      console.log("✅ Badges atualizados no servidor");
-      return result.data;
-    }
-
-    console.warn("⚠️ Falha ao atualizar badges no servidor");
     return null;
   } catch (error) {
-    console.warn("⚠️ Erro ao atualizar badges:", error.message);
+    console.warn(
+      "Endpoint de badges não disponível, usando dados do Auth:",
+      error.message
+    );
     return null;
   }
-}
-
-// Função corrigida para atualizar dados em tempo real
-async function refreshUserData() {
-  const oldLevel = getCurrentLevel(currentPoints);
-
-  // Tentar atualizar badges no servidor primeiro
-  await refreshBadgesFromServer();
-
-  // Buscar dados atualizados
-  await fetchUserData();
-
-  // Tentar buscar dados específicos de badges
-  const badgeProgress = await fetchBadgeProgressFromAPI();
-  if (badgeProgress) {
-    currentPoints =
-      badgeProgress.currentPoints || badgeProgress.points || currentPoints;
-  }
-
-  const newLevel = getCurrentLevel(currentPoints);
-
-  // Verificar se subiu de nível
-  if (newLevel.level > oldLevel.level) {
-    showLevelUpNotification(newLevel);
-  }
-
-  // Atualizar display
-  renderCurrentLevelCard();
-  renderBadgesGrid();
 }
 
 // Função para determinar o nível atual baseado nos pontos
@@ -870,16 +763,12 @@ async function initializeBadgesSystem() {
 // Função para atualizar pontos em tempo real usando API integrada
 async function updatePointsFromServer() {
   try {
-    // 1. Tentar atualizar badges no servidor
-    const refreshResult = await refreshBadgesFromServer();
-
-    // 2. Buscar progresso atualizado
     const progressData = await fetchBadgeProgressFromAPI();
 
     if (progressData) {
       const oldLevel = getCurrentLevel(currentPoints);
       currentPoints =
-        progressData.currentPoints || progressData.points || currentPoints;
+        progressData.points || progressData.totalDonated || currentPoints;
       const newLevel = getCurrentLevel(currentPoints);
 
       // Verificar se subiu de nível
@@ -891,15 +780,15 @@ async function updatePointsFromServer() {
       renderCurrentLevelCard();
       renderBadgesGrid();
 
-      console.log("✅ Dados de badges atualizados via API");
+      console.log("Dados de badges atualizados via API");
       return true;
     }
 
-    // Fallback: usar dados do usuário
+    // Fallback: usar dados do Auth
     await refreshUserData();
     return true;
   } catch (error) {
-    console.error("❌ Erro ao atualizar dados do servidor:", error);
+    console.error("Erro ao atualizar dados do servidor:", error);
     return false;
   }
 }
