@@ -553,10 +553,22 @@ function showLoadingState() {
   const userCoins = document.getElementById("user-coins");
   const userDonations = document.getElementById("user-donations");
 
+  // Adicionar os elementos do dashboard
+  const topInteractingUser = document.getElementById("top-interacting-user");
+  const topUserInteractions = document.getElementById("top-user-interactions");
+  const lastDonationAmount = document.getElementById("last-donation-amount");
+  const lastDonationDate = document.getElementById("last-donation-date");
+
   if (profileName) profileName.textContent = "Carregando...";
   if (profileEmail) profileEmail.textContent = "Carregando...";
   if (userCoins) userCoins.textContent = "...";
   if (userDonations) userDonations.textContent = "...";
+
+  // Atualizar os elementos do dashboard
+  if (topInteractingUser) topInteractingUser.textContent = "Carregando...";
+  if (topUserInteractions) topUserInteractions.textContent = "...";
+  if (lastDonationAmount) lastDonationAmount.textContent = "Carregando...";
+  if (lastDonationDate) lastDonationDate.textContent = "...";
 }
 
 function hideLoadingState() {
