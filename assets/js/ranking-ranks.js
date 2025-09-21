@@ -1581,33 +1581,61 @@ class Utils {
 // ========== INICIALIZAÇÃO PRINCIPAL ==========
 class RanksApp {
   static async init() {
-    console.log("🚀 Inicializando RanksApp...");
-
-    // ESTADO DE CARREGAMENTO AGORA É A PRIMEIRA COISA A SER MOSTRADA
-    UIManager.showLoading();
-
     try {
-      const currentUser = await UserService.getCurrentUser();
-      if (!currentUser) {
-        throw new Error("Usuário não encontrado.");
+      console.log("🚀 Inicializando aplicação de ranking...");
+
+      const token = UserService.getAuthToken();
+
+      if (!token) {
+        console.warn("⚠️ Token não encontrado.");
+
+        if (
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1"
+        ) {
+          console.log(
+            "🔧 Ambiente de desenvolvimento detectado. Criando dados de teste..."
+          );
+          Utils.generateTestUser();
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } else {
+          console.log("🔒 Redirecionando para login...");
+          this.redirectToLogin();
+          return;
+        }
+      } else if (!UserService.validateToken(token)) {
+        console.warn(
+          "❌ Token inválido encontrado. Limpando e redirecionando..."
+        );
+        Utils.clearUserData();
+        this.redirectToLogin();
+        return;
       }
-      this.currentUser = currentUser;
 
-      // Busca e atualiza os elementos da página de forma paralela
-      await Promise.all([
-        RankingManager.updatePodium(),
-        RankingManager.updateRankingList(currentUser),
-        UIManager.updateUserRank(currentUser),
-        UIManager.updateUserNameAndPhoto(currentUser),
-      ]);
+      UIManager.showLoading();
 
-      UIManager.hideLoading();
-      console.log("✅ RanksApp inicializado com sucesso!");
+      const hasConnection = await Utils.checkAPIConnection();
+      if (!hasConnection) {
+        console.warn(
+          "⚠️ API não acessível. Sistema funcionará com dados locais/mock."
+        );
+      } else {
+        console.log("✅ Conexão com API estabelecida.");
+      }
+
+      NavigationManager.setupNavigation();
+      RankingManager.addPodiumCSS();
+      await UIManager.updateUserInterface();
+
+      console.log("🎉 Aplicação de ranking carregada com sucesso!");
     } catch (error) {
-      console.error("❌ Erro fatal na inicialização:", error);
-      UIManager.showError(
-        "Erro ao carregar o ranking. Tente novamente mais tarde."
-      );
+      console.error("💥 Erro crítico ao inicializar aplicação:", error);
+
+      if (error.message.includes("Token")) {
+        this.redirectToLogin();
+      } else {
+        UIManager.showConnectionError();
+      }
     }
   }
 
