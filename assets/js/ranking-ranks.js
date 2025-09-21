@@ -1312,29 +1312,11 @@ class UIManager {
     });
   }
 
-  showLoading() {
+  static showLoading() {
     console.log("Mostrando estado de loading");
 
-    // Limpar e mostrar a mensagem de carregamento na lista principal
-    this.ranksList.innerHTML = `<li class="loading-message">
-        <i class="fas fa-spinner fa-spin"></i> Carregando ranking...
-    </li>`;
-    this.ranksList.style.display = "block";
-
-    // Adicionar indicadores de loading nos elementos do perfil e do pódio
-    const elementsToLoad = [
-      "user-name",
-      "user-balance",
-      "user-position",
-      "podium-name-1",
-      "podium-coins-1",
-      "podium-name-2",
-      "podium-coins-2",
-      "podium-name-3",
-      "podium-coins-3",
-    ];
-
-    elementsToLoad.forEach((id) => {
+    const elements = ["user-name", "user-balance", "user-position"];
+    elements.forEach((id) => {
       const element = document.getElementById(id);
       if (element) {
         element.textContent = "...";
