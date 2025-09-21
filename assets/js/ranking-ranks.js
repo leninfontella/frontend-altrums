@@ -1315,7 +1315,19 @@ class UIManager {
   static showLoading() {
     console.log("Mostrando estado de loading");
 
-    const elements = ["user-name", "user-balance", "user-position"];
+    const elements = [
+      "user-name",
+      "user-balance",
+      "user-position",
+      "podium-name-1",
+      "podium-coins-1",
+      "podium-name-2",
+      "podium-coins-2",
+      "podium-name-3",
+      "podium-coins-3",
+    ];
+
+    // Itera sobre a lista e atualiza o texto de cada elemento
     elements.forEach((id) => {
       const element = document.getElementById(id);
       if (element) {
