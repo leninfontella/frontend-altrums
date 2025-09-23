@@ -1,4 +1,4 @@
-/* CSS para Login Mobile - Living Coins */
+/* CSS para Login Mobile - Living Coins - Reduzido 25% */
 * {
   margin: 0;
   padding: 0;
@@ -28,7 +28,7 @@ body {
     env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* Partículas Flutuantes */
+/* Partículas Flutuantes - Reduzidas */
 .floating-particles {
   position: absolute;
   width: 100%;
@@ -39,12 +39,12 @@ body {
 
 .particle {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 3px; /* Reduzido de 4px */
+  height: 3px; /* Reduzido de 4px */
   background: linear-gradient(45deg, #00d4ff, #0099cc);
   border-radius: 50%;
   animation: float 8s infinite linear;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 7.5px rgba(0, 212, 255, 0.5); /* Reduzido de 10px */
 }
 
 .particle:nth-child(1) {
@@ -90,7 +90,7 @@ body {
     opacity: 1;
   }
   50% {
-    transform: translateY(-20px) rotate(180deg);
+    transform: translateY(-15px) rotate(180deg); /* Reduzido de -20px */
     opacity: 0.7;
   }
   100% {
@@ -103,31 +103,31 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 40px 24px 24px;
+  padding: 30px 18px 18px; /* Reduzido de 40px 24px 24px */
   position: relative;
   z-index: 10;
   justify-content: center;
-  max-width: 440px;
+  max-width: 330px; /* Reduzido de 440px */
   margin: 0 auto;
   width: 100%;
 }
 
-/* Header Section */
+/* Header Section - Reduzida */
 .header-section {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 36px; /* Reduzido de 48px */
 }
 
 .logo-container {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 24px;
+  width: 60px; /* Reduzido de 80px */
+  height: 60px; /* Reduzido de 80px */
+  margin: 0 auto 18px; /* Reduzido de 24px */
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-  border-radius: 20px;
+  border-radius: 15px; /* Reduzido de 20px */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 7.5px 22.5px rgba(0, 212, 255, 0.3); /* Reduzido de 10px 30px */
   position: relative;
   transition: transform 0.3s ease;
 }
@@ -135,11 +135,11 @@ body {
 .logo-container::after {
   content: "";
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 22px;
+  top: -1.5px; /* Reduzido de -2px */
+  left: -1.5px; /* Reduzido de -2px */
+  right: -1.5px; /* Reduzido de -2px */
+  bottom: -1.5px; /* Reduzido de -2px */
+  border-radius: 16.5px; /* Reduzido de 22px */
   background: linear-gradient(135deg, #00d4ff, #0099cc);
   z-index: -1;
   opacity: 0.3;
@@ -159,33 +159,33 @@ body {
 }
 
 .logo-icon {
-  font-size: 32px;
+  font-size: 24px; /* Reduzido de 32px */
   color: #ffffff;
 }
 
 .app-title {
   color: #fff;
-  font-size: 32px;
+  font-size: 24px; /* Reduzido de 32px */
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reduzido de 8px */
   letter-spacing: -0.02em;
 }
 
 .app-subtitle {
   color: #888;
-  font-size: 16px;
+  font-size: 12px; /* Reduzido de 16px */
   font-weight: 400;
   line-height: 1.4;
-  max-width: 280px;
+  max-width: 210px; /* Reduzido de 280px */
   margin: 0 auto;
 }
 
-/* Form Section */
+/* Form Section - Reduzida */
 .form-section {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px; /* Reduzido de 20px */
   min-height: 0;
 }
 
@@ -195,10 +195,10 @@ body {
 
 .input-label {
   display: block;
-  font-size: 14px;
+  font-size: 10.5px; /* Reduzido de 14px */
   font-weight: 500;
   color: #888;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reduzido de 8px */
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -209,12 +209,12 @@ body {
 
 .input-field {
   width: 100%;
-  height: 56px;
+  height: 42px; /* Reduzido de 56px */
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid #3a3a3a;
-  border-radius: 16px;
-  padding: 0 20px 0 56px;
-  font-size: 16px;
+  border-radius: 12px; /* Reduzido de 16px */
+  padding: 0 15px 0 42px; /* Reduzido de 20px 56px */
+  font-size: 12px; /* Reduzido de 16px */
   color: #ffffff;
   font-weight: 400;
   transition: all 0.3s ease;
@@ -229,16 +229,16 @@ body {
   outline: none;
   border-color: #00d4ff;
   background: rgba(0, 212, 255, 0.05);
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 0 2.25px rgba(0, 212, 255, 0.1); /* Reduzido de 3px */
 }
 
 .input-icon {
   position: absolute;
-  left: 20px;
+  left: 15px; /* Reduzido de 20px */
   top: 50%;
   transform: translateY(-50%);
   color: #666;
-  font-size: 18px;
+  font-size: 13.5px; /* Reduzido de 18px */
   transition: color 0.3s ease;
 }
 
@@ -248,11 +248,11 @@ body {
 
 .password-toggle {
   position: absolute;
-  right: 20px;
+  right: 15px; /* Reduzido de 20px */
   top: 50%;
   transform: translateY(-50%);
   color: #666;
-  font-size: 18px;
+  font-size: 13.5px; /* Reduzido de 18px */
   cursor: pointer;
   transition: color 0.2s ease;
   z-index: 10;
@@ -265,37 +265,37 @@ body {
 /* Estados de Erro e Sucesso */
 .error-message {
   color: #ff6b6b;
-  font-size: 12px;
-  margin-top: 6px;
-  padding-left: 4px;
+  font-size: 9px; /* Reduzido de 12px */
+  margin-top: 4.5px; /* Reduzido de 6px */
+  padding-left: 3px; /* Reduzido de 4px */
   display: none;
   font-weight: 500;
 }
 
 .error-border {
   border-color: #ff6b6b !important;
-  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1) !important;
+  box-shadow: 0 0 0 2.25px rgba(255, 107, 107, 0.1) !important; /* Reduzido de 3px */
 }
 
 .success-border {
   border-color: #51cf66 !important;
-  box-shadow: 0 0 0 3px rgba(81, 207, 102, 0.1) !important;
+  box-shadow: 0 0 0 2.25px rgba(81, 207, 102, 0.1) !important; /* Reduzido de 3px */
 }
 
-/* Opções do Formulário */
+/* Opções do Formulário - Reduzidas */
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 9px; /* Reduzido de 12px */
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 9px; /* Reduzido de 12px */
 }
 
 .forgot-password a {
   color: #00d4ff;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 10.5px; /* Reduzido de 14px */
   font-weight: 500;
   transition: opacity 0.2s ease;
 }
@@ -304,11 +304,11 @@ body {
   opacity: 0.8;
 }
 
-/* Checkbox Customizado */
+/* Checkbox Customizado - Reduzido */
 .remember-me-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px; /* Reduzido de 12px */
 }
 
 .checkbox-wrapper {
@@ -326,10 +326,10 @@ body {
 }
 
 .checkbox-custom {
-  width: 18px;
-  height: 18px;
+  width: 13.5px; /* Reduzido de 18px */
+  height: 13.5px; /* Reduzido de 18px */
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  border-radius: 3px; /* Reduzido de 4px */
   background: rgba(255, 255, 255, 0.05);
   position: relative;
   cursor: pointer;
@@ -342,7 +342,7 @@ body {
 .checkbox-custom::after {
   content: "✓";
   color: #ffffff;
-  font-size: 12px;
+  font-size: 9px; /* Reduzido de 12px */
   font-weight: bold;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -351,7 +351,7 @@ body {
 .checkbox-input:checked + .checkbox-custom {
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   border-color: #00d4ff;
-  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 1.5px 6px rgba(0, 212, 255, 0.3); /* Reduzido de 2px 8px */
 }
 
 .checkbox-input:checked + .checkbox-custom::after {
@@ -359,7 +359,7 @@ body {
 }
 
 .checkbox-label {
-  font-size: 14px;
+  font-size: 10.5px; /* Reduzido de 14px */
   color: #cccccc;
   cursor: pointer;
   user-select: none;
@@ -370,22 +370,22 @@ body {
   color: #ffffff;
 }
 
-/* Botão de Login */
+/* Botão de Login - Reduzido */
 .login-button {
   width: 100%;
-  height: 56px;
+  height: 42px; /* Reduzido de 56px */
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   border: none;
-  border-radius: 16px;
+  border-radius: 12px; /* Reduzido de 16px */
   color: #ffffff;
-  font-size: 16px;
+  font-size: 12px; /* Reduzido de 16px */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 24px rgba(0, 212, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1); /* Reduzido de 8px 32px */
   border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 24px;
+  margin-top: 18px; /* Reduzido de 24px */
   position: relative;
   overflow: hidden;
 }
@@ -407,8 +407,8 @@ body {
 }
 
 .login-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.5);
+  transform: translateY(-1.5px); /* Reduzido de -2px */
+  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.5); /* Reduzido de 16px 40px */
 }
 
 .login-button:hover::before {
@@ -425,31 +425,31 @@ body {
   transform: none;
 }
 
-/* Seção de Registro */
+/* Seção de Registro - Reduzida */
 .register-section {
   text-align: center;
-  margin-top: 24px;
-  padding: 20px 0;
+  margin-top: 18px; /* Reduzido de 24px */
+  padding: 15px 0; /* Reduzido de 20px */
   border-top: 1px solid #333;
 }
 
 .register-text {
-  font-size: 14px;
+  font-size: 10.5px; /* Reduzido de 14px */
   color: #999999;
-  margin-bottom: 16px;
+  margin-bottom: 12px; /* Reduzido de 16px */
 }
 
 .register-link {
   color: #00d4ff;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 11.25px; /* Reduzido de 15px */
   font-weight: 600;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: 12px;
+  gap: 6px; /* Reduzido de 8px */
+  padding: 9px 15px; /* Reduzido de 12px 20px */
+  border-radius: 9px; /* Reduzido de 12px */
   background: rgba(0, 212, 255, 0.08);
   border: 1px solid rgba(0, 212, 255, 0.2);
   flex-wrap: wrap;
@@ -458,34 +458,34 @@ body {
 
 .register-link:hover {
   background: rgba(0, 212, 255, 0.15);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.25);
+  transform: translateY(-0.75px); /* Reduzido de -1px */
+  box-shadow: 0 3px 12px rgba(0, 212, 255, 0.25); /* Reduzido de 4px 16px */
 }
 
 .register-link i {
-  font-size: 12px;
+  font-size: 9px; /* Reduzido de 12px */
   transition: transform 0.3s ease;
 }
 
 .register-link:hover i {
-  transform: translateX(2px);
+  transform: translateX(1.5px); /* Reduzido de 2px */
 }
 
-/* Badge de Moedas */
+/* Badge de Moedas - Reduzido */
 .coin-balance {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4.5px; /* Reduzido de 6px */
   background: linear-gradient(135deg, #24f847ff 0%, #3df824ff 100%);
   color: #000;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 13px;
+  padding: 3px 9px; /* Reduzido de 4px 12px */
+  border-radius: 9px; /* Reduzido de 12px */
+  font-size: 9.75px; /* Reduzido de 13px */
   font-weight: 700;
-  margin-left: 8px;
+  margin-left: 6px; /* Reduzido de 8px */
 }
 
-/* Loading Overlay */
+/* Loading Overlay - Ajustado */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -500,10 +500,10 @@ body {
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 3px solid #333;
-  border-top: 3px solid #00d4ff;
+  width: 37.5px; /* Reduzido de 50px */
+  height: 37.5px; /* Reduzido de 50px */
+  border: 2.25px solid #333; /* Reduzido de 3px */
+  border-top: 2.25px solid #00d4ff; /* Reduzido de 3px */
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -517,23 +517,23 @@ body {
   }
 }
 
-/* Feedback de Sucesso */
+/* Feedback de Sucesso - Reduzido */
 .success-feedback {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgba(0, 212, 255, 0.95);
-  padding: 20px 30px;
-  border-radius: 16px;
+  padding: 15px 22.5px; /* Reduzido de 20px 30px */
+  border-radius: 12px; /* Reduzido de 16px */
   color: white;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 12px; /* Reduzido de 16px */
   z-index: 9999;
   display: none;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.4);
+  gap: 9px; /* Reduzido de 12px */
+  box-shadow: 0 15px 45px rgba(0, 212, 255, 0.4); /* Reduzido de 20px 60px */
   backdrop-filter: blur(20px);
   animation: slideIn 0.3s ease-out;
   max-width: 90%;
@@ -550,7 +550,7 @@ body {
   }
 }
 
-/* Loader Inicial */
+/* Loader Inicial - Ajustado */
 .initial-loader {
   position: fixed;
   top: 0;
@@ -564,7 +564,7 @@ body {
   z-index: 10000;
 }
 
-/* Loader Pós-Login */
+/* Loader Pós-Login - Reduzido */
 .post-login-loader {
   position: fixed;
   top: 0;
@@ -578,7 +578,7 @@ body {
   z-index: 10000;
   flex-direction: column;
   color: #00d4ff;
-  font-size: 18px;
+  font-size: 13.5px; /* Reduzido de 18px */
   font-weight: 600;
   letter-spacing: 1px;
   opacity: 0;
@@ -589,12 +589,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 15px; /* Reduzido de 20px */
 }
 
 .post-login-loader .loader-logo {
-  width: 200px;
-  height: 200px;
+  width: 150px; /* Reduzido de 200px */
+  height: 150px; /* Reduzido de 200px */
   border-radius: 50%;
   object-fit: cover;
   animation: fadeIn 0.8s ease-in-out;
@@ -622,49 +622,49 @@ body {
   50%,
   70%,
   90% {
-    transform: translateX(-5px);
+    transform: translateX(-3.75px); /* Reduzido de -5px */
   }
   20%,
   40%,
   60%,
   80% {
-    transform: translateX(5px);
+    transform: translateX(3.75px); /* Reduzido de 5px */
   }
 }
 
-/* Media Queries para Responsividade */
+/* Media Queries para Responsividade - Ajustadas */
 @media (max-width: 480px) {
   .login-container {
-    padding: 24px 20px 20px;
+    padding: 18px 15px 15px; /* Reduzido de 24px 20px 20px */
   }
 
   .app-title {
-    font-size: 28px;
+    font-size: 21px; /* Reduzido de 28px */
   }
 
   .app-subtitle {
-    font-size: 15px;
+    font-size: 11.25px; /* Reduzido de 15px */
   }
 
   .logo-container {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
+    width: 52.5px; /* Reduzido de 70px */
+    height: 52.5px; /* Reduzido de 70px */
+    border-radius: 12px; /* Reduzido de 16px */
   }
 
   .logo-icon {
-    font-size: 28px;
+    font-size: 21px; /* Reduzido de 28px */
   }
 
   .form-options {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 12px; /* Reduzido de 16px */
   }
 
   .register-link {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px; /* Reduzido de 8px */
     text-align: center;
   }
 
@@ -673,37 +673,37 @@ body {
   }
 
   .post-login-loader .loader-logo {
-    width: 160px;
-    height: 160px;
+    width: 120px; /* Reduzido de 160px */
+    height: 120px; /* Reduzido de 160px */
   }
 }
 
 @media (max-width: 360px) {
   .login-container {
-    padding: 20px 16px;
+    padding: 15px 12px; /* Reduzido de 20px 16px */
   }
 
   .app-title {
-    font-size: 24px;
+    font-size: 18px; /* Reduzido de 24px */
   }
 
   .input-field {
-    height: 52px;
-    font-size: 15px;
+    height: 39px; /* Reduzido de 52px */
+    font-size: 11.25px; /* Reduzido de 15px */
   }
 
   .login-button {
-    height: 52px;
-    font-size: 15px;
+    height: 39px; /* Reduzido de 52px */
+    font-size: 11.25px; /* Reduzido de 15px */
   }
 
   .logo-container {
-    width: 60px;
-    height: 60px;
+    width: 45px; /* Reduzido de 60px */
+    height: 45px; /* Reduzido de 60px */
   }
 
   .logo-icon {
-    font-size: 24px;
+    font-size: 18px; /* Reduzido de 24px */
   }
 }
 
@@ -715,61 +715,61 @@ body {
   }
 }
 
-/* Orientação landscape em mobile */
+/* Orientação landscape em mobile - Ajustada */
 @media (orientation: landscape) and (max-height: 600px) {
   .login-container {
     height: auto;
     min-height: 100vh;
     justify-content: flex-start;
-    padding: 20px 24px;
+    padding: 15px 18px; /* Reduzido de 20px 24px */
   }
 
   .header-section {
-    margin-bottom: 32px;
+    margin-bottom: 24px; /* Reduzido de 32px */
   }
 
   .logo-container {
-    width: 60px;
-    height: 60px;
+    width: 45px; /* Reduzido de 60px */
+    height: 45px; /* Reduzido de 60px */
   }
 
   .logo-icon {
-    font-size: 24px;
+    font-size: 18px; /* Reduzido de 24px */
   }
 
   .app-title {
-    font-size: 24px;
+    font-size: 18px; /* Reduzido de 24px */
   }
 
   .app-subtitle {
-    font-size: 14px;
+    font-size: 10.5px; /* Reduzido de 14px */
   }
 }
 
-/* Otimizações para teclado virtual */
+/* Otimizações para teclado virtual - Ajustadas */
 .keyboard-open .login-container {
   height: auto;
   min-height: auto;
-  padding-top: 20px;
+  padding-top: 15px; /* Reduzido de 20px */
 }
 
 .keyboard-open .header-section {
-  margin-bottom: 24px;
+  margin-bottom: 18px; /* Reduzido de 24px */
 }
 
 .keyboard-open .logo-container {
-  width: 50px;
-  height: 50px;
+  width: 37.5px; /* Reduzido de 50px */
+  height: 37.5px; /* Reduzido de 50px */
 }
 
 .keyboard-open .logo-icon {
-  font-size: 20px;
+  font-size: 15px; /* Reduzido de 20px */
 }
 
 .keyboard-open .app-title {
-  font-size: 22px;
+  font-size: 16.5px; /* Reduzido de 22px */
 }
 
 .keyboard-open .app-subtitle {
-  font-size: 13px;
+  font-size: 9.75px; /* Reduzido de 13px */
 }
