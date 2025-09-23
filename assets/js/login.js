@@ -1,6 +1,6 @@
-// Script específico para página de Login - Living Coins
+// Script específico para página de Login Mobile - Living Coins
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Página de login carregada com sistema de moedas");
+  console.log("Página de login mobile carregada com sistema de moedas");
 
   // Verificar se usuário já está logado
   if (Auth.isLoggedIn()) {
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
   setupAnimations();
   loadRememberedEmail();
+  setupMobileOptimizations();
 });
 
 // Inicializar elementos
@@ -31,6 +32,7 @@ function initializeElements() {
     successFeedback: document.getElementById("successFeedback"),
     userBalanceSpan: document.getElementById("userBalance"),
     logoContainer: document.querySelector(".logo-container"),
+    screen: document.querySelector(".screen"),
   };
 }
 
@@ -52,6 +54,10 @@ function setupEventListeners() {
   // Toggle de senha
   if (togglePassword) {
     togglePassword.addEventListener("click", togglePasswordVisibility);
+    togglePassword.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      togglePasswordVisibility();
+    });
   }
 
   // Validação em tempo real
@@ -78,8 +84,8 @@ function setupEventListeners() {
     registerLink.addEventListener("click", handleRegisterClick);
   }
 
-  // Hover no logo
-  if (logoContainer) {
+  // Hover no logo (apenas para desktop)
+  if (logoContainer && !isMobileDevice()) {
     logoContainer.addEventListener("mouseenter", () => {
       logoContainer.style.transform = "scale(1.05) rotate(5deg)";
     });
@@ -87,6 +93,79 @@ function setupEventListeners() {
       logoContainer.style.transform = "scale(1) rotate(0deg)";
     });
   }
+}
+
+// Configurar otimizações mobile
+function setupMobileOptimizations() {
+  // Prevenir zoom em inputs no iOS
+  if (isIOS()) {
+    const inputs = document.querySelectorAll(
+      'input[type="email"], input[type="password"]'
+    );
+    inputs.forEach((input) => {
+      input.addEventListener("focus", () => {
+        input.style.fontSize = "16px";
+      });
+    });
+  }
+
+  // Ajustar altura da tela baseado no viewport
+  function setVH() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
+  }
+
+  setVH();
+  window.addEventListener("resize", setVH);
+  window.addEventListener("orientationchange", () => {
+    setTimeout(setVH, 100);
+  });
+
+  // Detectar teclado virtual no mobile
+  let initialHeight = window.innerHeight;
+
+  window.addEventListener("resize", () => {
+    const currentHeight = window.innerHeight;
+    const heightDiff = initialHeight - currentHeight;
+
+    if (heightDiff > 150) {
+      // Teclado provavelmente aberto
+      document.body.classList.add("keyboard-open");
+      window.elements.screen.style.height = `${currentHeight}px`;
+    } else {
+      document.body.classList.remove("keyboard-open");
+      window.elements.screen.style.height = "100vh";
+    }
+  });
+
+  // Smooth scroll para inputs em foco (mobile)
+  const inputs = document.querySelectorAll("input");
+  inputs.forEach((input) => {
+    input.addEventListener("focus", () => {
+      setTimeout(() => {
+        input.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+      }, 300);
+    });
+  });
+}
+
+// Detectar dispositivos
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+}
+
+function isAndroid() {
+  return /Android/i.test(navigator.userAgent);
 }
 
 // Configurar animações
@@ -99,6 +178,19 @@ function setupAnimations() {
     particle.style.animationDelay = `${randomDelay}s`;
     particle.style.animationDuration = `${randomDuration}s`;
   });
+
+  // Animação de entrada para mobile
+  if (isMobileDevice()) {
+    const loginContainer = document.querySelector(".login-container");
+    loginContainer.style.opacity = "0";
+    loginContainer.style.transform = "translateY(30px)";
+
+    setTimeout(() => {
+      loginContainer.style.transition = "all 0.6s ease-out";
+      loginContainer.style.opacity = "1";
+      loginContainer.style.transform = "translateY(0)";
+    }, 200);
+  }
 }
 
 // Carregar email lembrado
@@ -128,6 +220,11 @@ function togglePasswordVisibility() {
     passwordField.type = "password";
     togglePassword.classList.remove("fa-eye-slash");
     togglePassword.classList.add("fa-eye");
+  }
+
+  // Feedback tátil em mobile
+  if (isMobileDevice() && navigator.vibrate) {
+    navigator.vibrate(50);
   }
 }
 
@@ -194,6 +291,11 @@ function handleRememberMeChange() {
   } else if (!rememberMe.checked) {
     Auth.saveRememberMe("", false);
   }
+
+  // Feedback tátil
+  if (isMobileDevice() && navigator.vibrate) {
+    navigator.vibrate(30);
+  }
 }
 
 // Manipular mudança no email
@@ -214,6 +316,11 @@ function handleRegisterClick(e) {
   registerLink.style.transform = "scale(1.05)";
   registerLink.style.boxShadow = "0 8px 25px rgba(0, 212, 255, 0.4)";
 
+  // Feedback tátil
+  if (isMobileDevice() && navigator.vibrate) {
+    navigator.vibrate(50);
+  }
+
   setTimeout(() => {
     window.location.href = CONFIG.UI.pages.register;
   }, 200);
@@ -229,6 +336,19 @@ function showError(fieldId, message) {
     errorElement.style.display = "block";
     inputElement.classList.add("error-border");
     inputElement.classList.remove("success-border");
+
+    // Shake animation para mobile
+    if (isMobileDevice()) {
+      inputElement.style.animation = "shake 0.5s ease-in-out";
+      setTimeout(() => {
+        inputElement.style.animation = "";
+      }, 500);
+
+      // Feedback tátil
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    }
   }
 }
 
@@ -245,21 +365,21 @@ function clearError(fieldId) {
 // Mostrar loader pós-login antes de redirecionar
 function showPostLoginLoader() {
   const loader = document.getElementById("postLoginLoader");
-  const phoneContainer = document.querySelector(".phone-container");
+  const screen = document.querySelector(".screen");
 
-  if (phoneContainer) {
+  if (screen) {
     // Suavizar desaparecimento
-    phoneContainer.style.opacity = "0";
+    screen.style.opacity = "0";
     setTimeout(() => {
-      phoneContainer.style.display = "none";
-    }, 500); // tempo da transição do CSS
+      screen.style.display = "none";
+    }, 500);
   }
 
   if (loader) {
     loader.style.display = "flex";
     setTimeout(() => {
       loader.style.opacity = "1";
-    }, 50); // pequeno delay para aplicar transição
+    }, 50);
   }
 }
 
@@ -279,21 +399,32 @@ function showSuccessFeedback(balance) {
     userBalanceSpan.textContent = CONFIG.formatCoins(balance || 0);
     successFeedback.style.display = "flex";
 
+    // Feedback tátil de sucesso
+    if (isMobileDevice() && navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
     setTimeout(() => {
       successFeedback.style.display = "none";
     }, CONFIG.UI.successFeedbackDuration);
   }
 }
 
-// 🔧 VERSÃO LIMPA E CORRIGIDA DA FUNÇÃO DE LOGIN
+// Função principal de login otimizada para mobile
 async function handleLogin(e) {
   e.preventDefault();
-  console.log("📝 Formulário de login enviado");
+  console.log("📱 Formulário de login mobile enviado");
 
   const { emailField, passwordField, loginButton, rememberMe } =
     window.elements;
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
+
+  // Fechar teclado virtual no mobile
+  if (isMobileDevice()) {
+    emailField.blur();
+    passwordField.blur();
+  }
 
   // Limpar erros anteriores
   clearError("email");
@@ -320,20 +451,25 @@ async function handleLogin(e) {
     return;
   }
 
-  // Efeito visual no botão
+  // Efeito visual no botão otimizado para mobile
   const originalText = loginButton.innerHTML;
   loginButton.innerHTML =
     '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Conectando...';
   loginButton.disabled = true;
   loginButton.style.opacity = "0.8";
 
+  // Feedback tátil de início
+  if (isMobileDevice() && navigator.vibrate) {
+    navigator.vibrate(100);
+  }
+
   // Mostrar loading overlay
   showLoading(true);
 
   try {
-    console.log("🌐 Enviando requisição para login...");
+    console.log("🌐 Enviando requisição para login mobile...");
 
-    // 🔧 CORREÇÃO: Preservar foto de perfil ANTES do login
+    // Preservar foto de perfil existente
     let existingProfilePhoto = null;
     const existingUserData = Auth.getUserData();
     if (existingUserData && existingUserData.profilePhotoUrl) {
@@ -348,9 +484,9 @@ async function handleLogin(e) {
     const result = await Auth.login(email, password, rememberMe.checked);
 
     if (result.success) {
-      console.log("✅ Login bem-sucedido!");
+      console.log("✅ Login mobile bem-sucedido!");
 
-      // 🔧 CORREÇÃO: Restaurar foto de perfil após login se ela existir
+      // Restaurar foto de perfil após login se ela existir
       if (existingProfilePhoto) {
         console.log("🔄 Restaurando foto de perfil após login...");
         Auth.updateProfilePhoto(existingProfilePhoto);
@@ -367,11 +503,8 @@ async function handleLogin(e) {
       const userBalance = userData?.balance || userData?.coins || 0;
       showSuccessFeedback(userBalance);
 
-      // 🔧 CORREÇÃO: NÃO buscar perfil após login para evitar sobrescrever dados
-      // await Auth.getProfile(); // REMOVIDO - causava perda da foto
-
       // Redirecionar para o dashboard
-      console.log("🔄 Mostrando loader pós-login...");
+      console.log("🔄 Mostrando loader pós-login mobile...");
       showPostLoginLoader();
 
       setTimeout(() => {
@@ -381,7 +514,7 @@ async function handleLogin(e) {
       throw new Error("Erro inesperado no login");
     }
   } catch (err) {
-    console.error("❌ Erro no login:", err);
+    console.error("❌ Erro no login mobile:", err);
 
     // Tratamento de erros específicos
     const errorMessage = err.message.toLowerCase();
@@ -427,17 +560,60 @@ async function handleLogin(e) {
 
 // Interceptar eventos de conectividade
 window.addEventListener("online", () => {
-  console.log("Conexão restaurada");
+  console.log("📱 Conexão mobile restaurada");
   clearError("password");
+
+  // Feedback visual de conexão restaurada
+  if (isMobileDevice()) {
+    const screen = document.querySelector(".screen");
+    screen.style.borderTop = "3px solid #51cf66";
+    setTimeout(() => {
+      screen.style.borderTop = "none";
+    }, 2000);
+  }
 });
 
 window.addEventListener("offline", () => {
-  console.log("Conexão perdida");
+  console.log("📱 Conexão mobile perdida");
   showError("password", "Sem conexão com a internet");
+
+  // Feedback visual de perda de conexão
+  if (isMobileDevice()) {
+    const screen = document.querySelector(".screen");
+    screen.style.borderTop = "3px solid #ff6b6b";
+  }
 });
 
+// Prevenir zoom em duplo toque (iOS Safari)
+let lastTouchEnd = 0;
+document.addEventListener(
+  "touchend",
+  function (event) {
+    const now = new Date().getTime();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  },
+  false
+);
+
+// Adicionar shake animation ao CSS dinamicamente
+const shakeCSS = `
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+`;
+
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = shakeCSS;
+document.head.appendChild(styleSheet);
+
 console.log(
-  "✅ Login.js carregado - versão corrigida para preservar foto de perfil"
+  "✅ Login mobile.js carregado - versão otimizada para dispositivos móveis"
 );
 
 // Loader inicial - esconde após carregar a página
@@ -448,6 +624,6 @@ window.addEventListener("load", () => {
       initialLoader.style.opacity = "0";
       initialLoader.style.transition = "opacity 0.5s ease";
       setTimeout(() => initialLoader.remove(), 500);
-    }, 600); // pequeno delay para suavizar
+    }, 400); // delay menor para mobile
   }
 });
