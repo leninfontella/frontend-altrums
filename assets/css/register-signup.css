@@ -5,37 +5,26 @@
 }
 
 body {
-  /* Fundo e fonte do perfil */
   font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
     system-ui, sans-serif;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.phone-container {
-  /* Dimensões e fundo do perfil */
-  width: 390px;
-  height: 844px;
-  background: #000;
-  border-radius: 50px;
-  padding: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .screen {
-  /* Fundo e borda do perfil */
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-  border-radius: 42px;
-  overflow: hidden;
   position: relative;
-  border: none; /* Removido para combinar com o perfil */
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .status-bar {
@@ -45,7 +34,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
-  font-size: 17px; /* Tamanho da fonte do perfil */
+  font-size: 17px;
   font-weight: 600;
   color: #ffffff;
 }
@@ -55,27 +44,23 @@ body {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 130px; /* Largura do notch do perfil */
+  width: 130px;
   height: 30px;
   background: #000000;
-  border-radius: 0 0 20px 20px; /* Borda do notch do perfil */
+  border-radius: 0 0 20px 20px;
 }
 
 .signup-container {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 44px);
-  padding: 20px 30px 24px; /* Padding do perfil */
+  height: 100vh;
+  padding: 40px 24px 24px;
   position: relative;
-  overflow-y: auto;
-  /* Scrollbar invisível */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-}
-
-/* Webkit browsers (Chrome, Safari, Edge) */
-.signup-container::-webkit-scrollbar {
-  display: none;
+  z-index: 10;
+  justify-content: center;
+  max-width: 440px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .header-section {
@@ -88,14 +73,13 @@ body {
   width: 70px;
   height: 70px;
   margin: 0 auto 20px;
-  /* Novo gradiente com cores do perfil */
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 16px 40px rgba(0, 212, 255, 0.4),
-    /* Sombra com nova cor */ inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
 }
@@ -174,11 +158,7 @@ body {
 .input-field {
   width: 100%;
   height: 48px;
-  background: linear-gradient(
-    135deg,
-    #2a2a2a 0%,
-    #1a1a1a 100%
-  ); /* Fundo do perfil */
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 0 16px 0 48px;
@@ -196,9 +176,9 @@ body {
 
 .input-field:focus {
   outline: none;
-  border-color: #00d4ff; /* Cor do perfil */
-  background: rgba(0, 212, 255, 0.05); /* Fundo com nova cor */
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1); /* Sombra com nova cor */
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.05);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
 }
 
 .input-icon {
@@ -212,7 +192,7 @@ body {
 }
 
 .input-field:focus + .input-icon {
-  color: #00d4ff; /* Cor do perfil */
+  color: #00d4ff;
 }
 
 .password-toggle {
@@ -227,7 +207,7 @@ body {
 }
 
 .password-toggle:hover {
-  color: #00d4ff; /* Cor do perfil */
+  color: #00d4ff;
 }
 
 .terms-section {
@@ -257,9 +237,8 @@ body {
 }
 
 .checkbox:checked {
-  /* Novo gradiente com cores do perfil */
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-  border-color: #00d4ff; /* Cor do perfil */
+  border-color: #00d4ff;
 }
 
 .checkbox:checked::after {
@@ -281,7 +260,7 @@ body {
 }
 
 .terms-text a {
-  color: #00d4ff; /* Cor do perfil */
+  color: #00d4ff;
   text-decoration: none;
   font-weight: 500;
 }
@@ -293,7 +272,6 @@ body {
 .signup-button {
   width: 100%;
   height: 52px;
-  /* Novo gradiente com cores do perfil */
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   border: none;
   border-radius: 14px;
@@ -303,7 +281,7 @@ body {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3),
-    /* Sombra com nova cor */ inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 16px;
   position: relative;
@@ -334,7 +312,7 @@ body {
 
 .signup-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.5); /* Sombra com nova cor */
+  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.5);
 }
 
 .signup-button:hover:not(:disabled)::before {
@@ -359,7 +337,7 @@ body {
 }
 
 .login-link {
-  color: #00d4ff; /* Cor do perfil */
+  color: #00d4ff;
   text-decoration: none;
   font-weight: 600;
   font-size: 16px;
@@ -372,12 +350,12 @@ body {
 
 .design-label {
   position: absolute;
-  top: -30px; /* Posição do perfil */
+  top: -30px;
   left: 50%;
   transform: translateX(-50%);
-  background: none; /* Removido para combinar com o perfil */
-  color: #666; /* Cor do perfil */
-  padding: 0; /* Removido para combinar com o perfil */
+  background: none;
+  color: #666;
+  padding: 0;
   border-radius: 0;
   font-size: 12px;
   font-weight: 600;
@@ -388,7 +366,6 @@ body {
 }
 
 .floating-particles {
-  /* Mantido para o efeito visual */
   position: absolute;
   top: 0;
   left: 0;
@@ -402,7 +379,7 @@ body {
   position: absolute;
   width: 2px;
   height: 2px;
-  background: #00d4ff; /* Cor do perfil */
+  background: #00d4ff;
   border-radius: 50%;
   animation: float-particle 8s infinite linear;
   opacity: 0.3;
@@ -488,7 +465,7 @@ body {
   background: #ffaa00;
 }
 .strength-bar.strong {
-  background: #00ff88; /* Cor do perfil */
+  background: #00ff88;
 }
 
 .strength-text {
@@ -496,10 +473,79 @@ body {
   text-align: center;
 }
 
-/* Animação do ripple - será adicionada dinamicamente */
 @keyframes ripple {
   to {
     transform: scale(4);
     opacity: 0;
+  }
+}
+
+/* Ajustes para ecrãs menores que 768px (tablets e smartphones) */
+@media (max-width: 768px) {
+  .signup-container {
+    padding: 30px 20px 20px;
+  }
+}
+
+/* Ajustes para ecrãs menores que 480px (smartphones) */
+@media (max-width: 480px) {
+  .signup-container {
+    padding: 24px 16px;
+  }
+
+  .header-section {
+    margin-bottom: 32px;
+  }
+
+  .app-title {
+    font-size: 28px;
+  }
+
+  .input-field,
+  .signup-button {
+    height: 52px;
+    font-size: 15px;
+  }
+}
+
+/* Ajustes para ecrãs menores que 360px */
+@media (max-width: 360px) {
+  .signup-container {
+    padding: 20px 16px;
+  }
+
+  .app-title {
+    font-size: 24px;
+  }
+
+  .logo-container {
+    width: 60px;
+    height: 60px;
+  }
+
+  .logo-icon {
+    font-size: 24px;
+  }
+}
+
+/* Orientação paisagem em mobile */
+@media (orientation: landscape) and (max-height: 600px) {
+  .signup-container {
+    height: auto;
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding: 20px 24px;
+  }
+
+  .header-section {
+    margin-bottom: 24px;
+  }
+}
+
+/* Melhorias para dispositivos com notch */
+@supports (padding: env(safe-area-inset-top)) {
+  .screen {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
