@@ -4,39 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Termos de Uso - 1lênin1dev</title>
-    <!-- Fonte "Inter" é uma boa alternativa para o "SF Pro Display" -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     />
-    <!-- Font Awesome para ícones -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
-    <!-- Link para o arquivo CSS externo -->
-    <link rel="stylesheet" href="../../../assets/css/term-and-policies-style.css" />
+    <link
+      rel="stylesheet"
+      href="../../../assets/css/term-and-policies-style.css"
+    />
   </head>
   <body>
     <div class="phone-container">
       <div class="screen">
-        <!-- Barra de Status do iOS -->
         <div class="status-bar">
-          <span>9:41</span>
-          <div style="display: flex; gap: 6px; align-items: center">
-            <i class="fas fa-signal" style="font-size: 12px"></i>
-            <i class="fas fa-wifi" style="font-size: 12px"></i>
-            <i
-              class="fas fa-battery-three-quarters"
-              style="font-size: 12px"
-            ></i>
-          </div>
+          <div style="display: flex; gap: 6px; align-items: center"></div>
         </div>
 
         <div class="notch"></div>
 
         <div class="login-container">
-          <!-- Seção do Cabeçalho -->
           <div class="header-section">
             <div class="logo-container">
               <i class="fas fa-coins logo-icon"></i>
@@ -45,7 +35,6 @@
             <p class="app-subtitle">Termos de Uso e Política de Privacidade</p>
           </div>
 
-          <!-- Seção de Conteúdo dos Termos -->
           <div class="agreement-content">
             <h3>1. Aceitação dos Termos</h3>
             <p>
@@ -93,21 +82,17 @@
             </p>
           </div>
 
-          <!-- Seção de Checkbox e Botão -->
           <div class="form-section">
             <div class="remember-me-container">
               <div class="checkbox-wrapper">
-                <!-- O input continua invisível -->
                 <input
                   type="checkbox"
                   id="agree-terms"
                   class="checkbox-input"
                   required
                 />
-                <!-- O span customizado agora tem um ID para ser manipulado pelo JS -->
                 <span class="checkbox-custom" id="agree-custom-checkbox"></span>
               </div>
-              <!-- O label continua funcional para acessibilidade e usabilidade -->
               <label for="agree-terms" class="checkbox-label"
                 >Eu concordo com os Termos de Uso e Política de
                 Privacidade.</label
@@ -126,7 +111,6 @@
       </div>
     </div>
 
-    <!-- Modal de Mensagem -->
     <div id="confirmation-modal" class="modal">
       <div class="modal-content">
         <span class="close-button" id="close-modal-btn">&times;</span>
@@ -135,7 +119,6 @@
       </div>
     </div>
 
-    <!-- Link para o arquivo JavaScript externo -->
     <script src="../../../assets/js/term-and-policies-script.js"></script>
   </body>
 </html>

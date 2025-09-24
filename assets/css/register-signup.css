@@ -27,29 +27,6 @@ body {
     env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-.status-bar {
-  height: 44px;
-  background: transparent;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 24px;
-  font-size: 17px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.notch {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 130px;
-  height: 30px;
-  background: #000000;
-  border-radius: 0 0 20px 20px;
-}
-
 .signup-container {
   display: flex;
   flex-direction: column;
@@ -116,10 +93,10 @@ body {
 }
 
 .app-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 6px;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
   letter-spacing: -0.02em;
 }
 
@@ -139,6 +116,9 @@ body {
 
 .input-group {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .input-label {
