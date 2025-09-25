@@ -1,9 +1,9 @@
 // Módulo de Autenticação Unificado - Living Coins
 const Auth = {
   // ========== CONFIGURAÇÃO DA API ==========
-  // API_BASE: "https://api-backend-coins.onrender.com/api",
+  API_BASE: "https://api-backend-coins.onrender.com/api",
 
-  API_BASE: "http://localhost:5000/api",
+  // API_BASE: "http://localhost:5000/api",
 
   ENDPOINTS: {
     login: "/auth/login",
