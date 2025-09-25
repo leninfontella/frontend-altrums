@@ -529,7 +529,7 @@ body {
 }
 
 .profile-image {
-  opacity: 0;
+  opacity: 1;
 }
 
 .profile-image.is-loaded {
