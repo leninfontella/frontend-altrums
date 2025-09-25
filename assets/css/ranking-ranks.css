@@ -440,6 +440,8 @@ body {
   justify-content: center;
   font-size: 18px;
   color: #fff;
+  overflow: hidden; /* Garante que a imagem se ajuste ao círculo */
+  position: relative; /* Boa prática para z-index e filhos absolutos */
   /* CORREÇÃO: Remove a cor de fundo do CSS quando a imagem é carregada.
      A cor de fundo permanece para o fallback (iniciais).
      Adicionar overflow: hidden para evitar que fotos maiores vazem. */
