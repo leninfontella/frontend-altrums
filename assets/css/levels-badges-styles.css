@@ -12,24 +12,30 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* Altera de center para flex-start */
   padding: 20px;
+  color: #fff;
+  overflow-y: auto;
+  min-height: 100vh;
 }
 
-/* Container do Celular */
-.phone-container {
-  width: 390px;
-  height: 844px;
-  background: #000;
-  border-radius: 50px;
-  padding: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+/* Container principal (substitui .phone-container) */
+.main-container {
+  width: 100%;
+  max-width: 450px;
+  padding: 20px;
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 24px;
+  animation: fadeIn 0.8s ease-out;
 }
 
 .design-label {
   position: absolute;
-  top: -30px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
   color: #666;
@@ -40,12 +46,12 @@ body {
 
 .screen {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-  border-radius: 42px;
-  overflow: hidden;
+  height: auto; /* Altera de 100% para auto */
+  background: transparent; /* Remove o background */
+  border-radius: 0; /* Remove o border-radius */
+  overflow: visible; /* Altera de hidden para visible */
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none; /* Remove a borda */
   display: flex;
   flex-direction: column;
 }
@@ -57,7 +63,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 30px;
+  padding: 0 10px; /* Ajusta o padding */
   font-size: 17px;
   font-weight: 600;
   color: #ffffff;
@@ -65,24 +71,19 @@ body {
 }
 
 .notch {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 130px;
-  height: 30px;
-  background: #000;
-  border-radius: 0 0 20px 20px;
-  z-index: 1000;
+  display: none; /* Esconde o notch */
 }
 
 /* Partículas flutuantes */
 .floating-particles {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  position: fixed; /* Altera para fixed */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Altera para 100vw */
+  height: 100vh; /* Altera para 100vh */
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 }
 
 .particle {
@@ -164,12 +165,15 @@ body {
 /* Header */
 .header-section {
   flex-shrink: 0;
-  padding: 20px 30px;
+  padding: 0 0 20px 0; /* Ajusta o padding */
   background: transparent;
   backdrop-filter: blur(20px);
   text-align: center;
-  position: relative;
+  position: sticky; /* Altera para sticky */
+  top: 0;
+  z-index: 10;
   animation: slideInUp 0.6s ease-out;
+  margin-top: 50px; /* Adiciona margin-top */
 }
 
 .back-button {
@@ -189,6 +193,9 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
   overflow: hidden;
+  position: absolute; /* Adiciona posição absoluta */
+  top: 0;
+  left: 0;
 }
 
 .back-button:hover {
@@ -207,7 +214,7 @@ body {
 }
 
 .page-title {
-  font-size: 24px;
+  font-size: 28px; /* Aumenta o tamanho da fonte */
   font-weight: 800;
   color: #ffffff;
   margin-bottom: 8px;
@@ -225,9 +232,9 @@ body {
 /* Conteúdo Principal */
 .content-container {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: visible; /* Altera para visible */
   overflow-x: hidden;
-  padding: 32px 30px 100px 30px;
+  padding: 0; /* Remove o padding */
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -258,10 +265,16 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   position: relative;
-
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.3s ease;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.03
+  ); /* Adiciona background para corresponder ao login */
+  padding: 24px; /* Adiciona padding */
 }
 
 .current-level-card::before {
@@ -299,6 +312,11 @@ body {
   transition: transform 0.3s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   position: relative;
+  background: linear-gradient(
+    135deg,
+    #00d4ff,
+    #0099cc
+  ); /* Adiciona background do badge */
 }
 
 .current-badge:hover {
@@ -308,6 +326,7 @@ body {
 .badge-icon {
   font-size: 28px;
   animation: pulse 2s ease-in-out infinite;
+  color: #fff; /* Adiciona cor do ícone */
 }
 
 @keyframes pulse {
@@ -699,38 +718,25 @@ body {
 }
 
 /* Responsividade */
-@media (max-width: 400px) {
-  .phone-container {
-    width: 95vw;
-    max-width: 375px;
+@media (max-width: 450px) {
+  body {
+    padding: 0;
   }
-
-  .content-container {
-    padding: 20px;
+  .main-container {
+    padding: 20px 20px 80px 20px; /* Ajusta o padding inferior */
   }
 
   .header-section {
-    padding: 15px 20px;
+    padding: 0 0 20px 0;
+    margin-top: 30px;
+  }
+
+  .back-button {
+    top: 10px;
+    left: 20px;
   }
 
   .badges-grid {
     grid-template-columns: 1fr;
-  }
-
-  .current-level-card {
-    padding: 20px;
-  }
-
-  .current-badge {
-    width: 50px;
-    height: 50px;
-  }
-
-  .badge-icon {
-    font-size: 24px;
-  }
-
-  .current-name {
-    font-size: 18px;
   }
 }

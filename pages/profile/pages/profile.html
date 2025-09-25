@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile - 1lênin1dev</title>
+    <title>Perfil - Altrum Coins</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
@@ -11,28 +11,24 @@
     <link rel="stylesheet" href="../../../../assets/css/profile-profile.css" />
   </head>
   <body>
-    <div class="phone-container">
-      <div class="design-label">FIGMA DESIGN</div>
-      <div class="screen">
-        <div class="notch"></div>
+    <div class="screen">
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
 
-        <div class="status-bar">
-          <span>9:41</span>
-          <div style="display: flex; gap: 6px; align-items: center">
-            <i class="fas fa-signal" style="font-size: 12px"></i>
-            <i class="fas fa-wifi" style="font-size: 12px"></i>
-            <i
-              class="fas fa-battery-three-quarters"
-              style="font-size: 12px"
-            ></i>
-          </div>
-        </div>
-
+      <div class="profile-container">
         <div class="header">
           <button id="go-back" class="back-button">
             <i class="fas fa-chevron-left"></i>
           </button>
-
           <div id="go-settings" class="header-title">Meu perfil</div>
           <button id="go-settings-button" class="settings-button">
             <i class="fas fa-cog"></i>
@@ -49,7 +45,6 @@
                 src=""
               />
             </div>
-            <!-- Aqui com IDs para atualizar dinamicamente -->
             <div id="profile-name" class="profile-name">Lênin Fontella</div>
             <div id="profile-email" class="profile-username">@lenin_sci</div>
 
@@ -71,7 +66,6 @@
               Dashboard
             </h3>
 
-            <!-- Novo highlight card para usuário com maior interação -->
             <div class="highlight-card">
               <div class="highlight-icon top-user">
                 <i class="fas fa-crown"></i>
@@ -166,7 +160,6 @@
             </div>
           </div>
 
-          <!-- Modal para definir meta - movido para fora da section -->
           <div id="goal-modal" class="goal-modal">
             <div class="goal-modal-content">
               <div class="modal-header">
@@ -249,18 +242,11 @@
         </div>
       </div>
     </div>
-
     <script src="../../../../assets/js/auth.js"></script>
-    <!-- 1º - Base de autenticação -->
     <script src="../../../../assets/js/config-edit-apiConfig.js"></script>
-    <!-- 2º - Config da API -->
     <script src="../../../../assets/js/config-edit-userService.js"></script>
-    <!-- 3º - Serviços (usa apiConfig) -->
     <script src="../../../../assets/js/config-edit-globalInit.js"></script>
-    <!-- 4º - Inicialização -->
     <script src="../../../../assets/js/profile-profile.js"></script>
-    <!-- 5º - Lógica da página -->
     <script src="../../../../assets/js/profile-pull-to-refresh.js"></script>
-    <!-- 6º - Funcionalidades extras -->
   </body>
 </html>

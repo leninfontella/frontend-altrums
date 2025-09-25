@@ -12,108 +12,102 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../../assets/css/config-edit-edit-profile.css" />
+    <link
+      rel="stylesheet"
+      href="../../../assets/css/config-edit-edit-profile.css"
+    />
   </head>
   <body>
-    <div class="phone-container">
-      <div class="design-label">EDITAR PERFIL</div>
-      <div class="screen">
-        <div class="status-bar">
-          <span>9:41</span>
-          <div style="display: flex; gap: 6px; align-items: center">
-            <i class="fas fa-signal" style="font-size: 12px"></i>
-            <i class="fas fa-wifi" style="font-size: 12px"></i>
-            <i
-              class="fas fa-battery-three-quarters"
-              style="font-size: 12px"
-            ></i>
-          </div>
-        </div>
-        <div class="notch"></div>
+    <div class="floating-particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
 
-        <div class="header">
-          <div class="header-left">
-            <button id="go-back" class="back-button">
-              <i class="fas fa-arrow-left"></i>
-            </button>
-            <h1 class="header-title">Editar Perfil</h1>
-          </div>
-          <button class="save-button" onclick="saveProfile()">
-            <i class="fas fa-check"></i>
-          </button>
-        </div>
+    <div class="main-container">
+      <div class="header-section">
+        <button id="go-back" class="back-button" onclick="goBack()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1 class="header-title">Editar Perfil</h1>
+        <button class="save-button" onclick="saveProfile()">
+          <i class="fas fa-check"></i>
+        </button>
+      </div>
 
-        <div class="content">
-          <div class="main-content">
-            <div class="profile-photo-card">
-              <img id="profile-image" src="" alt="User Profile Photo" />
+      <div class="content-container">
+        <div class="main-content">
+          <div class="profile-photo-card">
+            <img id="profile-image" src="" alt="User Profile Photo" />
+            <input
+              type="file"
+              id="photo-input"
+              class="hidden-input"
+              accept="image/*"
+            />
+            <div class="photo-controls">
+              <button
+                class="change-photo-btn"
+                onclick="document.getElementById('photo-input').click()"
+              >
+                <i class="fas fa-camera"></i>
+                Trocar Foto
+              </button>
+              <button class="remove-photo-btn" onclick="showRemovePhotoModal()">
+                <i class="fas fa-trash"></i>
+                Remover Foto
+              </button>
+            </div>
+          </div>
+
+          <div class="section" style="animation-delay: 0.2s">
+            <div class="section-subtitle">Informações Principais</div>
+
+            <div class="form-group">
+              <label for="name">Nome Completo:</label>
               <input
-                type="file"
-                id="photo-input"
-                class="hidden-input"
-                accept="image/*"
+                type="text"
+                id="name"
+                value="Jane Doe"
+                placeholder="Digite seu nome completo"
               />
-              <div class="photo-controls">
-                <button
-                  class="change-photo-btn"
-                  onclick="document.getElementById('photo-input').click()"
-                >
-                  <i class="fas fa-camera"></i>
-                  Trocar Foto
-                </button>
-                <button
-                  class="remove-photo-btn"
-                  onclick="showRemovePhotoModal()"
-                >
-                  <i class="fas fa-trash"></i>
-                  Remover Foto
-                </button>
-              </div>
             </div>
 
-            <div class="section" style="animation-delay: 0.2s">
-              <div class="section-subtitle">Informações Principais</div>
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                value="jane.doe@example.com"
+                placeholder="Digite seu email"
+              />
+            </div>
 
-              <div class="form-group">
-                <label for="name">Nome Completo:</label>
-                <input
-                  type="text"
-                  id="name"
-                  value="Jane Doe"
-                  placeholder="Digite seu nome completo"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="email">Email:</label>
-                <input
-                  type="email"
-                  id="email"
-                  value="jane.doe@example.com"
-                  placeholder="Digite seu email"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="phone">Atualize o seu Telefone:</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  value="+55 (11) 98765-4321"
-                  placeholder="Digite seu telefone"
-                />
-              </div>
+            <div class="form-group">
+              <label for="phone">Atualize o seu Telefone:</label>
+              <input
+                type="tel"
+                id="phone"
+                value="+55 (11) 98765-4321"
+                placeholder="Digite seu telefone"
+              />
             </div>
           </div>
-
-          <button
-            class="save-content-btn"
-            onclick="saveProfile()"
-            style="margin-top: 24px"
-          >
-            Salvar Informações
-          </button>
         </div>
+
+        <button
+          class="save-content-btn"
+          onclick="saveProfile()"
+          style="margin-top: 24px"
+        >
+          Salvar Informações
+        </button>
       </div>
     </div>
 
@@ -121,7 +115,6 @@
       Perfil salvo com sucesso!
     </div>
 
-    <!-- Modal de Confirmação para Remover Foto -->
     <div id="remove-photo-modal" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
@@ -153,7 +146,6 @@
       </div>
     </div>
 
-    <!-- Modal de Confirmação para Alterações não salvas -->
     <div id="unsaved-modal" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">

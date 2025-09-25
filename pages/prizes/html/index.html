@@ -11,122 +11,115 @@
     <link rel="stylesheet" href="../../../assets/css/prizes-styles.css" />
   </head>
   <body>
-    <div class="phone-container">
-      <div class="design-label">PRÊMIOS</div>
-      <div class="screen">
-        <div class="notch"></div>
+    <div class="floating-particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
 
-        <div class="status-bar">
-          <span>9:41</span>
-          <div style="display: flex; gap: 6px; align-items: center">
-            <i class="fas fa-signal" style="font-size: 12px"></i>
-            <i class="fas fa-wifi" style="font-size: 12px"></i>
-            <i
-              class="fas fa-battery-three-quarters"
-              style="font-size: 12px"
-            ></i>
-          </div>
+    <div class="main-container">
+      <div class="header-section">
+        <div id="go-home" class="back-button" onclick="goBack()">
+          <i class="fas fa-arrow-left"></i>
         </div>
+        <h1 class="page-title">🏆 Prêmios</h1>
+        <p class="page-subtitle">
+          Doe mais moedas e concorra aos prêmios incríveis!
+        </p>
+      </div>
 
-        <div class="floating-particles">
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-        </div>
-
-        <div class="content-container">
-          <div id="go-home" class="back-button" onclick="goBack()">
-            <i class="fas fa-arrow-left"></i>
-          </div>
-
-          <div class="header-section">
-            <h1 class="page-title">🏆 Prêmios</h1>
-            <p class="page-subtitle">
-              Doe mais moedas e concorra aos prêmios incríveis!
+      <div class="content-container">
+        <div class="prizes-grid">
+          <div class="prize-card first-place">
+            <div class="prize-header">
+              <div class="position-badge">🥇</div>
+              <div class="prize-info">
+                <div class="prize-name">PlayStation 5</div>
+                <div class="prize-subtitle">1º Lugar</div>
+              </div>
+            </div>
+            <i class="fas fa-gamepad prize-icon-large"></i>
+            <p class="prize-description">
+              Console de última geração com controle DualSense e jogos
+              exclusivos incríveis!
             </p>
+            <div class="requirement-tag">Seja o TOP #1</div>
           </div>
 
-          <div class="prizes-grid">
-            <div class="prize-card first-place">
-              <div class="prize-header">
-                <div class="position-badge">🥇</div>
-                <div class="prize-info">
-                  <div class="prize-name">PlayStation 5</div>
-                  <div class="prize-subtitle">1º Lugar</div>
-                </div>
+          <div class="prize-card second-place">
+            <div class="prize-header">
+              <div class="position-badge">🥈</div>
+              <div class="prize-info">
+                <div class="prize-name">iPhone</div>
+                <div class="prize-subtitle">2º Lugar</div>
               </div>
-              <i class="fas fa-gamepad prize-icon-large"></i>
-              <p class="prize-description">
-                Console de última geração com controle DualSense e jogos
-                exclusivos incríveis!
-              </p>
-              <div class="requirement-tag">Seja o TOP #1</div>
             </div>
+            <i class="fas fa-mobile-alt prize-icon-large"></i>
+            <p class="prize-description">
+              O mais novo iPhone com tecnologia avançada e design premium!
+            </p>
+            <div class="requirement-tag">Seja o TOP #2</div>
+          </div>
 
-            <div class="prize-card second-place">
-              <div class="prize-header">
-                <div class="position-badge">🥈</div>
-                <div class="prize-info">
-                  <div class="prize-name">iPhone</div>
-                  <div class="prize-subtitle">2º Lugar</div>
-                </div>
+          <div class="prize-card third-place">
+            <div class="prize-header">
+              <div class="position-badge">🥉</div>
+              <div class="prize-info">
+                <div class="prize-name">R$ 1.000,00</div>
+                <div class="prize-subtitle">3º Lugar</div>
               </div>
-              <i class="fas fa-mobile-alt prize-icon-large"></i>
-              <p class="prize-description">
-                O mais novo iPhone com tecnologia avançada e design premium!
-              </p>
-              <div class="requirement-tag">Seja o TOP #2</div>
             </div>
-
-            <div class="prize-card third-place">
-              <div class="prize-header">
-                <div class="position-badge">🥉</div>
-                <div class="prize-info">
-                  <div class="prize-name">R$ 1.000,00</div>
-                  <div class="prize-subtitle">3º Lugar</div>
-                </div>
-              </div>
-              <i class="fas fa-money-bill-wave prize-icon-large"></i>
-              <p class="prize-description">
-                Mil reais em dinheiro para você usar como quiser!
-              </p>
-              <div class="requirement-tag">Seja o TOP #3</div>
-            </div>
+            <i class="fas fa-money-bill-wave prize-icon-large"></i>
+            <p class="prize-description">
+              Mil reais em dinheiro para você usar como quiser!
+            </p>
+            <div class="requirement-tag">Seja o TOP #3</div>
           </div>
+        </div>
 
-          <div class="cta-section">
-            <div class="cta-title">Pronto para começar?</div>
-            <p class="cta-text">Doe moedas e suba no ranking!</p>
-            <button id="cta-button"" class="cta-button" onclick="startDonating()">
-              <i class="fas fa-rocket" style="margin-right: 8px"></i>
-              Começar a Doar
-            </button>
-          </div>
+        <div class="cta-section">
+          <div class="cta-title">Pronto para começar?</div>
+          <p class="cta-text">Doe moedas e suba no ranking!</p>
+          <button id="cta-button" class="cta-button" onclick="startDonating()">
+            <i class="fas fa-rocket" style="margin-right: 8px"></i>
+            Começar a Doar
+          </button>
+        </div>
 
-          <div class="rules-section">
-            <div class="rules-title">
-              <i class="fas fa-info-circle"></i>
-              Como Funciona
-            </div>
-            <ul class="rules-list">
-              <li>Doe moedas através do CoinFuture</li>
-              <li>Os 3 usuários que mais doarem ganham</li>
-              <li>Ranking atualizado em tempo real</li>
-              <li>Período da promoção: confira no app</li>
-              <li>Entrega após verificação</li>
-              <li>Acompanhe sua posição no ranking</li>
-            </ul>
+        <div class="rules-section">
+          <div class="rules-title">
+            <i class="fas fa-info-circle"></i>
+            Como Funciona
           </div>
+          <ul class="rules-list">
+            <li>Doe moedas através do CoinFuture</li>
+            <li>Os 3 usuários que mais doarem ganham</li>
+            <li>Ranking atualizado em tempo real</li>
+            <li>Período da promoção: confira no app</li>
+            <li>Entrega após verificação</li>
+            <li>Acompanhe sua posição no ranking</li>
+          </ul>
         </div>
       </div>
     </div>
 
+    <script>
+      // Função básica para o botão voltar
+      function goBack() {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // Se não houver histórico, redirecionar para uma página padrão
+          window.location.href = "/";
+        }
+      }
+    </script>
     <script src="../../../assets/js/prizes-script.js"></script>
   </body>
 </html>
