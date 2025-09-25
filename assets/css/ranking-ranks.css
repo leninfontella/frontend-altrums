@@ -441,11 +441,24 @@ body {
   justify-content: center;
   font-size: 18px;
   color: #fff;
+  /* CORREÇÃO: Remove a cor de fundo do CSS quando a imagem é carregada.
+     A cor de fundo permanece para o fallback (iniciais).
+     Adicionar overflow: hidden para evitar que fotos maiores vazem. */
+  overflow: hidden;
 }
 
 .rank-avatar.highlighted {
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+}
+
+/* CORREÇÃO PRINCIPAL: Garante que a imagem preencha o container do avatar */
+.rank-avatar .profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .rank-info {
