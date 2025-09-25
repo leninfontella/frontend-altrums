@@ -64,7 +64,7 @@ function getFullImageUrl(photoUrl) {
   }
 
   if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
-    return `https://api-backend-coins.onrender.com/api${
+    return `https://api-backend-coins.onrender.com/api/profile/upload-photo${
       photoUrl.startsWith("/") ? "" : "/"
     }${photoUrl}`;
   }
