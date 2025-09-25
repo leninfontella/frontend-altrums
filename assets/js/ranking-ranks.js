@@ -64,7 +64,7 @@ function getFullImageUrl(photoUrl) {
   }
 
   if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
-    return `http://localhost:5000${
+    return `https://api-backend-coins.onrender.com/api${
       photoUrl.startsWith("/") ? "" : "/"
     }${photoUrl}`;
   }
