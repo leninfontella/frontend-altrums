@@ -362,7 +362,7 @@ class UserService {
           avatar: userObj.avatar,
           totalDonated: userObj.totalDonated || 0,
           totalReceived: userObj.totalReceived || 0,
-          profilePhotoUrl: userObj.profilePhotoUrl || null,
+          profilePhotoUrl: userObj.profilePhotoUrl || null, // NOVO: incluir foto
         };
 
         console.log("✅ Dados do usuário processados da API:", processedData);
@@ -434,7 +434,7 @@ class UserService {
           avatar: userData.avatar,
           totalDonated: userData.totalDonated || 0,
           totalReceived: userData.totalReceived || 0,
-          profilePhotoUrl: userData.profilePhotoUrl || null,
+          profilePhotoUrl: userData.profilePhotoUrl || null, // NOVO: incluir foto
         };
 
         console.log("✅ Dados do localStorage processados:", processedData);
@@ -680,7 +680,13 @@ class RankingManager {
   }
 
   /**
-   * CORRIGIDO: Atualiza o pódium com dados reais e fotos com cores de medalhas
+   * CORRIGIDO: Atualiza o pódium com dados reais e fotos
+   */
+  /**
+   * CORREÇÃO: Atualiza o pódium com dados reais e fotos proporcionais
+   */
+  /**
+   * CORREÇÃO: Atualiza o pódium com cores de medalhas (ouro, prata, bronze)
    */
   static async updatePodium() {
     try {
@@ -725,12 +731,6 @@ class RankingManager {
           const displayName = user.displayName || user.name || "Usuário";
           const userInitials = getUserInitials(displayName);
           const borderColor = medalColors[index];
-          const sizeMap = {
-            0: "60x60", // segundo lugar
-            1: "70x70", // primeiro lugar
-            2: "60x60", // terceiro lugar
-          };
-          const imageSize = sizeMap[index];
 
           if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
             const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
@@ -739,13 +739,13 @@ class RankingManager {
               class="podium-profile-image"
               src="${fullPhotoUrl}"
               alt="Foto do Usuário"
-              onerror="this.src='https://placehold.co/${imageSize}/${borderColor.replace(
-              "#",
-              ""
-            )}/ffffff?text=${userInitials}'"
+              onerror="this.src='https://placehold.co/80x80/${borderColor.replace(
+                "#",
+                ""
+              )}/ffffff?text=${userInitials}'"
               style="
-                width: ${imageSize.split("x")[0]}px;
-                height: ${imageSize.split("x")[1]}px;
+                width: 80px;
+                height: 80px;
                 border-radius: 50%;
                 object-fit: cover;
                 object-position: center;
@@ -768,14 +768,14 @@ class RankingManager {
             avatarElement.innerHTML = `
             <img
               class="podium-profile-image"
-              src="https://placehold.co/${imageSize}/${borderColor.replace(
-              "#",
-              ""
-            )}/ffffff?text=${userInitials}"
+              src="https://placehold.co/80x80/${borderColor.replace(
+                "#",
+                ""
+              )}/ffffff?text=${userInitials}"
               alt="Avatar"
               style="
-                width: ${imageSize.split("x")[0]}px;
-                height: ${imageSize.split("x")[1]}px;
+                width: 80px;
+                height: 80px;
                 border-radius: 50%;
                 object-fit: cover;
                 border: 3px solid ${borderColor};
@@ -836,12 +836,6 @@ class RankingManager {
         const displayName = user.displayName || user.name || "Usuário";
         const userInitials = getUserInitials(displayName);
         const borderColor = medalColors[index];
-        const sizeMap = {
-          0: "60x60", // segundo lugar
-          1: "70x70", // primeiro lugar
-          2: "60x60", // terceiro lugar
-        };
-        const imageSize = sizeMap[index];
 
         if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
           const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
@@ -850,13 +844,13 @@ class RankingManager {
             class="podium-profile-image"
             src="${fullPhotoUrl}"
             alt="Foto do Usuário"
-            onerror="this.src='https://placehold.co/${imageSize}/${borderColor.replace(
-            "#",
-            ""
-          )}/ffffff?text=${userInitials}'"
+            onerror="this.src='https://placehold.co/80x80/${borderColor.replace(
+              "#",
+              ""
+            )}/ffffff?text=${userInitials}'"
             style="
-              width: ${imageSize.split("x")[0]}px;
-              height: ${imageSize.split("x")[1]}px;
+              width: 80px;
+              height: 80px;
               border-radius: 50%;
               object-fit: cover;
               object-position: center;
@@ -879,14 +873,14 @@ class RankingManager {
           avatarElement.innerHTML = `
           <img
             class="podium-profile-image"
-            src="https://placehold.co/${imageSize}/${borderColor.replace(
-            "#",
-            ""
-          )}/ffffff?text=${userInitials}"
+            src="https://placehold.co/80x80/${borderColor.replace(
+              "#",
+              ""
+            )}/ffffff?text=${userInitials}"
             alt="Avatar"
             style="
-              width: ${imageSize.split("x")[0]}px;
-              height: ${imageSize.split("x")[1]}px;
+              width: 80px;
+              height: 80px;
               border-radius: 50%;
               object-fit: cover;
               border: 3px solid ${borderColor};
@@ -905,6 +899,79 @@ class RankingManager {
         }
       }
     });
+  }
+
+  /**
+   * Função para aplicar CSS corretivo globalmente com cores de medalhas
+   */
+  static addPodiumCSS() {
+    // Verificar se o CSS já foi adicionado
+    if (document.getElementById("podium-fix-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "podium-fix-styles";
+    style.textContent = `
+    /* CSS corretivo para fotos do pódio com cores de medalhas */
+    .podium-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px auto;
+      width: 86px;
+      height: 86px;
+    }
+
+    /* Estilo geral para todas as posições */
+    .podium-profile-image {
+      width: 80px !important;
+      height: 80px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      background: #f0f0f0 !important;
+      display: block !important;
+      margin: 0 auto !important;
+      transition: transform 0.3s ease !important;
+    }
+
+    /* 1º lugar - Ouro */
+    .podium-item.first .podium-profile-image {
+      border: 1px solid #FFD700 !important;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4) !important;
+    }
+
+    /* 2º lugar - Prata */
+    .podium-item.second .podium-profile-image {
+      border: 1px solid #C0C0C0 !important;
+      box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4) !important;
+    }
+
+    /* 3º lugar - Bronze */
+    .podium-item.third .podium-profile-image {
+      border: 1px solid #CD7F32 !important;
+      box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4) !important;
+    }
+
+    .podium-profile-image:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .podium-profile-image {
+        width: 60px !important;
+        height: 60px !important;
+        border-width: 2px !important;
+      }
+      
+      .podium-avatar {
+        width: 66px;
+        height: 66px;
+      }
+    }
+  `;
+
+    document.head.appendChild(style);
+    console.log("✓ CSS do pódio com cores de medalhas aplicado");
   }
 
   /**
@@ -1248,8 +1315,19 @@ class UIManager {
   static showLoading() {
     console.log("Mostrando estado de loading");
 
-    const elements = ["user-name", "user-balance", "user-position"];
+    const elements = [
+      "user-name",
+      "user-balance",
+      "user-position",
+      "podium-name-1",
+      "podium-coins-1",
+      "podium-name-2",
+      "podium-coins-2",
+      "podium-name-3",
+      "podium-coins-3",
+    ];
 
+    // Itera sobre a lista e atualiza o texto de cada elemento
     elements.forEach((id) => {
       const element = document.getElementById(id);
       if (element) {
@@ -1342,10 +1420,13 @@ class Utils {
     try {
       console.log("Verificando conexão com a API...");
 
-      const response = await fetch(`${API_CONFIG.baseURL}/health`, {
-        method: "GET",
-        timeout: 5000,
-      });
+      const response = await fetch(
+        `${API_CONFIG.baseURL}/health`, // <-- Corrigido aqui
+        {
+          method: "GET",
+          timeout: 5000,
+        }
+      );
 
       const isConnected = response.ok;
       console.log(`API ${isConnected ? "acessível" : "inacessível"}`);
@@ -1419,7 +1500,7 @@ class Utils {
 📊 API Base: ${API_CONFIG.baseURL}
 🔑 Token: ${token ? "Presente" : "Ausente"}
 ✅ Token Válido: ${isValidToken ? "Sim" : "Não"}
-🔍 Dados no localStorage: ${localStorage.getItem("currentUser") ? "Sim" : "Não"}
+📁 Dados no localStorage: ${localStorage.getItem("currentUser") ? "Sim" : "Não"}
 
 🛠️ COMANDOS DISPONÍVEIS:
    • testUser() - Cria usuário de teste com token
@@ -1543,6 +1624,7 @@ class RanksApp {
       }
 
       NavigationManager.setupNavigation();
+      RankingManager.addPodiumCSS();
       await UIManager.updateUserInterface();
 
       console.log("🎉 Aplicação de ranking carregada com sucesso!");
@@ -1558,7 +1640,7 @@ class RanksApp {
   }
 
   static redirectToLogin() {
-    console.log("🔄 Redirecionando para login em 3 segundos...");
+    console.log("📄 Redirecionando para login em 3 segundos...");
 
     const elements = ["user-name", "user-balance", "user-position"];
     elements.forEach((id) => {
@@ -1591,10 +1673,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const userNameElement = document.getElementById("user-name");
   if (
     userNameElement &&
-    (userNameElement.textContent === "Usuário" ||
-      userNameElement.textContent.includes("Usuário"))
+    (userNameElement.textContent === "UsuÃƒÆ'Ã‚Â¡rio" ||
+      userNameElement.textContent === "UsuÃƒÂ¡rio")
   ) {
     userNameElement.textContent = "Carregando...";
+  }
+
+  const userNameInListElement = document.getElementById("user-name-in-list");
+  if (
+    userNameInListElement &&
+    userNameInListElement.textContent.includes("UsuÃƒÆ'Ã‚Â¡rio")
+  ) {
+    userNameInListElement.textContent = "Carregando... (Você)";
   }
 
   RanksApp.init();
@@ -1609,7 +1699,11 @@ setInterval(() => {
   const userNameElement = document.getElementById("user-name");
   if (userNameElement) {
     const currentText = userNameElement.textContent;
-    if (currentText === "..." || currentText === "Usuário") {
+    if (
+      currentText === "UsuÃƒÆ'Ã‚Â¡rio" ||
+      currentText === "UsuÃƒÂ¡rio" ||
+      currentText === "..."
+    ) {
       const userData = JSON.parse(localStorage.getItem("currentUser") || "{}");
       if (userData.fullName) {
         userNameElement.textContent = userData.fullName;
