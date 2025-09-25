@@ -435,7 +435,6 @@ body {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #666 0%, #444 100%);
   display: flex;
   align-items: center;
   justify-content: center;
