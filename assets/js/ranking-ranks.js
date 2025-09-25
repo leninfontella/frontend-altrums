@@ -107,6 +107,8 @@ function generateAvatarHtml(
         class="profile-image"
         src="${fullPhotoUrl}"
         alt="Foto do Perfil"
+        onload="this.classList.add('is-loaded')"
+
         onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
       />
     `;
