@@ -64,7 +64,7 @@ function getFullImageUrl(photoUrl) {
   }
 
   if (photoUrl.startsWith("/uploads/") || photoUrl.includes("uploads")) {
-    return `https://api-backend-coins.onrender.com/api/profile/upload-photo${
+    return `http://localhost:5000${
       photoUrl.startsWith("/") ? "" : "/"
     }${photoUrl}`;
   }
@@ -107,8 +107,6 @@ function generateAvatarHtml(
         class="profile-image"
         src="${fullPhotoUrl}"
         alt="Foto do Perfil"
-        onload="this.classList.add('is-loaded')"
-
         onerror="this.src='https://placehold.co/50x50/00d4ff/ffffff?text=${userInitials}'"
       />
     `;
@@ -364,8 +362,7 @@ class UserService {
           avatar: userObj.avatar,
           totalDonated: userObj.totalDonated || 0,
           totalReceived: userObj.totalReceived || 0,
-          profilePhotoUrl:
-            userObj.profilePhotoUrl || userObj.photo || userObj.avatar || null,
+          profilePhotoUrl: userObj.profilePhotoUrl || null,
         };
 
         console.log("✅ Dados do usuário processados da API:", processedData);
