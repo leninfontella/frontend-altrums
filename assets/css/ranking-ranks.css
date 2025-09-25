@@ -1,4 +1,3 @@
-/* ========== RESET E BASE ========== */
 * {
   margin: 0;
   padding: 0;
@@ -10,70 +9,109 @@ body {
     system-ui, sans-serif;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-/* ========== CONTAINER DO CELULAR ========== */
-.phone-container {
-  width: 390px;
-  height: 844px;
-  background: #000;
-  border-radius: 50px;
-  padding: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .screen {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-  border-radius: 42px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* ========== ELEMENTOS DO TOPO ========== */
-.notch {
+/* Partículas Flutuantes */
+.floating-particles {
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 130px;
-  height: 30px;
-  background: #000;
-  border-radius: 0 0 20px 20px;
-  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.status-bar {
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, #00d4ff, #0099cc);
+  border-radius: 50%;
+  animation: float 8s infinite linear;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.particle:nth-child(1) {
+  left: 10%;
+  top: 20%;
+}
+.particle:nth-child(2) {
+  left: 20%;
+  top: 80%;
+}
+.particle:nth-child(3) {
+  left: 60%;
+  top: 40%;
+}
+.particle:nth-child(4) {
+  left: 80%;
+  top: 10%;
+}
+.particle:nth-child(5) {
+  left: 40%;
+  top: 70%;
+}
+.particle:nth-child(6) {
+  left: 70%;
+  top: 25%;
+}
+.particle:nth-child(7) {
+  left: 30%;
+  top: 90%;
+}
+.particle:nth-child(8) {
+  left: 90%;
+  top: 60%;
+}
+.particle:nth-child(9) {
+  left: 15%;
+  top: 50%;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0px) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.ranking-container {
+  width: 100%;
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 30px 10px 30px;
-  color: #fff;
-  font-size: 17px;
-  font-weight: 600;
-  z-index: 999;
-}
-
-.status-icons {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.status-bar i {
-  font-size: 12px;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+  padding: 24px;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
 .header {
-  padding: 20px 30px;
+  padding: 20px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -85,7 +123,7 @@ body {
   color: #00d4ff;
   font-size: 18px;
   cursor: pointer;
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   transition: all 0.3s ease;
 }
@@ -101,13 +139,17 @@ body {
   font-weight: 700;
 }
 
-/* ========== CONTEÚDO PRINCIPAL ========== */
-.main-content {
-  flex: 1;
-  padding: 0 30px 30px 30px;
-  overflow-y: auto;
+.header-space {
+  width: 34px; /* Mesmo tamanho do back-button para centralizar o título */
 }
 
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 20px 0;
+}
+
+/* Scrollbar Personalizada */
 .main-content::-webkit-scrollbar {
   width: 4px;
 }
@@ -122,7 +164,11 @@ body {
   border-radius: 2px;
 }
 
-/* ========== CARD DO USUÁRIO ATUAL ========== */
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00e9ff 0%, #00aacc 100%);
+}
+
+/* Card do usuário atual */
 .current-user-card {
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   border-radius: 20px;
@@ -133,6 +179,29 @@ body {
   gap: 20px;
   border: 2px solid #00d4ff;
   box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.current-user-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00d4ff, #ff00d4, #00ff88);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .user-rank-badge {
@@ -165,7 +234,7 @@ body {
   font-weight: 700;
 }
 
-/* ========== ÍCONE DE MOEDA ========== */
+/* Ícone de moeda */
 .coin-icon {
   width: 20px;
   height: 20px;
@@ -179,7 +248,7 @@ body {
   font-weight: 700;
 }
 
-/* ========== TÍTULOS DE SEÇÃO ========== */
+/* Títulos de seção */
 .section-title {
   color: #fff;
   font-size: 20px;
@@ -198,7 +267,7 @@ body {
   color: #ffd700;
 }
 
-/* ========== PÓDIUM ========== */
+/* Pódium */
 .podium-container {
   display: flex;
   justify-content: center;
@@ -249,10 +318,10 @@ body {
   color: #ffd700;
   font-size: 20px;
   z-index: 3;
-  animation: float 2s ease-in-out infinite;
+  animation: float-crown 2s ease-in-out infinite;
 }
 
-@keyframes float {
+@keyframes float-crown {
   0%,
   100% {
     transform: translateX(-50%) translateY(0px);
@@ -301,10 +370,12 @@ body {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
-  white-space: nowrap; /* Impede a quebra de linha */
-  overflow: hidden; /* Esconde o texto que ultrapassa o limite */
-  text-overflow: ellipsis; /* Adiciona as reticências (...) ao texto escondido */
-  max-width: 150px; /* Defina uma largura máxima para o elemento */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .podium-balance {
@@ -316,7 +387,7 @@ body {
   font-weight: 700;
 }
 
-/* ========== LISTA DE RANKING ========== */
+/* Lista de ranking */
 .total-users {
   color: #666;
   font-size: 13px;
@@ -328,7 +399,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 30px; /* Adicionado para dar mais espaço no final */
+  margin-bottom: 30px;
 }
 
 .rank-item {
@@ -339,6 +410,7 @@ body {
   align-items: center;
   gap: 15px;
   transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .rank-item:hover {
@@ -394,7 +466,7 @@ body {
   font-weight: 700;
 }
 
-/* ========== NAVEGAÇÃO INFERIOR ========== */
+/* Navegação inferior */
 .bottom-nav {
   display: flex;
   justify-content: space-around;
@@ -402,6 +474,9 @@ body {
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   padding: 15px 20px;
   border-top: 1px solid #333;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .nav-item {
@@ -443,34 +518,80 @@ body {
   transform: scale(1.1);
 }
 
-/* ========== RESPONSIVIDADE ========== */
-@media (max-width: 420px) {
-  .phone-container {
-    width: 390px; /* mantém tamanho fixo */
-    height: 844px;
-    border-radius: 50px; /* mantém a moldura */
-    padding: 8px;
-    margin: 0 auto; /* centraliza */
-  }
-
-  .screen {
-    border-radius: 42px;
-  }
-
-  body {
-    padding: 10px;
-  }
+/* Imagens de perfil */
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  transition: opacity 0.15s linear;
 }
 
 .profile-image {
-  /* Estas propriedades já estavam corretas e são as mais importantes */
-  width: 100%; /* Garante que a imagem ocupe 100% da largura do contêiner */
-  height: 100%; /* Garante que a imagem ocupe 100% da altura do contêiner */
-  object-fit: cover; /* Faz a imagem preencher o contêiner, cortando o que sobrar */
-  border-radius: 100%; /* Faz a imagem ficar redonda */
+  opacity: 0;
 }
 
-/* ========== ANIMAÇÕES ADICIONAIS ========== */
+.profile-image.is-loaded {
+  opacity: 1;
+}
+
+/* CSS corretivo para fotos do pódio com cores de medalhas */
+.podium-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto;
+  width: 66px;
+  height: 66px;
+}
+
+.podium-item.first .podium-avatar {
+  width: 76px;
+  height: 76px;
+}
+
+/* Estilo geral para todas as posições */
+.podium-profile-image {
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  background: #f0f0f0 !important;
+  display: block !important;
+  margin: 0 auto !important;
+  transition: transform 0.3s ease !important;
+}
+
+.podium-item.first .podium-profile-image {
+  width: 70px !important;
+  height: 70px !important;
+}
+
+/* 1º lugar - Ouro */
+.podium-item.first .podium-profile-image {
+  border: 3px solid #ffd700 !important;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4) !important;
+}
+
+/* 2º lugar - Prata */
+.podium-item.second .podium-profile-image {
+  border: 3px solid #c0c0c0 !important;
+  box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4) !important;
+}
+
+/* 3º lugar - Bronze */
+.podium-item.third .podium-profile-image {
+  border: 3px solid #cd7f32 !important;
+  box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4) !important;
+}
+
+.podium-profile-image:hover {
+  transform: scale(1.05);
+}
+
+/* Animações adicionais */
 .rank-item {
   opacity: 0;
   animation: fadeInUp 0.3s ease-in forwards;
@@ -484,5 +605,65 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 480px) {
+  .ranking-container {
+    padding: 20px;
+  }
+
+  .podium-profile-image {
+    width: 50px !important;
+    height: 50px !important;
+    border-width: 2px !important;
+  }
+
+  .podium-item.first .podium-profile-image {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .podium-avatar {
+    width: 56px;
+    height: 56px;
+  }
+
+  .podium-item.first .podium-avatar {
+    width: 66px;
+    height: 66px;
+  }
+}
+
+@media (max-width: 360px) {
+  .ranking-container {
+    padding: 16px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+
+  .user-rank-badge {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .user-info h3 {
+    font-size: 18px;
+  }
+
+  .user-balance {
+    font-size: 16px;
+  }
+}
+
+/* Melhorias para dispositivos com notch */
+@supports (padding: env(safe-area-inset-top)) {
+  .screen {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

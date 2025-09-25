@@ -10,316 +10,25 @@
     />
     <link rel="stylesheet" href="../../../assets/css/home-styles.css" />
     <style>
-      /* Estilos específicos para integração com backend */
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          135deg,
-          #0a0a0a 0%,
-          #1a1a1a 50%,
-          #2a2a2a 100%
-        );
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        gap: 20px;
-        opacity: 1;
-        transition: opacity 0.5s ease;
-      }
-
-      .loading-overlay.hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 3px solid rgba(0, 212, 255, 0.2);
-        border-top: 3px solid #00d4ff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      .loading-text {
-        color: #ffffff;
-        font-size: 16px;
-        font-weight: 500;
-        text-align: center;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Badge de nível do usuário */
-      /* .user-level-badge {
-        margin-top: 24px;
-      }
-
-      .level-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      .level-info:hover {
-        transform: scale(1.02);
-      }
-
-      .level-progress {
-        width: 100%;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        margin-top: 6px;
-        overflow: hidden;
-      }
-
-      .level-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #00d4ff, #0099cc);
-        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        border-radius: 2px;
-      } */
-
-      /* Animações de entrada melhoradas */
-      .fade-in {
-        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-      }
-
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px) scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      /* Estados de carregamento para cards */
-      .coin-card.loading,
-      .award-item.loading {
-        background: linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0.03) 0%,
-          rgba(255, 255, 255, 0.06) 50%,
-          rgba(255, 255, 255, 0.03) 100%
-        );
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-      }
-
-      @keyframes shimmer {
-        0% {
-          background-position: -200% 0;
-        }
-        100% {
-          background-position: 200% 0;
-        }
-      }
-
-      /* Melhorias no balance card */
-      .balance-card {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .balance-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(0, 212, 255, 0.1),
-          transparent
-        );
-        transition: left 0.6s ease;
-      }
-
-      .balance-card:hover::before {
-        left: 100%;
-      }
-
-      .balance-updated {
-        animation: balanceUpdatePulse 0.4s ease;
-      }
-
-      @keyframes balanceUpdatePulse {
-        0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-
-      /* Status de conexão */
-      .connection-status {
-        position: fixed;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9999;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        color: white;
-        transition: all 0.3s ease;
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .connection-status.online {
-        background: linear-gradient(135deg, #10b981, #059669);
-        opacity: 1;
-      }
-
-      .connection-status.offline {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        opacity: 1;
-      }
-
-      /* Aprimoramento do botão principal */
-      .action-button.primary {
-        background: linear-gradient(
-          135deg,
-          #00d4ff 0%,
-          #0099cc 30%,
-          #7b2cbf 100%
-        );
-        position: relative;
-        overflow: hidden;
-      }
-
-      .action-button.primary::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-          135deg,
-          transparent 0%,
-          rgba(255, 255, 255, 0.1) 50%,
-          transparent 100%
-        );
-        transform: translateX(-100%);
-        transition: transform 0.6s ease;
-      }
-
-      .action-button.primary:hover::after {
-        transform: translateX(100%);
-      }
-
-      /* Erro/sucesso estados */
-      .error-state {
-        color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        padding: 12px;
-        border-radius: 8px;
-        margin: 8px 0;
-        font-size: 14px;
-      }
-
-      .success-state {
-        color: #10b981;
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        padding: 12px;
-        border-radius: 8px;
-        margin: 8px 0;
-        font-size: 14px;
-      }
-
-      /* Placeholder para dados não carregados */
-      .data-placeholder {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        height: 20px;
-        animation: pulse 1.5s ease-in-out infinite alternate;
-      }
-
-      @keyframes pulse {
-        from {
-          opacity: 0.5;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      /* Correção para evitar piscar da foto */
+      /* Script inline para evitar piscar da foto */
       .profile-pic {
         position: relative;
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #00d4ff, #0099cc);
-        display: flex;
-        align-items: center;
-        justify-content: center;
         overflow: hidden;
       }
-
       .profile-pic img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
         opacity: 1;
+        transition: opacity 0.15s linear;
       }
-
-      .profile-pic .fa-user-astronaut {
-        font-size: 28px;
-        color: #ffffff;
-      }
-
-      /* Prevenir flash inicial */
-      .profile-pic.loading {
-        opacity: 0.7;
-      }
-
-      .profile-pic.loaded {
-        opacity: 1;
+      .profile-pic.loading img {
+        opacity: 0;
       }
     </style>
   </head>
   <body>
     <!-- Script inline para carregar foto imediatamente -->
     <script>
-      // Executar ANTES do DOM estar pronto para evitar piscar
       (function () {
         try {
-          // Tentar pegar userData do localStorage/sessionStorage
           let userData = null;
           try {
             userData = JSON.parse(
@@ -331,19 +40,12 @@
             console.warn("Erro ao carregar userData:", e);
           }
 
-          // Se tem foto salva, preparar para carregar
           if (userData && userData.profilePhotoUrl) {
             let imageUrl = userData.profilePhotoUrl;
-
-            // Construir URL correta
             if (!imageUrl.startsWith("http")) {
               imageUrl = `http://localhost:5000/${imageUrl}`;
             }
 
-            // Adicionar timestamp para evitar cache
-            imageUrl = imageUrl;
-
-            // Definir função para executar quando DOM estiver pronto
             document.addEventListener("DOMContentLoaded", function () {
               const img = document.querySelector("[data-user-photo]");
               const icon = document.querySelector(".fa-user-astronaut");
@@ -358,7 +60,7 @@
                   icon.style.display = "block";
                 };
 
-                console.log("✅ Foto carregada sem piscar:", imageUrl);
+                console.log("Foto carregada sem piscar:", imageUrl);
               }
             });
           }
@@ -367,59 +69,63 @@
         }
       })();
     </script>
+
     <div id="connection-status" class="connection-status">
       <i class="fas fa-wifi"></i> <span id="connection-text">Conectado</span>
     </div>
 
-    
-      <div class="design-label">LIVING COINS APP</div>
-      <div class="screen">
-     
+    <div class="screen">
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
 
-        <div class="status-bar">
-       
-          <div style="display: flex; gap: 6px; align-items: center">
-     
-          </div>
-        </div>
-
+      <div class="home-container">
         <div class="header">
-          <div class="profile-section">
-            <div class="profile-pic" id="user-avatar">
-              <img
-                data-user-photo
-                class="profile-image"
-                alt="Foto do Perfil"
-                src=""
-              />
+          <div class="header-content">
+            <div class="profile-section">
+              <div class="profile-pic" id="user-avatar">
+                <img
+                  data-user-photo
+                  class="profile-image"
+                  alt="Foto do Perfil"
+                  src=""
+                />
+                <i class="fas fa-user-astronaut" style="display: none"></i>
+              </div>
+              <div class="greeting">
+                <h2 id="user-greeting">Olá, Usuário!</h2>
+                <p>Pronto para impactar o futuro?</p>
+              </div>
+            </div>
 
-              <i class="fas fa-user-astronaut" style="display: none"></i>
-            </div>
-            <div class="greeting">
-              <h2 id="user-greeting">Olá, Usuário!</h2>
-              <p>Pronto para impactar o futuro?</p>
-            </div>
-          </div>
-
-          <div class="balance-card" id="balance-card">
-            <div class="balance-label">Saldo Digital</div>
-            <div class="balance-amount">
-              <div class="coin-icon">💰</div>
-              <span id="user-balance">
-                <div
-                  class="data-placeholder"
-                  style="width: 80px; display: inline-block"
-                ></div>
-              </span>
-            </div>
-            <div id="balance-error" class="error-state" style="display: none">
-              Erro ao carregar saldo
+            <div class="balance-card" id="balance-card">
+              <div class="balance-label">Saldo Digital</div>
+              <div class="balance-amount">
+                <div class="coin-icon">💰</div>
+                <span id="user-balance">
+                  <div
+                    class="data-placeholder"
+                    style="width: 80px; display: inline-block"
+                  ></div>
+                </span>
+              </div>
+              <div id="balance-error" class="error-state" style="display: none">
+                Erro ao carregar saldo
+              </div>
             </div>
           </div>
         </div>
 
         <div class="main-content">
-          <div class="actions-grid">
+          <div class="actions-section">
             <button
               class="action-button primary unified"
               id="search-donate-btn"
@@ -433,27 +139,28 @@
             </button>
           </div>
 
-          <div class="section">
-            <div class="section-header">
-              <h3 class="section-title">Meus Altrums</h3>
-            </div>
+          <div class="dashboard-section">
+            <h3 class="section-title">
+              <i class="fas fa-coins" style="color: #00d4ff"></i>
+              Meus Altrums
+            </h3>
             <div class="coins-grid">
               <div class="coin-card loading" id="earned-coins-card">
                 <div class="coin-type">Ganhos</div>
                 <div class="coin-amount">
                   <div class="small-coin-icon">💰</div>
-                  <span
-                    ><div class="data-placeholder" style="width: 40px"></div
-                  ></span>
+                  <span>
+                    <div class="data-placeholder" style="width: 40px"></div>
+                  </span>
                 </div>
               </div>
               <div class="coin-card loading" id="donated-coins-card">
                 <div class="coin-type">Doados</div>
                 <div class="coin-amount">
                   <div class="small-coin-icon">💰</div>
-                  <span
-                    ><div class="data-placeholder" style="width: 40px"></div
-                  ></span>
+                  <span>
+                    <div class="data-placeholder" style="width: 40px"></div>
+                  </span>
                 </div>
               </div>
             </div>
@@ -462,9 +169,12 @@
             </div>
           </div>
 
-          <div class="section">
+          <div class="dashboard-section">
             <div class="section-header">
-              <h3 class="section-title">Prêmios</h3>
+              <h3 class="section-title">
+                <i class="fas fa-trophy" style="color: #ffd700"></i>
+                Prêmios
+              </h3>
               <a class="view-all" id="view-all">Ver Tudo</a>
             </div>
             <div class="awards-list">
@@ -526,8 +236,6 @@
     </div>
 
     <script src="../../../assets/js/auth.js"></script>
-    <!-- <script src="../../../assets/js/config-edit-apiConfig.js"></script> -->
-
     <script src="../../../assets/js/config-edit-userService.js"></script>
     <script src="../../../assets/js/config-edit-globalInit.js"></script>
     <script src="../../../assets/js/home-script.js"></script>

@@ -1,4 +1,4 @@
-// ========== INTEGRAÇÃO COM AUTH.JS E API BACKEND ==========
+// ========== HOME MOBILE - INTEGRAÇÃO COM AUTH.JS E API BACKEND ==========
 
 // Verificar se Auth.js está carregado
 if (typeof Auth === "undefined") {
@@ -10,19 +10,15 @@ if (typeof Auth === "undefined") {
 
 // Sistema de usuário integrado com Auth.js
 const UserSystem = {
-  profilePicInitialized: false, // Flag para evitar múltiplas inicializações
+  profilePicInitialized: false,
 
   async loadUserProfile() {
     try {
-      console.log("📄 Carregando perfil do usuário...");
+      console.log("🔄 Carregando perfil do usuário...");
 
-      // Obter dados locais para fallback e mesclagem
       const localData = Auth.getUserData();
-
-      // Tentar carregar perfil da API
       const profileFromAPI = await Auth.getProfile();
 
-      // Mesclar dados locais com os da API
       const finalProfileData = {
         ...(localData || {}),
         ...(profileFromAPI || {}),
@@ -52,7 +48,7 @@ const UserSystem = {
 
   async loadUserBalance() {
     try {
-      console.log("📄 Carregando saldo do usuário...");
+      console.log("🔄 Carregando saldo do usuário...");
 
       const balance = await Auth.getBalance();
 
@@ -78,7 +74,7 @@ const UserSystem = {
 
   async loadUserStats() {
     try {
-      console.log("📄 Carregando estatísticas do usuário...");
+      console.log("🔄 Carregando estatísticas do usuário...");
 
       const stats = await Auth.getStats();
 
@@ -94,7 +90,7 @@ const UserSystem = {
 
       const balance = Auth.getUserBalance();
       const mockStats = {
-        totalEarned: balance + Math.floor(Math.random() * 500),
+        totalReceived: balance + Math.floor(Math.random() * 500),
         totalDonated: Math.floor(Math.random() * balance * 0.3),
         bonusCoins: Math.floor(Math.random() * 200),
         monthlyCoins: Math.floor(Math.random() * 300),
@@ -110,7 +106,6 @@ const UserSystem = {
     try {
       console.log("🎨 Atualizando interface do usuário:", userData);
 
-      // Atualizar saudação
       const greetingElement = document.getElementById("user-greeting");
       if (greetingElement && userData.name) {
         const firstName = userData.name.split(" ")[0];
@@ -121,10 +116,6 @@ const UserSystem = {
         console.log("⚠️ Nome não disponível, usando fallback");
       }
 
-      // CORREÇÃO: NÃO inicializar foto aqui para evitar piscar
-      // A foto já foi carregada pelo script inline no HTML
-
-      // Atualizar outros elementos do perfil se existirem
       const userNameElements = document.querySelectorAll(".user-name");
       userNameElements.forEach((element) => {
         element.textContent = userData.name || "Usuário";
@@ -136,10 +127,6 @@ const UserSystem = {
     }
   },
 
-  // FUNÇÃO REMOVIDA: initializeProfilePicture - não é mais necessária
-  // A inicialização agora é feita pelo script inline no HTML
-
-  // NOVA FUNÇÃO: Apenas para atualizações EXTERNAS (eventos)
   updateProfilePicture(newPhotoUrl) {
     const profilePic = document.querySelector(".profile-pic");
     if (!profilePic) return;
@@ -156,8 +143,7 @@ const UserSystem = {
         imageUrl = `http://localhost:5000/${newPhotoUrl}`;
       }
 
-      img.src = imageUrl; // ✅ URL limpa, sem timestamp
-
+      img.src = imageUrl;
       img.style.display = "block";
       icon.style.display = "none";
 
@@ -171,7 +157,6 @@ const UserSystem = {
         console.log("✅ Foto atualizada externamente:", imageUrl);
       };
     } else {
-      // Remover foto - mostrar ícone
       img.style.display = "none";
       icon.style.display = "block";
       console.log("✅ Foto removida, ícone padrão restaurado");
@@ -211,10 +196,11 @@ const UserSystem = {
       console.log("📊 Atualizando estatísticas na interface:", stats);
 
       const statsMap = [
-        { id: "earned-coins-card", value: stats.totalReceived },
+        {
+          id: "earned-coins-card",
+          value: stats.totalReceived || stats.totalEarned,
+        },
         { id: "donated-coins-card", value: stats.totalDonated },
-        { id: "bonus-coins-card", value: stats.bonusCoins },
-        { id: "monthly-coins-card", value: stats.monthlyCoins },
       ];
 
       statsMap.forEach(({ id, value }) => {
@@ -273,11 +259,9 @@ const UserSystem = {
 };
 
 // Sistema de níveis baseado no saldo
-
-// Sistema de níveis baseado no saldo
 const LevelSystem = {
   levels: {
-    1: { min: 100, max: 199, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
+    1: { min: 0, max: 199, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
     2: { min: 200, max: 499, name: "Explorador", color: "#06B6D4", icon: "🔍" },
     3: {
       min: 500,
@@ -349,17 +333,15 @@ const LevelSystem = {
   addLevelBadge(balance) {
     try {
       const levelInfo = this.calculateLevel(balance);
-      const profileSection = document.querySelector(
-        ".profile-section, .user-info, .header"
-      );
+      const headerContent = document.querySelector(".header-content");
 
-      if (profileSection) {
+      if (headerContent) {
         let levelBadge = document.querySelector(".user-level-badge");
 
         if (!levelBadge) {
           levelBadge = document.createElement("div");
           levelBadge.className = "user-level-badge";
-          profileSection.appendChild(levelBadge);
+          headerContent.appendChild(levelBadge);
         }
 
         levelBadge.innerHTML = `
@@ -380,25 +362,9 @@ const LevelSystem = {
             overflow: hidden;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: default;
-          " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 24px ${
-            levelInfo.color
-          }22, 0 3px 10px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.15)'" 
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px ${
-               levelInfo.color
-             }18, 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1)'">
+          " onmouseover="this.style.transform='translateY(-1px)'" 
+             onmouseout="this.style.transform='translateY(0)'">
             
-            <!-- Shimmer effect -->
-            <div style="
-              position: absolute;
-              top: 0;
-              left: -100%;
-              width: 100%;
-              height: 100%;
-              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-              animation: shimmer 2s ease-in-out infinite;
-            "></div>
-            
-            <!-- Header section: Icon + Name + Level -->
             <div style="
               display: flex;
               align-items: center;
@@ -436,15 +402,13 @@ const LevelSystem = {
               </div>
             </div>
             
-            <!-- Progress bar section -->
-            <div onclick="window.location.href='/pages/levels/html/badges.html'"
+            <div onclick="if(window.location.pathname.includes('levels')) return; window.location.href='/pages/levels/html/badges.html'"
             style="
               display: flex;
               align-items: center;
               gap: 12px;
               cursor: pointer;
             ">
-              <!-- Progress bar container -->
               <div style="
                 flex: 1;
                 height: 10px;
@@ -454,9 +418,7 @@ const LevelSystem = {
                 overflow: hidden;
                 position: relative;
                 box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-                display: block;
               ">
-                <!-- Progress bar fill -->
                 <div style="
                   height: 100%;
                   width: ${levelInfo.progress}%;
@@ -467,22 +429,9 @@ const LevelSystem = {
                   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
                   position: relative;
                   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                  animation: progressGlow 2s ease-in-out infinite alternate;
-                "></div>
-                
-                <!-- Progress bar shine effect -->
-                <div style="
-                  position: absolute;
-                  top: 0;
-                  left: -100%;
-                  width: 100%;
-                  height: 100%;
-                  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-              
                 "></div>
               </div>
               
-              <!-- Percentage text -->
               <div style="
                 color: ${levelInfo.color};
                 font-size: 13px;
@@ -497,58 +446,7 @@ const LevelSystem = {
           </div>
         `;
 
-        // Adicionar animação de entrada suave
-        const levelInfoElement = levelBadge.querySelector(".level-info");
-        levelInfoElement.style.animation =
-          "horizontalBadgeEntrance 0.5s ease-out forwards";
-
-        // Adicionar keyframes se não existirem
-        if (!document.querySelector("#horizontalBadgeKeyframes")) {
-          const style = document.createElement("style");
-          style.id = "horizontalBadgeKeyframes";
-          style.textContent = `
-            @keyframes horizontalBadgeEntrance {
-              0% {
-                opacity: 0;
-                transform: translateY(15px) scale(0.9);
-              }
-              100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-              }
-            }
-            
-            @keyframes shimmer {
-              0% { left: -100%; }
-              50% { left: 100%; }
-              100% { left: 100%; }
-            }
-            
-            @keyframes progressGlow {
-              0% { 
-                filter: brightness(1);
-                box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-              }
-              100% { 
-                filter: brightness(1.1);
-                box-shadow: 0 1px 4px rgba(0,0,0,0.15), 0 0 8px ${levelInfo.color}25;
-              }
-            }
-            
-            @keyframes progressShine {
-              0% { left: -100%; }
-              20% { left: -100%; }
-              40% { left: 100%; }
-              100% { left: 100%; }
-            }
-          `;
-          document.head.appendChild(style);
-        }
-
-        console.log(
-          "Badge de nível com barra de progresso horizontal adicionado:",
-          levelInfo
-        );
+        console.log("Badge de nível adicionado:", levelInfo);
       }
     } catch (error) {
       console.error("Erro ao adicionar badge de nível:", error);
@@ -556,10 +454,9 @@ const LevelSystem = {
   },
 };
 
-// ========== SISTEMA DE BUSCA E DOAÇÃO - INTEGRAÇÃO COM API ==========
-
+// Sistema de busca e doação - integração com API
 const UserSearchAPI = {
-  baseUrl: "https://api-backend-coins.onrender.com/api", // Ajuste conforme seu backend
+  baseUrl: "https://api-backend-coins.onrender.com/api",
 
   async searchUsers(query) {
     try {
@@ -584,8 +481,6 @@ const UserSearchAPI = {
       }
 
       const data = await response.json();
-
-      console.log("📋 Resposta completa da API:", data);
 
       let users = [];
       if (data.users) {
@@ -626,7 +521,9 @@ const UserSearchAPI = {
 
       const userData = await response.json();
       console.log("✅ Detalhes do usuário carregados:", userData);
-      return userData.data.user;
+      return userData.data
+        ? userData.data.user || userData.data
+        : userData.user || userData;
     } catch (error) {
       console.error("❌ Erro ao carregar detalhes do usuário:", error);
       return null;
@@ -711,12 +608,10 @@ function createSearchModal() {
 function createDonationModal(user) {
   const currentBalance = getCurrentUserBalance();
 
-  // Criar avatar real ou iniciais para o modal de doação
   let recipientAvatarHTML;
-  const photoUrl = user.profilePhoto || user.photo;
+  const photoUrl = user.profilePhoto || user.photo || user.profilePhotoUrl;
 
   if (photoUrl) {
-    // Construir URL completa se necessário
     const fullPhotoUrl = photoUrl.startsWith("http")
       ? photoUrl
       : `http://localhost:5000${
@@ -742,7 +637,6 @@ function createDonationModal(user) {
       </div>
     `;
   } else {
-    // Apenas iniciais
     const initials = user.name
       .split(" ")
       .map((word) => word[0])
@@ -772,10 +666,8 @@ function createDonationModal(user) {
               <h4>${user.name}</h4>
               <p class="username">${
                 user.username ||
-                `${
-                  user.email?.toLowerCase().replace(/\s+/g, "_") ||
-                  user.name.toLowerCase().replace(/\s+/g, "_")
-                }`
+                user.email?.toLowerCase().replace(/\s+/g, "_") ||
+                user.name.toLowerCase().replace(/\s+/g, "_")
               }</p>
               <p class="institution">${user.institution || "Nível atual:"}</p>
               <div class="level-badge ${(user.level || "iniciante")
@@ -821,7 +713,7 @@ function createDonationModal(user) {
           <div class="donation-actions">
             <button class="cancel-btn" onclick="closeDonationModal()">Cancelar</button>
             <button class="confirm-donation-btn" onclick="confirmDonation('${
-              user.id
+              user.id || user._id
             }')">
               Confirmar Doação
             </button>
@@ -854,12 +746,10 @@ function renderSearchResults(users) {
 
   const resultsHTML = users
     .map((user) => {
-      // Criar avatar real ou iniciais
       let avatarHTML;
-      const photoUrl = user.profilePhoto || user.photo;
+      const photoUrl = user.profilePhoto || user.photo || user.profilePhotoUrl;
 
       if (photoUrl) {
-        // Construir URL completa se necessário
         const fullPhotoUrl = photoUrl.startsWith("http")
           ? photoUrl
           : `http://localhost:5000${
@@ -885,7 +775,6 @@ function renderSearchResults(users) {
           </div>
         `;
       } else {
-        // Apenas iniciais
         const initials = user.name
           .split(" ")
           .map((word) => word[0])
@@ -900,7 +789,9 @@ function renderSearchResults(users) {
       }
 
       return `
-        <div class="user-result" onclick="openDonationModal('${user.id}')">
+        <div class="user-result" onclick="openDonationModal('${
+          user.id || user._id
+        }')">
           ${avatarHTML}
           <div class="user-info">
             <h4>${user.name}</h4>
@@ -910,7 +801,9 @@ function renderSearchResults(users) {
             }</p>      
             <div class="user-stats">
               <span class="coins-count">${(
-                user.coins || 0
+                user.coins ||
+                user.balance ||
+                0
               ).toLocaleString()} 🪙</span>
               <span class="level-badge ${(user.level || "iniciante")
                 .toLowerCase()
@@ -1011,7 +904,7 @@ async function confirmDonation(recipientId) {
       message
     );
 
-    if (result.success) {
+    if (result.success || result.data) {
       const newBalance = await Auth.getBalance();
       UserSystem.updateBalanceInterface(newBalance);
       closeDonationModal();
@@ -1033,6 +926,10 @@ async function confirmDonation(recipientId) {
 // ========== SISTEMA DE NOTIFICAÇÕES ==========
 
 function showNotification(message, type = "info") {
+  // Remover notificações existentes
+  const existingNotifications = document.querySelectorAll(".notification");
+  existingNotifications.forEach((notif) => notif.remove());
+
   const notification = document.createElement("div");
   notification.className = `notification ${type}`;
   notification.innerHTML = `
@@ -1105,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     console.log("Inicializacao concluida!");
-    showNotification("Bem-vindo ao Autrums!", "success");
+    // showNotification("Bem-vindo ao Altrums!", "success");
   } catch (error) {
     console.error("Erro durante inicializacao:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
@@ -1133,29 +1030,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, index * 100);
   });
 
-  // CORREÇÃO: Event listeners para foto de perfil - evitar piscar
+  // Event listeners para foto de perfil
   window.addEventListener("profilePhotoUpdated", (event) => {
-    console.log("📸 Evento de foto atualizada recebido:", event.detail);
+    console.log("Evento de foto atualizada recebido:", event.detail);
     const newPhotoUrl = event.detail.photoUrl;
     UserSystem.updateProfilePicture(newPhotoUrl);
   });
 
   window.addEventListener("profilePhotoRemoved", () => {
-    console.log("🗑️ Evento de foto removida recebido");
+    console.log("Evento de foto removida recebido");
     UserSystem.updateProfilePicture(null);
   });
 
   window.addEventListener("userDataUpdated", (event) => {
-    console.log("👤 Dados do usuário atualizados:", event.detail);
+    console.log("Dados do usuário atualizados:", event.detail);
     const userData = event.detail.userData;
     if (userData) {
       UserSystem.updateUserInterface(userData);
+    }
+  });
+
+  // Event listener para atualização de saldo
+  window.addEventListener("balanceUpdated", (event) => {
+    console.log("Saldo atualizado:", event.detail);
+    const newBalance = event.detail.balance;
+    if (newBalance !== null && newBalance !== undefined) {
+      UserSystem.updateBalanceInterface(newBalance);
+      LevelSystem.addLevelBadge(newBalance);
     }
   });
 });
 
 // ========== EVENT LISTENERS ==========
 
+// Botão principal de busca e doação
 const searchDonateBtn = document.getElementById("search-donate-btn");
 if (searchDonateBtn) {
   searchDonateBtn.addEventListener("click", () => {
@@ -1199,14 +1107,7 @@ if (buttonTimeline) {
 }
 
 // Ver mais botões
-const viewCoinsBtn = document.getElementById("view-coins-btn");
 const viewAwardsBtn = document.getElementById("view-all");
-
-if (viewCoinsBtn) {
-  viewCoinsBtn.addEventListener("click", () => {
-    window.location.href = "../../profile/pages/profile.html";
-  });
-}
 
 if (viewAwardsBtn) {
   viewAwardsBtn.addEventListener("click", () => {
@@ -1227,24 +1128,88 @@ navItems.forEach((item) => {
   });
 });
 
-// Feedback tátil
+// Feedback tátil para dispositivos móveis
 function addTouchFeedback(element) {
   if (!element) return;
 
-  element.addEventListener("touchstart", () => {
-    element.style.transform = "scale(0.98)";
-  });
+  element.addEventListener(
+    "touchstart",
+    () => {
+      element.style.transform = "scale(0.98)";
+    },
+    { passive: true }
+  );
 
-  element.addEventListener("touchend", () => {
-    element.style.transform = "scale(1)";
+  element.addEventListener(
+    "touchend",
+    () => {
+      element.style.transform = "scale(1)";
+    },
+    { passive: true }
+  );
+
+  element.addEventListener(
+    "touchcancel",
+    () => {
+      element.style.transform = "scale(1)";
+    },
+    { passive: true }
+  );
+}
+
+// Aplicar feedback tátil
+[searchDonateBtn, viewAwardsBtn, ...navItems].forEach(addTouchFeedback);
+
+// Cards clicáveis
+const coinCards = document.querySelectorAll(".coin-card");
+coinCards.forEach((card) => {
+  addTouchFeedback(card);
+  card.addEventListener("click", () => {
+    // Pode redirecionar para página de estatísticas detalhadas
+    console.log("Card de moeda clicado");
+  });
+});
+
+const awardItems = document.querySelectorAll(".award-item");
+awardItems.forEach((item) => {
+  addTouchFeedback(item);
+  item.addEventListener("click", () => {
+    // Pode redirecionar para página de prêmios
+    if (viewAwardsBtn) {
+      viewAwardsBtn.click();
+    }
+  });
+});
+
+// Balance card clicável
+const balanceCard = document.getElementById("balance-card");
+if (balanceCard) {
+  addTouchFeedback(balanceCard);
+  balanceCard.addEventListener("click", () => {
+    // Pode mostrar histórico de transações ou detalhes do saldo
+    console.log("Balance card clicado");
   });
 }
 
-[searchDonateBtn, viewCoinsBtn, viewAwardsBtn, ...navItems].forEach(
-  addTouchFeedback
-);
+// Status de conexão
+// function updateConnectionStatus() {
+//   const statusElement = document.getElementById("connection-status");
+//   const statusText = document.getElementById("connection-text");
 
-// Atualizar horário
+//   if (navigator.onLine) {
+//     statusElement.className = "connection-status online";
+//     if (statusText) statusText.textContent = "Conectado";
+//   } else {
+//     statusElement.className = "connection-status offline";
+//     if (statusText) statusText.textContent = "Offline";
+//   }
+// }
+
+window.addEventListener("online", updateConnectionStatus);
+window.addEventListener("offline", updateConnectionStatus);
+updateConnectionStatus();
+
+// Atualizar horário (se necessário)
 function updateTime() {
   const now = new Date();
   const hours = now.getHours().toString().padStart(2, "0");
@@ -1258,9 +1223,90 @@ function updateTime() {
 setInterval(updateTime, 60000);
 updateTime();
 
-console.log("Sistema integrado com Auth.js e API real carregado com sucesso!");
+// Prevenção de zoom acidental em dispositivos móveis
+document.addEventListener(
+  "touchstart",
+  function (event) {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  },
+  { passive: false }
+);
 
-// Exportar funções globalmente
+let lastTouchEnd = 0;
+document.addEventListener(
+  "touchend",
+  function (event) {
+    const now = new Date().getTime();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  },
+  { passive: false }
+);
+
+// Pull-to-refresh (pode ser implementado se necessário)
+let startY = 0;
+let isRefreshing = false;
+
+document.addEventListener(
+  "touchstart",
+  function (e) {
+    startY = e.touches[0].pageY;
+  },
+  { passive: true }
+);
+
+document.addEventListener(
+  "touchmove",
+  function (e) {
+    const y = e.touches[0].pageY;
+    const pullDistance = y - startY;
+
+    // Se estiver no topo da página e puxando para baixo
+    if (
+      window.scrollY === 0 &&
+      pullDistance > 0 &&
+      pullDistance > 100 &&
+      !isRefreshing
+    ) {
+      isRefreshing = true;
+
+      // Recarregar dados
+      showNotification("Atualizando dados...", "info");
+
+      Promise.allSettled([
+        UserSystem.loadUserProfile(),
+        UserSystem.loadUserBalance(),
+        UserSystem.loadUserStats(),
+      ])
+        .then(() => {
+          isRefreshing = false;
+          showNotification("Dados atualizados!", "success");
+        })
+        .catch(() => {
+          isRefreshing = false;
+          showNotification("Erro ao atualizar", "error");
+        });
+    }
+  },
+  { passive: true }
+);
+
+console.log(
+  "Sistema mobile HOME integrado com Auth.js e API real carregado com sucesso!"
+);
+
+// Exportar funções globalmente para compatibilidade
 window.UserSystem = UserSystem;
 window.LevelSystem = LevelSystem;
 window.UserSearchAPI = UserSearchAPI;
+window.openSearchModal = openSearchModal;
+window.closeSearchModal = closeSearchModal;
+window.openDonationModal = openDonationModal;
+window.closeDonationModal = closeDonationModal;
+window.setDonationAmount = setDonationAmount;
+window.confirmDonation = confirmDonation;
+window.showNotification = showNotification;

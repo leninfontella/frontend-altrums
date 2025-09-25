@@ -1,4 +1,3 @@
-/* Reset e Base */
 * {
   margin: 0;
   padding: 0;
@@ -10,124 +9,129 @@ body {
     system-ui, sans-serif;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-/* Container do Celular */
-.phone-container {
-  width: 390px;
-  height: 844px;
-  background: #000;
-  border-radius: 50px;
-  padding: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  position: relative;
-}
-
-.design-label {
-  position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #666;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 2px;
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .screen {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-  border-radius: 42px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* Notch */
-.notch {
+/* Partículas Flutuantes */
+.floating-particles {
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 130px;
-  height: 30px;
-  background: #000;
-  border-radius: 0 0 20px 20px;
-  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
 }
 
-/* Status Bar */
-.status-bar {
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, #00d4ff, #0099cc);
+  border-radius: 50%;
+  animation: float 8s infinite linear;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.particle:nth-child(1) {
+  left: 10%;
+  top: 20%;
+}
+.particle:nth-child(2) {
+  left: 20%;
+  top: 80%;
+}
+.particle:nth-child(3) {
+  left: 60%;
+  top: 40%;
+}
+.particle:nth-child(4) {
+  left: 80%;
+  top: 10%;
+}
+.particle:nth-child(5) {
+  left: 40%;
+  top: 70%;
+}
+.particle:nth-child(6) {
+  left: 70%;
+  top: 25%;
+}
+.particle:nth-child(7) {
+  left: 30%;
+  top: 90%;
+}
+.particle:nth-child(8) {
+  left: 90%;
+  top: 60%;
+}
+.particle:nth-child(9) {
+  left: 15%;
+  top: 50%;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0px) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.home-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  z-index: 999;
-  height: 50px;
-  background: transparent;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 30px;
-  padding-top: 10px;
-  font-size: 17px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.status-icons {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.status-icons i {
-  font-size: 12px;
+  z-index: 10;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
 /* Header */
 .header {
-  padding: 20px 30px 30px 30px;
-  background: transparent;
-  color: white;
+  padding: 20px 24px 30px;
   position: relative;
 }
 
-.profile-image {
-  /* Estas propriedades já estavam corretas e são as mais importantes */
-  width: 100%; /* Garante que a imagem ocupe 100% da largura do contêiner */
-  height: 100%; /* Garante que a imagem ocupe 100% da altura do contêiner */
-  object-fit: cover; /* Faz a imagem preencher o contêiner, cortando o que sobrar */
-  border-radius: 100%; /* Faz a imagem ficar redonda */
-}
-
-/* Evita "piscado" da foto de perfil */
-.profile-image {
-  opacity: 0;
-  transition: opacity 0.15s linear;
-}
-.profile-image.is-loaded {
-  opacity: 1;
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .profile-section {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .profile-pic {
-  /* Ajuste este contêiner para combinar com a imagem */
   width: 60px;
   height: 60px;
-  border-radius: 50%; /* Corrigido: Agora o contêiner também é redondo */
-  overflow: hidden; /* Adicionado: Oculta qualquer parte da imagem que transborde */
-  /* As outras propriedades de estilo (background, display, etc.) podem permanecer */
-  /* background: linear-gradient(60deg, #00d4ff 0%, #0099cc 35%); */
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,12 +139,27 @@ body {
   color: #ffffff;
   box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  /* border: 1px solid rgba(255, 255, 255, 0.1); */
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .profile-pic:hover {
   transform: scale(1.05);
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-image {
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+.profile-image.is-loaded {
+  opacity: 1;
 }
 
 .greeting {
@@ -163,15 +182,36 @@ body {
 
 /* Balance Card */
 .balance-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   border-radius: 20px;
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.balance-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00d4ff, #ff00d4, #00ff88);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .balance-card:hover {
@@ -190,7 +230,7 @@ body {
 }
 
 .balance-amount {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -200,8 +240,8 @@ body {
 }
 
 .coin-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
   border-radius: 50%;
   display: flex;
@@ -223,13 +263,10 @@ body {
 .main-content {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0 30px 100px 30px;
+  padding: 0 24px 100px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .main-content::-webkit-scrollbar {
@@ -246,29 +283,27 @@ body {
   border-radius: 2px;
 }
 
-/* Actions Grid */
-.actions-grid {
-  display: flex;
-  justify-content: center;
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00e9ff 0%, #00aacc 100%);
+}
+
+/* Actions Section */
+.actions-section {
   margin-bottom: 8px;
 }
 
 .action-button {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 50%, #7b2cbf 100%);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 20px;
-  padding: 32px 40px;
+  padding: 32px 24px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  width: 100%;
-  max-width: 280px;
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 50%, #7b2cbf 100%);
-  border: 2px solid rgba(255, 255, 255, 0.15);
 }
 
 .action-button::before {
@@ -294,6 +329,11 @@ body {
 .action-button:hover {
   transform: translateY(-6px) scale(1.03);
   box-shadow: 0 20px 50px rgba(0, 212, 255, 0.6);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .action-icon {
@@ -332,21 +372,19 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Sections */
-.section {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Dashboard Sections */
+.dashboard-section {
+  margin-bottom: 25px;
 }
 
-.section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-  border-color: rgba(0, 212, 255, 0.2);
+.section-title {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .section-header {
@@ -354,13 +392,6 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: -0.01em;
 }
 
 .view-all {
@@ -371,6 +402,7 @@ body {
   padding: 6px 12px;
   border-radius: 8px;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .view-all:hover {
@@ -382,15 +414,15 @@ body {
 .coins-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 15px;
 }
 
 .coin-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   border-radius: 16px;
   padding: 20px;
   text-align: center;
+  border: 1px solid rgba(0, 212, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
@@ -442,7 +474,7 @@ body {
 .awards-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 15px;
 }
 
 .award-item {
@@ -450,7 +482,7 @@ body {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -521,7 +553,9 @@ body {
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   padding: 15px 20px;
   border-top: 1px solid #333;
-  position: relative;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .nav-item {
@@ -561,6 +595,164 @@ body {
 .nav-item:hover span {
   color: #00d4ff;
   transform: scale(1.1);
+}
+
+/* Estados de Loading */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(0, 212, 255, 0.2);
+  border-top: 3px solid #00d4ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Placeholder para dados não carregados */
+.data-placeholder {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  height: 20px;
+  animation: pulse-loading 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-loading {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Estados de erro */
+.error-state {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+/* Status de conexão */
+.connection-status {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.connection-status.online {
+  background: linear-gradient(135deg, #10b981, #059669);
+  opacity: 1;
+}
+
+.connection-status.offline {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  opacity: 1;
+}
+
+/* Animações para cards loading */
+.coin-card.loading,
+.award-item.loading {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Efeito de atualização do saldo */
+.balance-updated {
+  animation: balanceUpdatePulse 0.4s ease;
+}
+
+@keyframes balanceUpdatePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Animações de entrada */
+.fade-in {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ========== ESTILOS PARA SISTEMA DE BUSCA E DOAÇÃO ========== */
@@ -1207,3 +1399,63 @@ body {
     transform: translateY(30px) scale(0.95);
   }
 }
+
+/* Media Queries para Responsividade */
+@media (max-width: 480px) {
+  .home-container {
+    padding: 20px;
+  }
+  
+  .header {
+    padding: 20px 20px 30px;
+  }
+  
+  .main-content {
+    padding: 0 20px 100px 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-container {
+    padding: 16px;
+  }
+  
+  .header {
+    padding: 20px 16px 30px;
+  }
+  
+  .main-content {
+    padding: 0 16px 100px 16px;
+  }
+
+  .greeting h2 {
+    font-size: 18px;
+  }
+
+  .profile-pic {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .balance-amount {
+    font-size: 28px;
+  }
+}
+
+/* Melhorias para dispositivos com notch */
+@supports (padding: env(safe-area-inset-top)) {
+  .screen {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.success-state {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 14px;
