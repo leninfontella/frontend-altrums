@@ -364,7 +364,8 @@ class UserService {
           avatar: userObj.avatar,
           totalDonated: userObj.totalDonated || 0,
           totalReceived: userObj.totalReceived || 0,
-          profilePhotoUrl: userObj.profilePhotoUrl || null,
+          profilePhotoUrl:
+            userObj.profilePhotoUrl || userObj.photo || userObj.avatar || null,
         };
 
         console.log("✅ Dados do usuário processados da API:", processedData);
