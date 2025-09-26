@@ -3,55 +3,87 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Timeline - App Doação de Moedas</title>
+    <title>Timeline - Altrum Coins</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/assets/css/timeline-timeline.css" />
-    <link rel="stylesheet" href="/assets/css/timeline-api.css" />
   </head>
   <body>
-    
-      <div class="design-label">TIMELINE</div>
-      <div class="screen">
-      
-        <div class="status-bar">
-         
-          <div style="display: flex; gap: 6px; align-items: center">
- 
-          </div>
+    <div class="screen">
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <div class="timeline-container">
+        <div class="header">
+          <button id="go-back" class="back-button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="header-title">Timeline Altrums</div>
+          <button id="search-toggle" class="search-button">
+            <i class="fas fa-search"></i>
+          </button>
         </div>
 
-        <div class="header">
-          <div class="header-top">
-            <div class="page-title">
-              <div class="title-icon">
-                <i class="fas fa-history"></i>
-              </div>
-              <div class="header-title">Timeline Altrums</div>
-            </div>
-          </div>
-
-          <div class="stats-row">
-            <div class="stat-card">
-              <div class="stat-value" id="totalTransactions">--</div>
+        <div class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div id="totalTransactions" class="stat-value">--</div>
               <div class="stat-label">Transações</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-value" id="todayActivity">--</div>
+            <div class="stat-item">
+              <div id="todayActivity" class="stat-value">--</div>
               <div class="stat-label">Hoje</div>
             </div>
           </div>
         </div>
 
         <div class="main-content">
-          <div class="timeline-controls">
-            <div class="timeline-actions"></div>
+          <div
+            class="search-container"
+            id="searchContainer"
+            style="display: none"
+          >
+            <div class="search-input-wrapper">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Buscar usuários ou transações..."
+              />
+              <i class="fas fa-search search-icon"></i>
+            </div>
+            <div id="searchResults" class="search-results"></div>
           </div>
 
-          <div class="timeline-container" id="timelineContainer">
+          <div class="filter-section">
+            <div class="filter-container">
+              <button class="filter-btn active" data-filter="all">
+                <i class="fas fa-list"></i> Todas
+              </button>
+              <button class="filter-btn" data-filter="sent">
+                <i class="fas fa-arrow-up"></i> Enviadas
+              </button>
+              <button class="filter-btn" data-filter="received">
+                <i class="fas fa-arrow-down"></i> Recebidas
+              </button>
+            </div>
+          </div>
+
+          <div class="timeline-wrapper" id="timelineWrapper">
             <div class="timeline-line"></div>
+            <div class="timeline-items" id="timelineContainer">
+              <!-- Timeline items will be inserted here -->
+            </div>
           </div>
 
           <div
@@ -67,26 +99,27 @@
         </div>
 
         <div class="bottom-nav">
-          <a href="/index.html" class="nav-item">
+          <div id="go-home" class="nav-item" data-tab="home">
             <i class="fas fa-home"></i>
             <span>Início</span>
-          </a>
-          <a href="#" class="nav-item active">
+          </div>
+          <div class="nav-item active" data-tab="timeline">
             <i class="fas fa-history"></i>
             <span>Timeline</span>
-          </a>
-          <a href="/pages/ranking/html/ranks.html" class="nav-item">
+          </div>
+          <div id="go-ranks" class="nav-item" data-tab="ranks">
             <i class="fas fa-trophy"></i>
             <span>Ranking</span>
-          </a>
-          <a href="/pages/profile/pages/profile.html" class="nav-item">
+          </div>
+          <div id="go-profile" class="nav-item" data-tab="profile">
             <i class="fas fa-user-circle"></i>
             <span>Perfil</span>
-          </a>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Modal de Doação -->
     <div class="modal-overlay" id="donationModal" style="display: none">
       <div class="modal-content">
         <div class="modal-header">
@@ -104,7 +137,7 @@
               placeholder="Digite o nome ou username..."
               class="form-input"
             />
-            <div class="search-results" id="searchResults"></div>
+            <div class="search-results" id="modalSearchResults"></div>
           </div>
 
           <div class="form-group">
@@ -140,7 +173,7 @@
     <script src="/assets/js/timeline-timeline.js"></script>
 
     <script>
-      // Configurações específicas do ambiente
+      // ConfiguraÃ§Ãµes especÃ­ficas do ambiente
       window.APP_CONFIG = {
         API_BASE_URL: "http://localhost:3000/api",
         ENABLE_REAL_TIME: true,
@@ -168,7 +201,7 @@
           });
         });
 
-        // Botão de refresh
+        // BotÃ£o de refresh
         // document
         //   .getElementById("refreshBtn")
         //   .addEventListener("click", async function () {
@@ -201,7 +234,7 @@
             }
           });
 
-        // Busca de usuários no modal
+        // Busca de usuÃ¡rios no modal
         let searchTimeout;
         document
           .getElementById("recipientSearch")
@@ -226,7 +259,7 @@
             }
           });
 
-        // Confirmar doação
+        // Confirmar doaÃ§Ã£o
         document
           .getElementById("confirmDonationBtn")
           .addEventListener("click", processDonation);
@@ -239,7 +272,7 @@
 
       function closeDonationModal() {
         document.getElementById("donationModal").style.display = "none";
-        // Limpar formulário
+        // Limpar formulÃ¡rio
         document.getElementById("recipientSearch").value = "";
         document.getElementById("donationAmount").value = "";
         document.getElementById("donationMessage").value = "";
@@ -251,7 +284,7 @@
 
         if (!results || !results.users || results.users.length === 0) {
           container.innerHTML =
-            '<div class="no-results">Nenhum usuário encontrado</div>';
+            '<div class="no-results">Nenhum usuÃ¡rio encontrado</div>';
           return;
         }
 
@@ -262,7 +295,7 @@
             user._id
           }" onclick="selectRecipient('${user._id}', '${user.name}')">
             <div class="user-avatar-small">
-              ${user.avatar || "👤"}
+              ${user.avatar || "ðŸ‘¤"}
             </div>
             <div class="user-info-small">
               <div class="user-name">${user.name}</div>
@@ -271,7 +304,7 @@
               } ${user.institution || ""}</div>
             </div>
             <div class="user-coins">
-              ${user.coins} Æ
+              ${user.coins} Ã†
             </div>
           </div>
         `
@@ -288,7 +321,7 @@
 
       async function processDonation() {
         if (!selectedRecipientId) {
-          alert("Selecione um destinatário");
+          alert("Selecione um destinatÃ¡rio");
           return;
         }
 
@@ -298,7 +331,7 @@
         const message = document.getElementById("donationMessage").value;
 
         if (!amount || amount <= 0) {
-          alert("Insira uma quantidade válida");
+          alert("Insira uma quantidade vÃ¡lida");
           return;
         }
 
@@ -320,18 +353,18 @@
               closeDonationModal();
               // Recarregar timeline
               await window.timelineAPI.loadRealTimelineData();
-              // Mostrar notificação de sucesso
+              // Mostrar notificaÃ§Ã£o de sucesso
               if (window.showNotification) {
                 window.showNotification(
-                  "Doação realizada com sucesso!",
+                  "DoaÃ§Ã£o realizada com sucesso!",
                   "success"
                 );
               }
             }
           }
         } catch (error) {
-          console.error("Erro ao processar doação:", error);
-          alert("Erro ao processar doação. Tente novamente.");
+          console.error("Erro ao processar doaÃ§Ã£o:", error);
+          alert("Erro ao processar doaÃ§Ã£o. Tente novamente.");
         } finally {
           const btn = document.getElementById("confirmDonationBtn");
           btn.disabled = false;
@@ -341,14 +374,14 @@
 
       async function loadMoreTransactions() {
         if (window.timelineAPI) {
-          // Implementar paginação
-          console.log("Carregando mais transações...");
+          // Implementar paginaÃ§Ã£o
+          console.log("Carregando mais transaÃ§Ãµes...");
         }
       }
     </script>
 
     <style>
-      /* Estilos específicos para controles da timeline */
+      /* Estilos especÃ­ficos para controles da timeline */
       .timeline-controls {
         display: flex;
         justify-content: space-between;

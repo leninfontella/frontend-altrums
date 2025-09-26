@@ -1,12 +1,12 @@
 // ===============================
-// ENHANCED TIMELINE SYSTEM v2.0
-// Sistema completo de timeline com filtros, cache e API
+// ENHANCED TIMELINE SYSTEM v2.1 - MOBILE OPTIMIZED
+// Sistema completo de timeline com design mobile como profile
 // ===============================
 
 // Configuração global
 const API_BASE_URL = "https://api-backend-coins.onrender.com";
 const CACHE_DURATION = 30000; // 30 segundos
-const PULL_THRESHOLD = 70; // Distância para pull-to-refresh
+const PULL_THRESHOLD = 80; // Distância para pull-to-refresh
 
 // Variáveis globais
 let currentFilter = "all";
@@ -252,17 +252,6 @@ class NotificationService {
   static show(message, type = "info", duration = 4000) {
     const notification = document.createElement("div");
     notification.className = `notification notification-${type}`;
-    notification.style.cssText = `
-      position: fixed; top: 100px; right: 30px;
-      background: linear-gradient(135deg, ${this.getTypeColors(type)});
-      color: white; padding: 16px 20px; border-radius: 16px;
-      font-size: 14px; font-weight: 600; z-index: 1000;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.3);
-      transform: translateX(300px);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      max-width: 320px; border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-    `;
 
     notification.innerHTML = `
       <div style="display: flex; align-items: center; gap: 12px;">
@@ -280,25 +269,15 @@ class NotificationService {
     document.body.appendChild(notification);
 
     // Animação de entrada
-    setTimeout(() => (notification.style.transform = "translateX(0)"), 100);
+    setTimeout(() => notification.classList.add("show"), 100);
 
     // Auto-remove
     setTimeout(() => {
-      notification.style.transform = "translateX(300px)";
+      notification.classList.remove("show");
       setTimeout(() => notification.remove(), 300);
     }, duration);
 
     return notification;
-  }
-
-  static getTypeColors(type) {
-    const colors = {
-      success: "#22c55e, #16a34a",
-      error: "#ef4444, #dc2626",
-      warning: "#f59e0b, #d97706",
-      info: "#00d4ff, #0099cc",
-    };
-    return colors[type] || colors.info;
   }
 
   static getTypeIcon(type) {
@@ -349,16 +328,14 @@ class TimelineManager {
   }
 
   static renderTimeline(donations) {
-    const timelineContainer = document.querySelector(".timeline-container");
+    const timelineContainer = document.getElementById("timelineContainer");
     if (!timelineContainer) {
       console.error("Container da timeline não encontrado");
       return;
     }
 
     // Limpar itens existentes
-    timelineContainer
-      .querySelectorAll(".timeline-item")
-      .forEach((item) => item.remove());
+    timelineContainer.innerHTML = "";
 
     if (donations.length === 0) {
       this.showEmptyState(currentFilter);
@@ -387,26 +364,39 @@ class TimelineManager {
 
     const timeAgo = this.getTimeAgo(donation.createdAt);
 
-    // Obter o nome do receptor e do doador
+    // Obter nomes do receptor e doador
     const recipientName =
       donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
     const donorName =
       donation.donorInfo?.name || donation.donor?.name || "Usuário";
 
-    // Escolher o nome principal com base no filtro
+    // Determinar nome principal e secundário baseado no filtro
     let mainName = userData.name;
-    if (currentFilter === "received") {
-      mainName = recipientName; // Em destaque, o receptor
-    } else if (currentFilter === "sent") {
-      mainName = recipientName; // Em destaque, o receptor
+    let displayActionText = actionText;
+
+    if (currentFilter === "sent") {
+      const userName = currentUser?.name || "Você";
+      mainName = `${userName}`;
+      displayActionText = `Enviou para ${recipientName}`;
+    } else if (currentFilter === "received") {
+      const userName = currentUser?.name || "Você";
+      mainName = `${userName}`;
+      displayActionText = `Recebeu de ${donorName}`;
     } else {
-      // all ou outros
-      // Manter a lógica original
+      // Para filtro "all", mostrar transações entre usuários
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
+      const isReceived =
+        donation.recipient && donation.recipient._id === currentUser?.id;
+
       if (isSent) {
         mainName = recipientName;
-      } else {
+        displayActionText = `Recebeu de ${currentUser?.name || "Você"}`;
+      } else if (isReceived) {
         mainName = donorName;
+        displayActionText = `Enviou para ${currentUser?.name || "Você"}`;
+      } else {
+        mainName = recipientName;
+        displayActionText = `Recebeu de ${donorName}`;
       }
     }
 
@@ -424,9 +414,7 @@ class TimelineManager {
             </div>
             <div class="user-details">
               <h4>${mainName}</h4>
-              <p class="transaction-type">${actionText} ${
-      mainName === recipientName ? donorName : recipientName
-    }</p>
+              <p class="transaction-type">${displayActionText}</p>
               <p class="timestamp">${timeAgo}</p>
             </div>
           </div>
@@ -466,7 +454,6 @@ class TimelineManager {
     return item;
   }
 
-  // Fix for the getTransactionDetails method
   static getTransactionDetails(donation) {
     const isSent = donation.donor && donation.donor._id === currentUser?.id;
     const isReceived =
@@ -488,7 +475,6 @@ class TimelineManager {
       amountPrefix = "+";
       actionText = "Bônus do sistema";
     } else if (currentFilter === "sent") {
-      // For "sent" filter, show current user as main name
       userData = {
         name: currentUser?.name || "Você",
         avatar: currentUser?.avatar || "👤",
@@ -501,7 +487,6 @@ class TimelineManager {
       amountPrefix = "-";
       actionText = "Enviou para";
     } else if (currentFilter === "received") {
-      // For "received" filter, show current user as main name
       userData = {
         name: currentUser?.name || "Você",
         avatar: currentUser?.avatar || "👤",
@@ -514,7 +499,6 @@ class TimelineManager {
       amountPrefix = "+";
       actionText = "Recebeu de";
     } else if (isSent) {
-      // For "all" filter, show recipient when current user sent
       userData = {
         name:
           donation.recipientInfo?.name || donation.recipient?.name || "Usuário",
@@ -532,7 +516,6 @@ class TimelineManager {
       amountPrefix = "-";
       actionText = "Enviou para";
     } else if (isReceived) {
-      // For "all" filter, show donor when current user received
       userData = {
         name: donation.donorInfo?.name || donation.donor?.name || "Usuário",
         avatar: donation.donorInfo?.avatar || donation.donor?.avatar || "👤",
@@ -546,7 +529,6 @@ class TimelineManager {
       amountPrefix = "+";
       actionText = "Recebeu de";
     } else {
-      // For transactions between other users (not involving current user)
       userData = {
         name:
           donation.recipientInfo?.name || donation.recipient?.name || "Usuário",
@@ -575,133 +557,10 @@ class TimelineManager {
     };
   }
 
-  // Also need to fix the createTimelineItem method to handle the display names correctly
-  static createTimelineItem(donation, index) {
-    const item = document.createElement("div");
-    item.className = "timeline-item";
-    item.style.animationDelay = `${index * 0.1}s`;
-
-    const {
-      userData,
-      dotClass,
-      dotIcon,
-      amountClass,
-      amountPrefix,
-      actionText,
-    } = this.getTransactionDetails(donation);
-
-    const timeAgo = this.getTimeAgo(donation.createdAt);
-
-    // Get recipient and donor names
-    const recipientName =
-      donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
-    const donorName =
-      donation.donorInfo?.name || donation.donor?.name || "Usuário";
-
-    // Determine the main name and secondary name based on filter and transaction type
-    let mainName = userData.name;
-    let secondaryName = "";
-    let displayActionText = actionText;
-
-    if (currentFilter === "sent") {
-      const userName =
-        currentUser?.user?.name ||
-        currentUser?.user?.displayName ||
-        currentUser?.user?.username ||
-        "Usuário";
-      mainName = `${userName} (você)`;
-      secondaryName = recipientName;
-      displayActionText = `Enviou para ${recipientName}`;
-    } else if (currentFilter === "received") {
-      const userName =
-        currentUser?.user?.name ||
-        currentUser?.user?.displayName ||
-        currentUser?.user?.username ||
-        "Usuário";
-      mainName = `${userName} (você)`;
-      secondaryName = donorName;
-      displayActionText = `Recebeu de ${donorName}`;
-    } else {
-      // For "all" filter, show transactions between any users
-      const isSent = donation.donor && donation.donor._id === currentUser?.id;
-      const isReceived =
-        donation.recipient && donation.recipient._id === currentUser?.id;
-
-      if (isSent) {
-        // Current user sent this donation
-        mainName = recipientName;
-        displayActionText = `Recebeu de ${currentUser?.name || "Você"}`;
-      } else if (isReceived) {
-        // Current user received this donation
-        mainName = donorName;
-        displayActionText = `Enviou para ${currentUser?.name || "Você"}`;
-      } else {
-        // Transaction between other users
-        mainName = recipientName;
-        displayActionText = `Recebeu de ${donorName}`;
-      }
-    }
-
-    item.innerHTML = `
-    <div class="timeline-dot ${dotClass}">
-      <i class="${dotIcon}"></i>
-    </div>
-    <div class="timeline-content" data-donation-id="${donation._id}">
-      <div class="transaction-header">
-        <div class="user-info">
-          <div class="user-avatar" style="background: linear-gradient(135deg, ${
-            userData.gradient
-          });">
-            ${this.renderAvatar(userData.avatar, userData.name)}
-          </div>
-          <div class="user-details">
-            <h4>${mainName}</h4>
-            <p class="transaction-type">${displayActionText}</p>
-            <p class="timestamp">${timeAgo}</p>
-          </div>
-        </div>
-        <div class="transaction-amount">
-          <div class="coin-icon-small">Æ</div>
-          <span class="amount ${amountClass}">${amountPrefix}${
-      donation.amount
-    }</span>
-        </div>
-      </div>
-      ${
-        donation.message
-          ? `
-        <div class="transaction-message">
-          <i class="fas fa-comment" style="margin-right: 8px; color: #64748b;"></i>
-          "${donation.message}"
-        </div>
-      `
-          : ""
-      }
-      <div class="transaction-meta">
-        <span class="transaction-status ${
-          donation.status
-        }">${this.getStatusText(donation.status)}</span>
-        ${
-          userData.username
-            ? `<span class="username">@${userData.username}</span>`
-            : ""
-        }
-      </div>
-    </div>
-  `;
-
-    // Add interactivity
-    item.addEventListener("click", () => this.handleItemClick(donation));
-
-    return item;
-  }
-
-  // Also need to fix the createTimelineItem method to handle the display names correctly
-
   static renderAvatar(avatar, name) {
     if (!avatar) return `<span style="font-size: 16px;">👤</span>`;
 
-    if (avatar.startsWith("http")) {
+    if (avatar.startsWith && avatar.startsWith("http")) {
       return `<img src="${avatar}" alt="${name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
     }
 
@@ -722,8 +581,6 @@ class TimelineManager {
 
         this.animateCounter("totalTransactions", transactionCount);
         this.animateCounter("todayActivity", todayCount);
-        this.animateCounter("donationsSent", stats.donationsSent || 0);
-        this.animateCounter("donationsReceived", stats.donationsReceived || 0);
       }
     } catch (error) {
       console.error("Erro ao atualizar estatísticas:", error);
@@ -744,15 +601,14 @@ class TimelineManager {
   }
 
   static showLoadingState(show) {
-    const timeline = document.querySelector(".timeline-container");
+    const timeline = document.getElementById("timelineContainer");
     if (timeline) {
-      timeline.style.opacity = show ? "0.6" : "1";
-      timeline.style.pointerEvents = show ? "none" : "auto";
+      timeline.classList.toggle("timeline-loading", show);
     }
   }
 
   static showEmptyState(filterType = "all") {
-    const timelineContainer = document.querySelector(".timeline-container");
+    const timelineContainer = document.getElementById("timelineContainer");
     if (!timelineContainer) return;
 
     const emptyState = document.createElement("div");
@@ -836,274 +692,45 @@ class TimelineManager {
 }
 
 // ===============================
-// SISTEMA DE FILTROS
+// SISTEMA DE FILTROS MOBILE
 // ===============================
 class FilterManager {
   static initialize() {
-    const filterContainer = this.createFilterContainer();
-
-    const filters = [
-      { key: "all", label: "Todas", icon: "fas fa-list" },
-      { key: "sent", label: "Enviadas", icon: "fas fa-arrow-up" },
-      { key: "received", label: "Recebidas", icon: "fas fa-arrow-down" },
-    ];
-
-    filters.forEach((filter) => {
-      const btn = this.createFilterButton(filter);
-      filterContainer.appendChild(btn);
-    });
+    this.bindFilterEvents();
   }
 
-  // Replace the existing createFilterContainer method in FilterManager class
+  static bindFilterEvents() {
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        // Remover active de todos
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
 
-  static createFilterContainer() {
-    let container = document.querySelector(".filter-container");
-    if (!container) {
-      container = document.createElement("div");
-      container.className = "filter-container";
-      container.style.cssText = `
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: nowrap;
-      gap: 8px;
-      margin: 16px 0;
-      padding: 12px 16px;
-      background: transparent;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      position: relative;
-    `;
+        // Adicionar active ao clicado
+        this.classList.add("active");
 
-      // Add a subtle animated background
-      const animatedBg = document.createElement("div");
-      animatedBg.style.cssText = `
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, 
-        rgba(0, 212, 255, 0.03) 0%, 
-        rgba(0, 153, 204, 0.05) 50%, 
-        rgba(0, 212, 255, 0.03) 100%);
-      animation: subtle-pulse 4s ease-in-out infinite;
-      border-radius: 16px;
-      pointer-events: none;
-    `;
-      container.appendChild(animatedBg);
-
-      // Hide scrollbar for webkit browsers
-      const style = document.createElement("style");
-      style.textContent = `
-      .filter-container::-webkit-scrollbar {
-        display: none;
-      }
-      
-      @keyframes subtle-pulse {
-        0%, 100% { opacity: 0.5; }
-        50% { opacity: 1; }
-      }
-      
-      .filter-container::before {
-        content: '';
-        position: absolute;
-        top: -1px;
-        left: -1px;
-        right: -1px;
-        bottom: -1px;
-        background: linear-gradient(45deg, 
-          rgba(0, 212, 255, 0.1), 
-          transparent, 
-          rgba(0, 153, 204, 0.1));
-        border-radius: 17px;
-        z-index: -1;
-      }
-    `;
-      document.head.appendChild(style);
-
-      const timelineContainer = document.querySelector(".timeline-container");
-      if (timelineContainer) {
-        timelineContainer.parentNode.insertBefore(container, timelineContainer);
-      }
-    }
-    return container;
-  }
-
-  // ===============================
-  // MODERN FILTER BUTTONS STYLING
-  // ===============================
-
-  // Replace the existing createFilterButton method in FilterManager class
-
-  static createFilterButton(filter) {
-    const btn = document.createElement("button");
-    btn.className = `filter-btn ${filter.key === "all" ? "active" : ""}`;
-    btn.dataset.filter = filter.key;
-    btn.innerHTML = `<i class="${filter.icon}"></i> ${filter.label}`;
-
-    // Modern base styling
-    btn.style.cssText = `
-    position: relative;
-    background: linear-gradient(135deg, rgba(45, 55, 72, 0.4), rgba(55, 65, 81, 0.4));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #e2e8f0;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 85px;
-    height: 36px;
-    justify-content: center;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  `;
-
-    // Add pseudo-element for modern glow effect
-    const glowOverlay = document.createElement("div");
-    glowOverlay.style.cssText = `
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 204, 0.1));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    border-radius: 12px;
-  `;
-    btn.appendChild(glowOverlay);
-
-    // Active state styling
-    if (filter.key === "all") {
-      btn.style.background = "linear-gradient(135deg, #00d4ff, #0099cc)";
-      btn.style.color = "#ffffff";
-      btn.style.borderColor = "rgba(0, 212, 255, 0.3)";
-      btn.style.boxShadow =
-        "0 8px 25px rgba(0, 212, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)";
-      btn.style.transform = "translateY(-1px)";
-      glowOverlay.style.opacity = "1";
-    }
-
-    // Hover effects
-    btn.addEventListener("mouseenter", () => {
-      if (!btn.classList.contains("active")) {
-        btn.style.background =
-          "linear-gradient(135deg, rgba(55, 65, 81, 0.9), rgba(67, 79, 99, 0.9))";
-        btn.style.borderColor = "rgba(255, 255, 255, 0.15)";
-        btn.style.transform = "translateY(-2px)";
-        btn.style.boxShadow =
-          "0 8px 25px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)";
-        btn.style.color = "#00d4ff";
-        glowOverlay.style.opacity = "0.5";
-      } else {
-        btn.style.transform = "translateY(-3px)";
-        btn.style.boxShadow =
-          "0 12px 30px rgba(0, 212, 255, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15)";
-      }
-    });
-
-    btn.addEventListener("mouseleave", () => {
-      if (!btn.classList.contains("active")) {
-        btn.style.background =
-          "linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(55, 65, 81, 0.8))";
-        btn.style.borderColor = "rgba(255, 255, 255, 0.08)";
-        btn.style.transform = "translateY(0)";
-        btn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
-        btn.style.color = "#e2e8f0";
-        glowOverlay.style.opacity = "0";
-      } else {
-        btn.style.transform = "translateY(-1px)";
-        btn.style.boxShadow =
-          "0 8px 25px rgba(0, 212, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)";
-      }
-    });
-
-    // Click animation
-    btn.addEventListener("mousedown", () => {
-      btn.style.transform = "translateY(0) scale(0.98)";
-    });
-
-    btn.addEventListener("mouseup", () => {
-      setTimeout(() => {
-        if (btn.classList.contains("active")) {
-          btn.style.transform = "translateY(-1px) scale(1)";
-        } else {
-          btn.style.transform = "translateY(-2px) scale(1)";
-        }
-      }, 100);
-    });
-
-    // Click handler
-    btn.addEventListener("click", () => {
-      // Update active states
-      document.querySelectorAll(".filter-btn").forEach((filterBtn) => {
-        filterBtn.classList.remove("active");
-        const btnGlow = filterBtn.querySelector("div");
-
-        // Reset to inactive styling
-        filterBtn.style.background =
-          "linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(55, 65, 81, 0.8))";
-        filterBtn.style.color = "#e2e8f0";
-        filterBtn.style.borderColor = "rgba(255, 255, 255, 0.08)";
-        filterBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
-        filterBtn.style.transform = "translateY(0)";
-        if (btnGlow) btnGlow.style.opacity = "0";
+        // Carregar dados com o filtro selecionado
+        const filter = this.dataset.filter;
+        TimelineManager.loadData(filter);
       });
-
-      // Set active styling for clicked button
-      btn.classList.add("active");
-      btn.style.background = "linear-gradient(135deg, #00d4ff, #0099cc)";
-      btn.style.color = "#ffffff";
-      btn.style.borderColor = "rgba(0, 212, 255, 0.3)";
-      btn.style.boxShadow =
-        "0 8px 25px rgba(0, 212, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)";
-      btn.style.transform = "translateY(-1px)";
-      glowOverlay.style.opacity = "1";
-
-      // Load data with the selected filter
-      TimelineManager.loadData(filter.key);
     });
-
-    return btn;
   }
-
-  // ===============================
-  // ENHANCED FILTER CONTAINER STYLING
-  // ===============================
 }
 
 // ===============================
-// PULL-TO-REFRESH MELHORADO
+// PULL-TO-REFRESH MOBILE OTIMIZADO
 // ===============================
 class PullToRefreshManager {
   static initialize() {
     const mainContent = document.querySelector(".main-content");
-    const timelineContainer = document.querySelector(".timeline-container");
+    const indicator = document.getElementById("pullToRefreshIndicator");
 
-    if (!mainContent || !timelineContainer) return;
+    if (!mainContent || !indicator) return;
 
     let startY = 0;
     let isDragging = false;
     let refreshTriggered = false;
-
-    // Criar indicador de refresh se não existir
-    let indicator = document.getElementById("pullToRefreshIndicator");
-    if (!indicator) {
-      indicator = this.createRefreshIndicator();
-      document.body.appendChild(indicator);
-    }
 
     mainContent.addEventListener("touchstart", (e) => {
       if (mainContent.scrollTop === 0) {
@@ -1124,8 +751,8 @@ class PullToRefreshManager {
         const pullFraction = Math.min(dragDistance / PULL_THRESHOLD, 1);
         const pullValue = pullFraction * 60;
 
-        timelineContainer.style.transform = `translateY(${pullValue}px)`;
-        indicator.style.transform = `translate(-50%, ${
+        mainContent.style.transform = `translateY(${pullValue}px)`;
+        indicator.style.transform = `translateX(-50%) translateY(${
           20 + pullValue
         }px) scale(${0.5 + pullFraction / 2})`;
         indicator.style.opacity = pullFraction;
@@ -1133,7 +760,7 @@ class PullToRefreshManager {
         if (dragDistance >= PULL_THRESHOLD && !refreshTriggered) {
           refreshTriggered = true;
           indicator.classList.add("ready");
-          navigator.vibrate && navigator.vibrate(50); // Feedback háptico
+          if (navigator.vibrate) navigator.vibrate(50);
         } else if (dragDistance < PULL_THRESHOLD && refreshTriggered) {
           refreshTriggered = false;
           indicator.classList.remove("ready");
@@ -1146,7 +773,6 @@ class PullToRefreshManager {
 
       isDragging = false;
       mainContent.style.transition = "transform 0.3s ease-out";
-      timelineContainer.style.transition = "transform 0.3s ease-out";
 
       if (refreshTriggered) {
         indicator.classList.add("loading");
@@ -1155,178 +781,217 @@ class PullToRefreshManager {
       }
 
       // Reset positions
-      timelineContainer.style.transform = "translateY(0)";
-      indicator.style.transform = "translate(-50%, -100%) scale(0)";
+      mainContent.style.transform = "translateY(0)";
+      indicator.style.transform = "translateX(-50%) translateY(-50px) scale(0)";
       indicator.style.opacity = "0";
 
       refreshTriggered = false;
     });
   }
-
-  static createRefreshIndicator() {
-    const indicator = document.createElement("div");
-    indicator.id = "pullToRefreshIndicator";
-    indicator.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 50%;
-      transform: translate(-50%, -100%) scale(0);
-      background: linear-gradient(135deg, #00d4ff, #0099cc);
-      color: white;
-      padding: 12px;
-      border-radius: 50%;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
-    `;
-
-    indicator.innerHTML = `
-      <i class="fas fa-sync-alt" style="font-size: 18px;"></i>
-    `;
-
-    return indicator;
-  }
 }
 
 // ===============================
-// SISTEMA DE AUTO-UPDATE
+// SISTEMA DE BUSCA MOBILE
 // ===============================
-class AutoUpdateManager {
-  static interval = null;
+class SearchManager {
+  static searchTimeout = null;
+  static searchCache = new Map();
 
-  static start() {
-    this.stop(); // Limpar interval anterior
+  static initialize() {
+    this.bindSearchEvents();
+  }
 
-    this.interval = setInterval(async () => {
-      if (Date.now() - lastFetchTime > CACHE_DURATION) {
-        await TimelineManager.loadData(currentFilter);
+  static bindSearchEvents() {
+    const searchToggle = document.getElementById("search-toggle");
+    const searchContainer = document.getElementById("searchContainer");
+    const searchInput = document.getElementById("searchInput");
+    const searchResults = document.getElementById("searchResults");
+
+    if (!searchToggle || !searchContainer || !searchInput || !searchResults)
+      return;
+
+    // Toggle search container
+    searchToggle.addEventListener("click", () => {
+      const isVisible = searchContainer.style.display !== "none";
+      searchContainer.style.display = isVisible ? "none" : "block";
+
+      if (!isVisible) {
+        searchInput.focus();
+      } else {
+        searchInput.value = "";
+        searchResults.style.display = "none";
       }
-    }, 30000);
+    });
 
-    // Atualizar stats a cada minuto
-    setInterval(() => TimelineManager.updateStats(), 60000);
+    // Search input events
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+
+      clearTimeout(this.searchTimeout);
+
+      if (query.length < 2) {
+        searchResults.style.display = "none";
+        return;
+      }
+
+      this.searchTimeout = setTimeout(() => {
+        this.performSearch(query);
+      }, 300);
+    });
+
+    // Focus/blur events
+    searchInput.addEventListener("focus", () => {
+      searchInput.style.borderColor = "rgba(0, 212, 255, 0.5)";
+    });
+
+    searchInput.addEventListener("blur", () => {
+      searchInput.style.borderColor = "rgba(0, 212, 255, 0.2)";
+
+      setTimeout(() => {
+        searchResults.style.display = "none";
+      }, 200);
+    });
+
+    // Close search when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        !searchContainer.contains(e.target) &&
+        !searchToggle.contains(e.target)
+      ) {
+        searchContainer.style.display = "none";
+        searchInput.value = "";
+        searchResults.style.display = "none";
+      }
+    });
   }
 
-  static stop() {
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
+  static async performSearch(query) {
+    const searchResults = document.getElementById("searchResults");
+    if (!searchResults) return;
+
+    // Check cache first
+    if (this.searchCache.has(query)) {
+      this.displaySearchResults(this.searchCache.get(query));
+      return;
     }
+
+    try {
+      searchResults.innerHTML = `
+        <div class="no-results">
+          <div class="loading-spinner"></div> Buscando...
+        </div>
+      `;
+      searchResults.style.display = "block";
+
+      const results = await DonationService.searchUsers(query);
+
+      if (results) {
+        this.searchCache.set(query, results);
+        this.displaySearchResults(results);
+      }
+    } catch (error) {
+      console.error("Erro na busca:", error);
+      searchResults.innerHTML = `
+        <div class="no-results" style="color: #ef4444;">
+          Erro na busca. Tente novamente.
+        </div>
+      `;
+    }
+  }
+
+  static displaySearchResults(results) {
+    const searchResults = document.getElementById("searchResults");
+    if (!searchResults) return;
+
+    if (!results || !results.users || results.users.length === 0) {
+      searchResults.innerHTML =
+        '<div class="no-results">Nenhum resultado encontrado</div>';
+      searchResults.style.display = "block";
+      return;
+    }
+
+    const resultsHTML = results.users
+      .map(
+        (user) => `
+      <div class="search-result-item" 
+           data-user-id="${user._id}">
+        <div class="user-avatar-small">
+          ${user.avatar || "👤"}
+        </div>
+        <div class="user-info-small">
+          <div class="user-name">${user.name}</div>
+          ${
+            user.username
+              ? `<div class="user-details">@${user.username}</div>`
+              : ""
+          }
+        </div>
+        <div class="user-coins">${user.coins || 0} Æ</div>
+      </div>
+    `
+      )
+      .join("");
+
+    searchResults.innerHTML = resultsHTML;
+    searchResults.style.display = "block";
+
+    // Add click handlers
+    searchResults.querySelectorAll(".search-result-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        const userId = item.dataset.userId;
+        this.handleUserSelect(userId);
+      });
+    });
+  }
+
+  static handleUserSelect(userId) {
+    console.log("Usuário selecionado:", userId);
+
+    const searchInput = document.getElementById("searchInput");
+    const searchResults = document.getElementById("searchResults");
+    const searchContainer = document.getElementById("searchContainer");
+
+    if (searchInput) searchInput.value = "";
+    if (searchResults) searchResults.style.display = "none";
+    if (searchContainer) searchContainer.style.display = "none";
   }
 }
 
 // ===============================
-// INICIALIZAÇÃO PRINCIPAL
-// ===============================
-async function initialize() {
-  console.log("🚀 Enhanced Timeline System v2.0 - Inicializando...");
-
-  if (!AuthService.isAuthenticated()) {
-    console.warn("Usuário não autenticado");
-    NotificationService.show(
-      "É necessário fazer login para acessar a timeline",
-      "error"
-    );
-    return false;
-  }
-
-  try {
-    // Carregar usuário atual
-    currentUser = await UserService.getCurrentUser();
-    if (!currentUser) {
-      throw new Error("Não foi possível carregar dados do usuário");
-    }
-
-    // Inicializar componentes
-    FilterManager.initialize();
-    PullToRefreshManager.initialize();
-
-    // Carregar dados iniciais
-    await TimelineManager.loadData("all");
-
-    // Iniciar sistema de auto-update
-    AutoUpdateManager.start();
-
-    // Feedback de sucesso
-    setTimeout(() => {
-      NotificationService.show("🌟 Timeline carregada com sucesso!", "success");
-    }, 1000);
-
-    console.log("✅ Timeline inicializada com sucesso");
-    return true;
-  } catch (error) {
-    console.error("Erro na inicialização:", error);
-    NotificationService.show("Erro ao inicializar timeline", "error");
-    return false;
-  }
-}
-
-// ===============================
-// API GLOBAL EXPORTADA
-// ===============================
-window.timelineAPI = {
-  // Core functions
-  initialize,
-  refresh: () => TimelineManager.refresh(),
-  loadData: (filter) => TimelineManager.loadData(filter),
-
-  // Services
-  DonationService,
-  UserService,
-  AuthService,
-
-  // Managers
-  TimelineManager,
-  FilterManager,
-  NotificationService,
-
-  // Utilities
-  getCurrentFilter: () => currentFilter,
-  getCurrentUser: () => currentUser,
-  isLoading: () => isLoading,
-
-  // Cache management
-  clearCache: () => DonationService.clearCache(),
-
-  // Auto-update control
-  startAutoUpdate: () => AutoUpdateManager.start(),
-  stopAutoUpdate: () => AutoUpdateManager.stop(),
-};
-
-// ===============================
-// SISTEMA DE NAVEGAÇÃO MELHORADO
+// SISTEMA DE NAVEGAÇÃO MOBILE
 // ===============================
 class NavigationManager {
   static initialize() {
     this.initializeNavItems();
-    this.initializeKeyboardShortcuts();
     this.initializeScrollEffects();
+    this.createScrollToTopButton();
   }
 
   static initializeNavItems() {
     document.querySelectorAll(".nav-item").forEach((item) => {
       item.addEventListener("click", function () {
-        // Aqui você pode adicionar lógica para destacar o ativo
+        // Remove active de todos
         document
           .querySelectorAll(".nav-item")
           .forEach((nav) => nav.classList.remove("active"));
+
+        // Add active ao clicado
         this.classList.add("active");
 
-        // Add click animation
+        // Add animation
         this.style.transform = "scale(0.95)";
         setTimeout(() => {
           this.style.transform = "scale(1)";
         }, 150);
 
-        // Handle navigation based on data attribute
-        const target = this.dataset.target;
+        // Handle navigation
+        const target = this.dataset.tab;
         if (target) {
-          NavigationManager.navigateTo(target);
+          this.handleNavigation(target);
         }
       });
 
-      // Add hover effects
+      // Hover effects
       item.addEventListener("mouseenter", function () {
         if (!this.classList.contains("active")) {
           this.style.transform = "translateY(-2px)";
@@ -1341,39 +1006,9 @@ class NavigationManager {
     });
   }
 
-  static initializeKeyboardShortcuts() {
-    document.addEventListener("keydown", (e) => {
-      // Only handle shortcuts when not typing in inputs
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
-        return;
-
-      switch (e.key) {
-        case "1":
-          e.preventDefault();
-          TimelineManager.loadData("all");
-          break;
-        case "2":
-          e.preventDefault();
-          TimelineManager.loadData("sent");
-          break;
-        case "3":
-          e.preventDefault();
-          TimelineManager.loadData("received");
-          break;
-        case "r":
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            TimelineManager.refresh();
-          }
-          break;
-        case "Escape":
-          // Close any open modals or overlays
-          document.querySelectorAll(".modal, .overlay").forEach((el) => {
-            el.classList.add("hidden");
-          });
-          break;
-      }
-    });
+  static handleNavigation(target) {
+    console.log("Navegando para:", target);
+    // Implementar navegação conforme necessário
   }
 
   static initializeScrollEffects() {
@@ -1402,67 +1037,20 @@ class NavigationManager {
       const scrollToTopBtn = document.getElementById("scrollToTop");
 
       if (scrollToTopBtn) {
-        if (scrollTop > 500) {
+        if (scrollTop > 300) {
           scrollToTopBtn.style.display = "flex";
-          scrollToTopBtn.style.opacity = "1";
         } else {
-          scrollToTopBtn.style.opacity = "0";
-          setTimeout(() => {
-            if (scrollToTopBtn.style.opacity === "0") {
-              scrollToTopBtn.style.display = "none";
-            }
-          }, 300);
+          scrollToTopBtn.style.display = "none";
         }
-      }
-
-      // Infinite scroll detection
-      if (
-        scrollTop + mainContent.clientHeight >=
-        mainContent.scrollHeight - 100
-      ) {
-        this.handleInfiniteScroll();
       }
     });
   }
 
-  static navigateTo(target) {
-    console.log("Navegando para:", target);
-    // Implementar navegação conforme necessário
-  }
-
-  static async handleInfiniteScroll() {
-    if (isLoading) return;
-
-    console.log("Loading more data...");
-    // Implementar carregamento de mais dados
-    // await TimelineManager.loadMoreData();
-  }
-
   static createScrollToTopButton() {
-    const btn = document.createElement("button");
-    btn.id = "scrollToTop";
-    btn.innerHTML = '<i class="fas fa-arrow-up"></i>';
-    btn.style.cssText = `
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #00d4ff, #0099cc);
-      border: none;
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
-      transition: all 0.3s ease;
-    `;
+    const scrollToTop = document.getElementById("scrollToTop");
+    if (!scrollToTop) return;
 
-    btn.addEventListener("click", () => {
+    scrollToTop.addEventListener("click", () => {
       const mainContent = document.querySelector(".main-content");
       if (mainContent) {
         mainContent.scrollTo({
@@ -1471,467 +1059,345 @@ class NavigationManager {
         });
       }
     });
-
-    document.body.appendChild(btn);
-    return btn;
   }
 }
 
 // ===============================
-// SISTEMA DE BUSCA AVANÇADO
+// MODAL MANAGER
 // ===============================
-class SearchManager {
-  static searchTimeout = null;
-  static searchCache = new Map();
-
+class ModalManager {
   static initialize() {
-    this.createSearchInterface();
-    this.bindSearchEvents();
+    this.bindModalEvents();
   }
 
-  static createSearchInterface() {
-    const searchContainer = document.createElement("div");
-    searchContainer.className = "search-container";
-    searchContainer.style.cssText = `
-      position: relative;
-      margin: 20px 0;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-    `;
+  static bindModalEvents() {
+    const donationModal = document.getElementById("donationModal");
+    const closeDonationModal = document.getElementById("closeDonationModal");
+    const cancelDonationBtn = document.getElementById("cancelDonationBtn");
+    const confirmDonationBtn = document.getElementById("confirmDonationBtn");
 
-    searchContainer.innerHTML = `
-      <div class="search-input-wrapper" style="position: relative;">
-        <input 
-          type="text" 
-          id="searchInput" 
-          placeholder="Buscar usuários ou transações..."
-          style="
-            width: 100%;
-            padding: 12px 45px 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            font-size: 14px;
-            transition: all 0.3s ease;
-          "
-        />
-        <i class="fas fa-search" style="
-          position: absolute;
-          right: 16px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 14px;
-        "></i>
-      </div>
-      <div id="searchResults" class="search-results" style="
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(30, 30, 30, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        margin-top: 8px;
-        max-height: 300px;
-        overflow-y: auto;
-        z-index: 1000;
-        display: none;
-      "></div>
-    `;
-
-    // Insert after filter container
-    const filterContainer = document.querySelector(".filter-container");
-    if (filterContainer) {
-      filterContainer.parentNode.insertBefore(
-        searchContainer,
-        filterContainer.nextSibling
-      );
+    if (closeDonationModal) {
+      closeDonationModal.addEventListener("click", this.closeDonationModal);
     }
+
+    if (cancelDonationBtn) {
+      cancelDonationBtn.addEventListener("click", this.closeDonationModal);
+    }
+
+    if (confirmDonationBtn) {
+      confirmDonationBtn.addEventListener("click", this.processDonation);
+    }
+
+    // Close modal clicking on overlay
+    if (donationModal) {
+      donationModal.addEventListener("click", (e) => {
+        if (e.target === donationModal) {
+          this.closeDonationModal();
+        }
+      });
+    }
+
+    // Recipient search
+    this.initializeRecipientSearch();
   }
 
-  static bindSearchEvents() {
-    const searchInput = document.getElementById("searchInput");
-    const searchResults = document.getElementById("searchResults");
+  static initializeRecipientSearch() {
+    const recipientSearch = document.getElementById("recipientSearch");
+    const modalSearchResults = document.getElementById("modalSearchResults");
 
-    if (!searchInput || !searchResults) return;
+    if (!recipientSearch || !modalSearchResults) return;
 
-    searchInput.addEventListener("input", (e) => {
-      const query = e.target.value.trim();
+    let searchTimeout;
+    recipientSearch.addEventListener("input", function () {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim();
 
-      clearTimeout(this.searchTimeout);
-
-      if (query.length < 2) {
-        searchResults.style.display = "none";
-        return;
-      }
-
-      this.searchTimeout = setTimeout(() => {
-        this.performSearch(query);
-      }, 300);
-    });
-
-    searchInput.addEventListener("focus", () => {
-      searchInput.style.borderColor = "rgba(0, 212, 255, 0.5)";
-      searchInput.style.boxShadow = "0 0 0 3px rgba(0, 212, 255, 0.1)";
-    });
-
-    searchInput.addEventListener("blur", () => {
-      searchInput.style.borderColor = "rgba(255, 255, 255, 0.1)";
-      searchInput.style.boxShadow = "none";
-
-      // Hide results after a delay to allow clicking
-      setTimeout(() => {
-        searchResults.style.display = "none";
-      }, 200);
-    });
-
-    // Close search results when clicking outside
-    document.addEventListener("click", (e) => {
-      if (
-        !searchInput.contains(e.target) &&
-        !searchResults.contains(e.target)
-      ) {
-        searchResults.style.display = "none";
+      if (query.length >= 2) {
+        searchTimeout = setTimeout(async () => {
+          const results = await DonationService.searchUsers(query, 1, 5);
+          ModalManager.displayModalSearchResults(results);
+        }, 300);
+      } else {
+        modalSearchResults.innerHTML = "";
+        modalSearchResults.style.display = "none";
       }
     });
   }
 
-  static async performSearch(query) {
-    const searchResults = document.getElementById("searchResults");
-    if (!searchResults) return;
+  static displayModalSearchResults(results) {
+    const container = document.getElementById("modalSearchResults");
+    if (!container) return;
 
-    // Check cache first
-    if (this.searchCache.has(query)) {
-      this.displaySearchResults(this.searchCache.get(query));
+    if (!results || !results.users || results.users.length === 0) {
+      container.innerHTML =
+        '<div class="no-results">Nenhum usuário encontrado</div>';
+      container.style.display = "block";
       return;
     }
 
-    try {
-      searchResults.innerHTML = `
-        <div style="padding: 16px; text-align: center; color: rgba(255, 255, 255, 0.7);">
-          <i class="fas fa-spinner fa-spin"></i> Buscando...
-        </div>
-      `;
-      searchResults.style.display = "block";
-
-      const results = await DonationService.searchUsers(query);
-
-      if (results) {
-        this.searchCache.set(query, results);
-        this.displaySearchResults(results);
-      }
-    } catch (error) {
-      console.error("Erro na busca:", error);
-      searchResults.innerHTML = `
-        <div style="padding: 16px; text-align: center; color: #ef4444;">
-          Erro na busca. Tente novamente.
-        </div>
-      `;
-    }
-  }
-
-  static displaySearchResults(results) {
-    const searchResults = document.getElementById("searchResults");
-    if (!searchResults) return;
-
-    if (!results || results.length === 0) {
-      searchResults.innerHTML = `
-        <div style="padding: 16px; text-align: center; color: rgba(255, 255, 255, 0.7);">
-          Nenhum resultado encontrado
-        </div>
-      `;
-      searchResults.style.display = "block";
-      return;
-    }
-
-    const resultsHTML = results
+    container.innerHTML = results.users
       .map(
         (user) => `
-      <div class="search-result-item" 
-           data-user-id="${user._id}"
-           style="
-             padding: 12px 16px;
-             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-             cursor: pointer;
-             transition: background 0.2s ease;
-           "
-           onmouseenter="this.style.background='rgba(255, 255, 255, 0.05)'"
-           onmouseleave="this.style.background='transparent'">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #00d4ff, #0099cc);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-          ">
-            ${user.avatar || "👤"}
-          </div>
-          <div>
-            <div style="color: white; font-weight: 600; font-size: 14px;">
-              ${user.name}
-            </div>
-            ${
-              user.username
-                ? `
-              <div style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">
-                @${user.username}
-              </div>
-            `
-                : ""
-            }
-          </div>
+      <div class="search-result-item" data-user-id="${user._id}">
+        <div class="user-avatar-small">
+          ${user.avatar || "👤"}
+        </div>
+        <div class="user-info-small">
+          <div class="user-name">${user.name}</div>
+          <div class="user-details">${
+            user.username ? "@" + user.username : ""
+          } ${user.institution || ""}</div>
+        </div>
+        <div class="user-coins">
+          ${user.coins} Æ
         </div>
       </div>
     `
       )
       .join("");
 
-    searchResults.innerHTML = resultsHTML;
-    searchResults.style.display = "block";
+    container.style.display = "block";
 
     // Add click handlers
-    searchResults.querySelectorAll(".search-result-item").forEach((item) => {
+    container.querySelectorAll(".search-result-item").forEach((item) => {
       item.addEventListener("click", () => {
         const userId = item.dataset.userId;
-        this.handleUserSelect(userId);
+        const userName = item.querySelector(".user-name").textContent;
+        this.selectRecipient(userId, userName);
       });
     });
   }
 
-  static handleUserSelect(userId) {
-    console.log("Usuário selecionado:", userId);
-    // Implementar ação ao selecionar usuário (ex: abrir modal de doação)
+  static selectedRecipientId = null;
 
-    const searchInput = document.getElementById("searchInput");
-    const searchResults = document.getElementById("searchResults");
+  static selectRecipient(userId, userName) {
+    this.selectedRecipientId = userId;
+    const recipientSearch = document.getElementById("recipientSearch");
+    const modalSearchResults = document.getElementById("modalSearchResults");
 
-    if (searchInput) searchInput.value = "";
-    if (searchResults) searchResults.style.display = "none";
-  }
-}
-
-// ===============================
-// SISTEMA DE TEMAS MELHORADO
-// ===============================
-class ThemeManager {
-  static currentTheme = "dark";
-
-  static initialize() {
-    this.loadTheme();
-    this.createThemeToggle();
+    if (recipientSearch) recipientSearch.value = userName;
+    if (modalSearchResults) modalSearchResults.style.display = "none";
   }
 
-  static loadTheme() {
-    const savedTheme = localStorage.getItem("timeline-theme") || "dark";
-    this.setTheme(savedTheme);
+  static closeDonationModal() {
+    const donationModal = document.getElementById("donationModal");
+    if (donationModal) donationModal.style.display = "none";
+
+    // Clear form
+    const recipientSearch = document.getElementById("recipientSearch");
+    const donationAmount = document.getElementById("donationAmount");
+    const donationMessage = document.getElementById("donationMessage");
+    const modalSearchResults = document.getElementById("modalSearchResults");
+
+    if (recipientSearch) recipientSearch.value = "";
+    if (donationAmount) donationAmount.value = "";
+    if (donationMessage) donationMessage.value = "";
+    if (modalSearchResults) modalSearchResults.innerHTML = "";
+
+    ModalManager.selectedRecipientId = null;
   }
 
-  static setTheme(theme) {
-    this.currentTheme = theme;
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("timeline-theme", theme);
+  static async processDonation() {
+    if (!ModalManager.selectedRecipientId) {
+      NotificationService.show("Selecione um destinatário", "warning");
+      return;
+    }
 
-    // Update theme toggle button
-    const themeToggle = document.getElementById("themeToggle");
-    if (themeToggle) {
-      const icon = themeToggle.querySelector("i");
-      if (icon) {
-        icon.className = theme === "dark" ? "fas fa-sun" : "fas fa-moon";
+    const donationAmount = document.getElementById("donationAmount");
+    const donationMessage = document.getElementById("donationMessage");
+
+    const amount = parseInt(donationAmount?.value || 0);
+    const message = donationMessage?.value || "";
+
+    if (!amount || amount <= 0) {
+      NotificationService.show("Insira uma quantidade válida", "warning");
+      return;
+    }
+
+    try {
+      const btn = document.getElementById("confirmDonationBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loading-spinner"></div> Processando...';
+      }
+
+      const result = await DonationService.createDonation(
+        ModalManager.selectedRecipientId,
+        amount,
+        message
+      );
+
+      if (result && result.success) {
+        ModalManager.closeDonationModal();
+        await TimelineManager.loadData(currentFilter);
+        NotificationService.show("Doação realizada com sucesso!", "success");
+      }
+    } catch (error) {
+      console.error("Erro ao processar doação:", error);
+      NotificationService.show(
+        "Erro ao processar doação. Tente novamente.",
+        "error"
+      );
+    } finally {
+      const btn = document.getElementById("confirmDonationBtn");
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = "Doar";
       }
     }
   }
-
-  static toggleTheme() {
-    const newTheme = this.currentTheme === "dark" ? "light" : "dark";
-    this.setTheme(newTheme);
-    NotificationService.show(
-      `Tema ${newTheme === "dark" ? "escuro" : "claro"} ativado`,
-      "info",
-      2000
-    );
-  }
-
-  static createThemeToggle() {
-    const themeToggle = document.createElement("button");
-    themeToggle.id = "themeToggle";
-    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    themeToggle.style.cssText = `
-      position: fixed;
-      top: 30px;
-      right: 30px;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      transition: all 0.3s ease;
-    `;
-
-    themeToggle.addEventListener("click", () => this.toggleTheme());
-
-    themeToggle.addEventListener("mouseenter", () => {
-      themeToggle.style.background = "rgba(255, 255, 255, 0.2)";
-      themeToggle.style.transform = "scale(1.1)";
-    });
-
-    themeToggle.addEventListener("mouseleave", () => {
-      themeToggle.style.background = "rgba(255, 255, 255, 0.1)";
-      themeToggle.style.transform = "scale(1)";
-    });
-
-    document.body.appendChild(themeToggle);
-  }
 }
 
 // ===============================
-// SISTEMA DE ANALYTICS
+// SISTEMA DE AUTO-UPDATE
 // ===============================
-class AnalyticsManager {
-  static events = [];
+class AutoUpdateManager {
+  static interval = null;
 
-  static track(event, data = {}) {
-    const eventData = {
-      event,
-      data,
-      timestamp: new Date().toISOString(),
-      userId: currentUser?.id,
-    };
+  static start() {
+    this.stop();
 
-    this.events.push(eventData);
+    this.interval = setInterval(async () => {
+      if (Date.now() - lastFetchTime > CACHE_DURATION) {
+        await TimelineManager.loadData(currentFilter);
+      }
+    }, 30000);
 
-    // Send to analytics service if needed
-    console.log("Analytics:", eventData);
+    // Update stats every minute
+    setInterval(() => TimelineManager.updateStats(), 60000);
   }
 
-  static trackTimelineView(filter) {
-    this.track("timeline_view", { filter });
-  }
-
-  static trackDonationClick(donationId) {
-    this.track("donation_click", { donationId });
-  }
-
-  static trackSearch(query, resultsCount) {
-    this.track("search", { query, resultsCount });
-  }
-
-  static trackRefresh(method) {
-    this.track("timeline_refresh", { method });
-  }
-}
-
-// ===============================
-// INICIALIZAÇÃO COMPLETA
-// ===============================
-document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🌟 Sistema de Timeline v2.0 - Inicializando componentes...");
-
-  try {
-    // Initialize core system
-    const initialized = await initialize();
-
-    if (initialized) {
-      // Initialize additional managers
-      NavigationManager.initialize();
-      SearchManager.initialize();
-      ThemeManager.initialize();
-
-      // Create additional UI elements
-      NavigationManager.createScrollToTopButton();
-
-      console.log("✅ Todos os componentes inicializados com sucesso!");
-
-      // Track initialization
-      AnalyticsManager.track("app_initialized", {
-        version: "2.0",
-        features: [
-          "timeline",
-          "filters",
-          "search",
-          "themes",
-          "pull-to-refresh",
-        ],
-      });
-    } else {
-      console.error("❌ Falha na inicialização do sistema principal");
+  static stop() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
     }
-  } catch (error) {
-    console.error("💥 Erro crítico na inicialização:", error);
+  }
+}
+
+// ===============================
+// INICIALIZAÇÃO PRINCIPAL
+// ===============================
+async function initialize() {
+  console.log("🚀 Enhanced Timeline System v2.1 Mobile - Inicializando...");
+
+  if (!AuthService.isAuthenticated()) {
+    console.warn("Usuário não autenticado");
     NotificationService.show(
-      "Erro crítico na inicialização do sistema",
+      "É necessário fazer login para acessar a timeline",
       "error"
     );
+    return false;
   }
-});
+
+  try {
+    // Carregar usuário atual
+    currentUser = await UserService.getCurrentUser();
+    if (!currentUser) {
+      throw new Error("Não foi possível carregar dados do usuário");
+    }
+
+    // Inicializar componentes
+    FilterManager.initialize();
+    PullToRefreshManager.initialize();
+    SearchManager.initialize();
+    NavigationManager.initialize();
+    ModalManager.initialize();
+
+    // Carregar dados iniciais
+    await TimelineManager.loadData("all");
+
+    // Iniciar auto-update
+    AutoUpdateManager.start();
+
+    // Feedback de sucesso
+    setTimeout(() => {
+      NotificationService.show("✨ Timeline carregada com sucesso!", "success");
+    }, 1000);
+
+    console.log("✅ Timeline mobile inicializada com sucesso");
+    return true;
+  } catch (error) {
+    console.error("Erro na inicialização:", error);
+    NotificationService.show("Erro ao inicializar timeline", "error");
+    return false;
+  }
+}
 
 // ===============================
-// CLEANUP E LIFECYCLE
+// API GLOBAL EXPORTADA
 // ===============================
-window.addEventListener("beforeunload", () => {
-  console.log("🧹 Limpando recursos...");
+window.timelineAPI = {
+  // Core functions
+  initialize,
+  refresh: () => TimelineManager.refresh(),
+  loadData: (filter) => TimelineManager.loadData(filter),
 
-  // Stop auto-updates
-  AutoUpdateManager.stop();
+  // Services
+  DonationService,
+  UserService,
+  AuthService,
 
-  // Clear caches
-  DonationService.clearCache();
-  SearchManager.searchCache.clear();
-
-  // Track session end
-  AnalyticsManager.track("session_end", {
-    duration: Date.now() - lastFetchTime,
-    eventsCount: AnalyticsManager.events.length,
-  });
-});
-
-// ===============================
-// EXTEND GLOBAL API
-// ===============================
-Object.assign(window.timelineAPI, {
-  // Additional managers
-  NavigationManager,
+  // Managers
+  TimelineManager,
+  FilterManager,
+  NotificationService,
   SearchManager,
-  ThemeManager,
-  AnalyticsManager,
+  NavigationManager,
+  ModalManager,
 
-  // Utility functions
-  trackEvent: (event, data) => AnalyticsManager.track(event, data),
-  setTheme: (theme) => ThemeManager.setTheme(theme),
-  search: (query) => SearchManager.performSearch(query),
+  // Utilities
+  getCurrentFilter: () => currentFilter,
+  getCurrentUser: () => currentUser,
+  isLoading: () => isLoading,
 
-  // System info
-  version: "2.0",
-  buildDate: new Date().toISOString(),
+  // Cache management
+  clearCache: () => DonationService.clearCache(),
+
+  // Auto-update control
+  startAutoUpdate: () => AutoUpdateManager.start(),
+  stopAutoUpdate: () => AutoUpdateManager.stop(),
+
+  // Version info
+  version: "2.1",
   features: [
+    "mobile_optimized",
     "timeline_management",
     "filtering_system",
     "pull_to_refresh",
     "search_functionality",
-    "theme_switching",
+    "modal_system",
     "auto_updates",
-    "analytics_tracking",
-    "keyboard_shortcuts",
-    "infinite_scroll",
-    "cache_management",
+    "touch_interactions",
   ],
+};
+
+// ===============================
+// INICIALIZAÇÃO E EVENTOS
+// ===============================
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("🌟 Sistema Timeline Mobile v2.1 - Inicializando...");
+
+  try {
+    const initialized = await initialize();
+
+    if (initialized) {
+      console.log("✅ Todos os componentes mobile inicializados!");
+    } else {
+      console.error("❌ Falha na inicialização");
+    }
+  } catch (error) {
+    console.error("💥 Erro crítico:", error);
+    NotificationService.show("Erro crítico na inicialização", "error");
+  }
 });
 
-console.log("🎉 Enhanced Timeline System v2.0 carregado com sucesso!");
+// Cleanup
+window.addEventListener("beforeunload", () => {
+  AutoUpdateManager.stop();
+  DonationService.clearCache();
+  SearchManager.searchCache.clear();
+});
+
+console.log("🎉 Enhanced Timeline System v2.1 Mobile carregado!");
 console.log("📚 API disponível em: window.timelineAPI");
-console.log("🎨 Recursos:", window.timelineAPI.features);
