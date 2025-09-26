@@ -49,18 +49,18 @@ function checkPasswordStrength(password) {
     case 0:
     case 1:
       feedback = "Muito fraca";
-      bars[0].classList.add("weak");
+      if (bars[0]) bars[0].classList.add("weak");
       break;
     case 2:
       feedback = "Fraca";
-      bars[0].classList.add("weak");
-      bars[1].classList.add("weak");
+      if (bars[0]) bars[0].classList.add("weak");
+      if (bars[1]) bars[1].classList.add("weak");
       break;
     case 3:
       feedback = "Média";
-      bars[0].classList.add("medium");
-      bars[1].classList.add("medium");
-      bars[2].classList.add("medium");
+      if (bars[0]) bars[0].classList.add("medium");
+      if (bars[1]) bars[1].classList.add("medium");
+      if (bars[2]) bars[2].classList.add("medium");
       break;
     case 4:
     case 5:
@@ -70,15 +70,6 @@ function checkPasswordStrength(password) {
   }
 
   return { strength, feedback };
-}
-
-// Função para aplicar máscara no telefone
-function phoneMask(value) {
-  return value
-    .replace(/\D/g, "") // Remove tudo que não é dígito
-    .replace(/(\d{2})(\d)/, "($1) $2") // Aplica máscara: (XX)
-    .replace(/(\d{5})(\d)/, "$1-$2") // Aplica máscara: XXXXX-XXXX
-    .replace(/(-\d{4})\d+?$/, "$1"); // Limita a 4 dígitos finais
 }
 
 // Função para validar se as senhas coincidem
@@ -173,9 +164,18 @@ function clearPasswordError() {
   confirmPasswordWrapper.style.borderColor = "";
 }
 
+// Função para aplicar máscara no telefone
+function phoneMask(value) {
+  return value
+    .replace(/\D/g, "") // Remove tudo que não é dígito
+    .replace(/(\d{2})(\d)/, "($1) $2") // Aplica máscara: (XX)
+    .replace(/(\d{5})(\d)/, "$1-$2") // Aplica máscara: XXXXX-XXXX
+    .replace(/(-\d{4})\d+?$/, "$1"); // Limita a 4 dígitos finais
+}
+
 // Função para validar todo o formulário
 function validateForm() {
-  const fullnameInput = document.getElementById("fullname");
+  const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
   const phoneInput = document.getElementById("phone");
   const passwordInput = document.getElementById("password");
@@ -188,7 +188,7 @@ function validateForm() {
 
   // Verificar se todos os campos estão preenchidos corretamente
   const isValid =
-    fullnameInput.value.trim().length >= 2 &&
+    nameInput.value.trim().length >= 2 &&
     emailInput.value.includes("@") &&
     phoneInput.value.length >= 14 &&
     passwordInput.value.length >= 6 &&
@@ -234,7 +234,7 @@ function createRippleEffect(event, element) {
 // Event listeners e inicialização
 document.addEventListener("DOMContentLoaded", function () {
   // Obter elementos do DOM
-  const fullnameInput = document.getElementById("fullname");
+  const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
   const phoneInput = document.getElementById("phone");
   const passwordInput = document.getElementById("password");
@@ -243,6 +243,20 @@ document.addEventListener("DOMContentLoaded", function () {
   const signupBtn = document.getElementById("signupBtn");
   const passwordStrength = document.getElementById("passwordStrength");
   const strengthText = document.getElementById("strengthText");
+
+  // Verificar se os elementos existem antes de adicionar event listeners
+  if (
+    !nameInput ||
+    !emailInput ||
+    !phoneInput ||
+    !passwordInput ||
+    !confirmPasswordInput ||
+    !termsCheckbox ||
+    !signupBtn
+  ) {
+    console.error("Elementos essenciais do formulário não encontrados");
+    return;
+  }
 
   // Aplicar máscara no campo de telefone
   phoneInput.addEventListener("input", function (e) {
@@ -254,11 +268,13 @@ document.addEventListener("DOMContentLoaded", function () {
   passwordInput.addEventListener("input", function (e) {
     const password = e.target.value;
 
-    if (password.length > 0) {
+    if (password.length > 0 && passwordStrength) {
       passwordStrength.style.display = "block";
       const result = checkPasswordStrength(password);
-      strengthText.textContent = result.feedback;
-    } else {
+      if (strengthText) {
+        strengthText.textContent = result.feedback;
+      }
+    } else if (passwordStrength) {
       passwordStrength.style.display = "none";
     }
 
@@ -276,7 +292,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Adicionar event listeners para validação em todos os campos
-  [fullnameInput, emailInput, termsCheckbox].forEach((field) => {
+  [nameInput, emailInput, phoneInput, termsCheckbox].forEach((field) => {
     field.addEventListener("input", validateForm);
     field.addEventListener("change", validateForm);
   });
@@ -306,17 +322,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Coletar dados do formulário
     const formData = {
-      fullname: fullnameInput.value.trim(),
+      name: nameInput.value.trim(),
       email: emailInput.value.trim(),
       phone: phoneInput.value.trim(),
       password: passwordInput.value,
+      confirmPassword: confirmPasswordInput.value,
       terms: termsCheckbox.checked,
     };
 
     // ========== SALVAR DADOS LOCALMENTE TAMBÉM ==========
     // Salvar dados do usuário no localStorage para usar na home
     const userData = {
-      name: formData.fullname,
+      name: formData.name,
       email: formData.email,
       phone: formData.phone,
       registeredAt: new Date().toISOString(),
@@ -331,10 +348,10 @@ document.addEventListener("DOMContentLoaded", function () {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: formData.fullname,
+            name: formData.name,
             email: formData.email,
             password: formData.password,
-            confirmPassword: confirmPasswordInput.value, // Adicionar confirmPassword
+            confirmPassword: formData.confirmPassword,
           }),
         }
       );

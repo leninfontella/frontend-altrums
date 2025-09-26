@@ -57,6 +57,15 @@
             </div>
             <div class="input-wrapper spaced-input">
               <input
+                type="tel"
+                class="input-field"
+                placeholder="Seu telefone"
+                id="phone"
+              />
+              <i class="fas fa-phone input-icon"></i>
+            </div>
+            <div class="input-wrapper spaced-input">
+              <input
                 type="password"
                 class="input-field"
                 placeholder="Crie uma senha"
@@ -68,6 +77,22 @@
                 onclick="togglePassword('password')"
               ></i>
             </div>
+
+            <!-- Indicador de força da senha -->
+            <div
+              class="password-strength"
+              id="passwordStrength"
+              style="display: none"
+            >
+              <div class="strength-indicator">
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+              </div>
+              <div class="strength-text" id="strengthText"></div>
+            </div>
+
             <div class="input-wrapper spaced-input">
               <input
                 type="password"
