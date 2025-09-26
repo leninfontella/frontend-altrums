@@ -987,7 +987,7 @@ class NavigationManager {
         // Handle navigation
         const target = this.dataset.tab;
         if (target) {
-          this.handleNavigation(target);
+          NavigationManager.handleNavigation(target);
         }
       });
 
