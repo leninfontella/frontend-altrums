@@ -1332,7 +1332,6 @@ window.timelineAPI = {
   initialize,
   refresh: () => TimelineManager.refresh(),
   loadData: (filter) => TimelineManager.loadData(filter),
-  filterTimeline: (filter) => TimelineManager.loadData(filter), // Método que estava faltando
 
   // Services
   DonationService,
