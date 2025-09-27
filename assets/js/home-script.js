@@ -1205,23 +1205,23 @@ if (balanceCard) {
 //   }
 // }
 
-window.addEventListener("online", updateConnectionStatus);
-window.addEventListener("offline", updateConnectionStatus);
-updateConnectionStatus();
+// window.addEventListener("online", updateConnectionStatus);
+// window.addEventListener("offline", updateConnectionStatus);
+// updateConnectionStatus();
 
 // Atualizar horário (se necessário)
-function updateTime() {
-  const now = new Date();
-  const hours = now.getHours().toString().padStart(2, "0");
-  const minutes = now.getMinutes().toString().padStart(2, "0");
-  const statusBarTime = document.querySelector("#status-time");
-  if (statusBarTime) {
-    statusBarTime.textContent = `${hours}:${minutes}`;
-  }
-}
+// function updateTime() {
+//   const now = new Date();
+//   const hours = now.getHours().toString().padStart(2, "0");
+//   const minutes = now.getMinutes().toString().padStart(2, "0");
+//   const statusBarTime = document.querySelector("#status-time");
+//   if (statusBarTime) {
+//     statusBarTime.textContent = `${hours}:${minutes}`;
+//   }
+// }
 
-setInterval(updateTime, 60000);
-updateTime();
+// setInterval(updateTime, 60000);
+// updateTime();
 
 // Prevenção de zoom acidental em dispositivos móveis
 document.addEventListener(
