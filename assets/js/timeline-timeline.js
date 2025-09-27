@@ -961,19 +961,144 @@ class SearchManager {
 // SISTEMA DE NAVEGAÇÃO MOBILE
 // ===============================
 class NavigationManager {
+  static navigationHistory = [];
+  static currentPage = "timeline";
+
   static initialize() {
+    this.initializeNavigationTracking();
+    this.initializeBackButton();
     this.initializeNavItems();
     this.initializeScrollEffects();
     this.createScrollToTopButton();
   }
 
+  static initializeNavigationTracking() {
+    // Salvar informações de navegação
+    const referrer = document.referrer;
+    const currentUrl = window.location.href;
+
+    // Armazenar no sessionStorage para rastreamento
+    const navigationData = {
+      referrer: referrer,
+      timestamp: Date.now(),
+      currentUrl: currentUrl,
+    };
+
+    sessionStorage.setItem(
+      "timeline_navigation",
+      JSON.stringify(navigationData)
+    );
+
+    // Escutar mudanças no histórico
+    window.addEventListener("popstate", (event) => {
+      console.log("Navegação via histórico detectada:", event);
+    });
+  }
+
+  static initializeBackButton() {
+    const backButton = document.getElementById("go-back");
+    if (backButton) {
+      backButton.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        // Recuperar dados de navegação
+        const navigationData = JSON.parse(
+          sessionStorage.getItem("timeline_navigation") || "{}"
+        );
+        const referrer = navigationData.referrer || document.referrer;
+        const currentDomain = window.location.origin;
+
+        console.log("Dados de navegação:", {
+          referrer,
+          currentDomain,
+          historyLength: window.history.length,
+        });
+
+        // Estratégia 1: Se veio de uma página interna
+        if (referrer && referrer.startsWith(currentDomain)) {
+          console.log("Voltando via history.back() - referrer interno");
+          this.goBackWithFallback();
+          return;
+        }
+
+        // Estratégia 2: Se há histórico suficiente
+        if (window.history.length > 2) {
+          console.log("Voltando via history.back() - histórico disponível");
+          this.goBackWithFallback();
+          return;
+        }
+
+        // Estratégia 3: Verificar se veio de uma página específica comum
+        const commonSources = [
+          "/index.html",
+          "/pages/profile/pages/profile.html",
+          "/pages/ranking/html/ranks.html",
+        ];
+        const possibleSource = commonSources.find((source) =>
+          referrer.includes(source)
+        );
+
+        if (possibleSource) {
+          console.log("Redirecionando para fonte provável:", possibleSource);
+          window.location.href = possibleSource;
+          return;
+        }
+
+        // Estratégia 4: Fallback para home
+        console.log("Redirecionando para home - fallback");
+        window.location.href = "/index.html";
+      });
+
+      // Adicionar feedback visual
+      backButton.addEventListener("mousedown", () => {
+        backButton.style.transform = "scale(0.95)";
+      });
+
+      backButton.addEventListener("mouseup", () => {
+        setTimeout(() => {
+          backButton.style.transform = "scale(1.05)";
+        }, 100);
+      });
+
+      backButton.addEventListener("mouseleave", () => {
+        backButton.style.transform = "scale(1)";
+      });
+    }
+  }
+
+  static goBackWithFallback() {
+    // Marcar que estamos tentando voltar
+    const isGoingBack = true;
+    sessionStorage.setItem("timeline_going_back", "true");
+
+    // Tentar voltar
+    window.history.back();
+
+    // Verificar se conseguiu voltar após um tempo
+    setTimeout(() => {
+      const stillGoingBack = sessionStorage.getItem("timeline_going_back");
+
+      if (stillGoingBack === "true") {
+        // Se ainda está marcado como "voltando", significa que não conseguiu
+        sessionStorage.removeItem("timeline_going_back");
+        console.log("Não conseguiu voltar, redirecionando para home");
+        window.location.href = "/index.html";
+      }
+    }, 500);
+  }
+
   static initializeNavItems() {
     document.querySelectorAll(".nav-item").forEach((item) => {
+      // Skip items que são links <a>
+      if (item.tagName === "A") return;
+
       item.addEventListener("click", function () {
-        // Remove active de todos
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((nav) => nav.classList.remove("active"));
+        // Remove active de todos os nav-items do tipo div
+        document.querySelectorAll(".nav-item").forEach((nav) => {
+          if (nav.tagName !== "A") {
+            nav.classList.remove("active");
+          }
+        });
 
         // Add active ao clicado
         this.classList.add("active");
@@ -991,24 +1116,60 @@ class NavigationManager {
         }
       });
 
-      // Hover effects
-      item.addEventListener("mouseenter", function () {
-        if (!this.classList.contains("active")) {
-          this.style.transform = "translateY(-2px)";
-        }
-      });
+      // Hover effects para elementos div
+      if (item.tagName !== "A") {
+        item.addEventListener("mouseenter", function () {
+          if (!this.classList.contains("active")) {
+            this.style.transform = "translateY(-2px)";
+          }
+        });
 
-      item.addEventListener("mouseleave", function () {
-        if (!this.classList.contains("active")) {
+        item.addEventListener("mouseleave", function () {
+          if (!this.classList.contains("active")) {
+            this.style.transform = "translateY(0)";
+          }
+        });
+      }
+    });
+
+    // Add click effects for <a> elements too
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      if (item.tagName === "A") {
+        item.addEventListener("click", function (e) {
+          // Add animation
+          this.style.transform = "scale(0.95)";
+          setTimeout(() => {
+            this.style.transform = "scale(1)";
+          }, 150);
+        });
+
+        // Hover effects for <a> elements
+        item.addEventListener("mouseenter", function () {
+          this.style.transform = "translateY(-2px)";
+        });
+
+        item.addEventListener("mouseleave", function () {
           this.style.transform = "translateY(0)";
-        }
-      });
+        });
+      }
     });
   }
 
   static handleNavigation(target) {
     console.log("Navegando para:", target);
-    // Implementar navegação conforme necessário
+
+    // Mapear targets para URLs
+    const navigationMap = {
+      home: "/index.html",
+      timeline: "#", // Página atual
+      ranks: "/pages/ranking/html/ranks.html",
+      profile: "/pages/profile/pages/profile.html",
+    };
+
+    const url = navigationMap[target];
+    if (url && url !== "#") {
+      window.location.href = url;
+    }
   }
 
   static initializeScrollEffects() {
@@ -1372,6 +1533,16 @@ window.timelineAPI = {
     "touch_interactions",
   ],
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  const goBackButton = document.getElementById("go-back");
+
+  if (goBackButton) {
+    goBackButton.addEventListener("click", () => {
+      history.back();
+    });
+  }
+});
 
 // ===============================
 // INICIALIZAÇÃO E EVENTOS

@@ -9,6 +9,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/assets/css/timeline-timeline.css" />
+    <link rel="stylesheet" href="/assets/css/timeline-api.css" />
   </head>
   <body>
     <div class="screen">
@@ -99,22 +100,30 @@
         </div>
 
         <div class="bottom-nav">
-          <div id="go-home" class="nav-item" data-tab="home">
+          <a href="/index.html" class="nav-item" data-tab="home">
             <i class="fas fa-home"></i>
             <span>Início</span>
-          </div>
+          </a>
           <div class="nav-item active" data-tab="timeline">
             <i class="fas fa-history"></i>
             <span>Timeline</span>
           </div>
-          <div id="go-ranks" class="nav-item" data-tab="ranks">
+          <a
+            href="/pages/ranking/html/ranks.html"
+            class="nav-item"
+            data-tab="ranks"
+          >
             <i class="fas fa-trophy"></i>
             <span>Ranking</span>
-          </div>
-          <div id="go-profile" class="nav-item" data-tab="profile">
+          </a>
+          <a
+            href="/pages/profile/pages/profile.html"
+            class="nav-item"
+            data-tab="profile"
+          >
             <i class="fas fa-user-circle"></i>
             <span>Perfil</span>
-          </div>
+          </a>
         </div>
       </div>
     </div>
@@ -168,6 +177,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Pull to Refresh Indicator -->
+    <div id="pullToRefreshIndicator" class="pull-refresh-indicator">
+      <i class="fas fa-sync-alt"></i>
+    </div>
+
+    <!-- Scroll to Top Button
+    <button id="scrollToTop" class="scroll-to-top">
+      <i class="fas fa-arrow-up"></i>
+    </button> -->
 
     <script src="/assets/js/timeline-api-connected.js"></script>
     <script src="/assets/js/timeline-timeline.js"></script>
