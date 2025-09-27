@@ -419,7 +419,7 @@ class TimelineManager {
             </div>
           </div>
           <div class="transaction-amount">
-            <div class="coin-icon-small">Æ</div>
+            <div class="coin-icon-small">🪙</div>
             <span class="amount ${amountClass}">${amountPrefix}${
       donation.amount
     }</span>
@@ -926,7 +926,7 @@ class SearchManager {
               : ""
           }
         </div>
-        <div class="user-coins">${user.coins || 0} Æ</div>
+        <div class="user-coins">${user.coins || 0} 🪙</div>
       </div>
     `
       )
@@ -1310,7 +1310,7 @@ class ModalManager {
           } ${user.institution || ""}</div>
         </div>
         <div class="user-coins">
-          ${user.coins} Æ
+          ${user.coins} 🪙
         </div>
       </div>
     `
