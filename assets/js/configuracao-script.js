@@ -644,7 +644,6 @@ function addAdvancedEffects() {
   resetInactivityTimer();
 }
 
-// Listener para logout
 // Listener para logout - VERSÃO CORRIGIDA
 document.addEventListener("DOMContentLoaded", function () {
   const logoutItem = document.getElementById("logout-item");
@@ -1006,23 +1005,31 @@ console.log("💡 Dicas:", {
   Logout: "Clique em 'Sair da Conta' para testar o logout",
 });
 
+// Modal de idiomas - VERSÃO CORRIGIDA COM VERIFICAÇÕES DE NULO
 document.addEventListener("DOMContentLoaded", function () {
   const langSetting = document.getElementById("language-setting");
   const langModal = document.getElementById("language-modal");
   const closeBtn = document.getElementById("close-language-modal");
   const langSubtitle = document.getElementById("current-language");
 
+  // Adicionar verificações de nulo antes de adicionar event listeners
   if (langSetting && langModal) {
     langSetting.addEventListener("click", () => {
       langModal.classList.remove("hidden");
       const content = langModal.querySelector(".modal-content");
-      content.style.animation = "fadeInCenter 0.4s ease forwards";
+      if (content) {
+        content.style.animation = "fadeInCenter 0.4s ease forwards";
+      }
     });
   }
 
   function closeLangModal() {
+    if (!langModal) return; // Cláusula de guarda
+
     const content = langModal.querySelector(".modal-content");
-    content.style.animation = "fadeOutCenter 0.3s ease forwards";
+    if (content) {
+      content.style.animation = "fadeOutCenter 0.3s ease forwards";
+    }
     setTimeout(() => langModal.classList.add("hidden"), 300);
   }
 
@@ -1030,36 +1037,43 @@ document.addEventListener("DOMContentLoaded", function () {
     closeBtn.addEventListener("click", closeLangModal);
   }
 
-  langModal.addEventListener("click", (e) => {
-    if (e.target === langModal) {
-      closeLangModal();
-    }
-  });
-
-  langModal.querySelectorAll("li").forEach((li) => {
-    li.addEventListener("click", () => {
-      const lang = li.getAttribute("data-lang");
-      const text = li.textContent;
-
-      // Atualiza visualmente
-      langSubtitle.textContent = text;
-
-      // Salva escolha
-      localStorage.setItem("appLanguage", lang);
-
-      // Fecha modal
-      langModal.classList.add("hidden");
-
-      console.log("🌍 Idioma selecionado:", lang);
+  if (langModal) {
+    langModal.addEventListener("click", (e) => {
+      if (e.target === langModal) {
+        closeLangModal();
+      }
     });
-  });
 
-  // Carregar idioma salvo
-  const savedLang = localStorage.getItem("appLanguage");
-  if (savedLang) {
-    const selected = langModal.querySelector(`li[data-lang="${savedLang}"]`);
-    if (selected) {
-      langSubtitle.textContent = selected.textContent;
+    // Só adicionar listeners se langModal existir
+    langModal.querySelectorAll("li").forEach((li) => {
+      li.addEventListener("click", () => {
+        const lang = li.getAttribute("data-lang");
+        const text = li.textContent;
+
+        // Atualizar visualmente só se langSubtitle existir
+        if (langSubtitle) {
+          langSubtitle.textContent = text;
+        }
+
+        // Salvar escolha
+        localStorage.setItem("appLanguage", lang);
+
+        // Fechar modal
+        langModal.classList.add("hidden");
+
+        console.log("🌐 Idioma selecionado:", lang);
+      });
+    });
+
+    // Carregar idioma salvo
+    const savedLang = localStorage.getItem("appLanguage");
+    if (savedLang) {
+      const selected = langModal.querySelector(`li[data-lang="${savedLang}"]`);
+      if (selected && langSubtitle) {
+        langSubtitle.textContent = selected.textContent;
+      }
     }
+  } else {
+    console.warn("⚠️ Elementos do modal de idiomas não encontrados no DOM");
   }
 });
