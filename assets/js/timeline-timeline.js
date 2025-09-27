@@ -721,74 +721,74 @@ class FilterManager {
 // ===============================
 // PULL-TO-REFRESH MOBILE OTIMIZADO
 // ===============================
-// class PullToRefreshManager {
-//   static initialize() {
-//     const mainContent = document.querySelector(".main-content");
-//     const indicator = document.getElementById("pullToRefreshIndicator");
+class PullToRefreshManager {
+  static initialize() {
+    const mainContent = document.querySelector(".main-content");
+    const indicator = document.getElementById("pullToRefreshIndicator");
 
-//     if (!mainContent || !indicator) return;
+    if (!mainContent || !indicator) return;
 
-//     let startY = 0;
-//     let isDragging = false;
-//     let refreshTriggered = false;
+    let startY = 0;
+    let isDragging = false;
+    let refreshTriggered = false;
 
-//     mainContent.addEventListener("touchstart", (e) => {
-//       if (mainContent.scrollTop === 0) {
-//         startY = e.touches[0].clientY;
-//         isDragging = true;
-//         mainContent.style.transition = "none";
-//       }
-//     });
+    mainContent.addEventListener("touchstart", (e) => {
+      if (mainContent.scrollTop === 0) {
+        startY = e.touches[0].clientY;
+        isDragging = true;
+        mainContent.style.transition = "none";
+      }
+    });
 
-//     mainContent.addEventListener("touchmove", (e) => {
-//       if (!isDragging) return;
+    mainContent.addEventListener("touchmove", (e) => {
+      if (!isDragging) return;
 
-//       const currentY = e.touches[0].clientY;
-//       const dragDistance = currentY - startY;
+      const currentY = e.touches[0].clientY;
+      const dragDistance = currentY - startY;
 
-//       if (dragDistance > 0) {
-//         e.preventDefault();
-//         const pullFraction = Math.min(dragDistance / PULL_THRESHOLD, 1);
-//         const pullValue = pullFraction * 60;
+      if (dragDistance > 0) {
+        e.preventDefault();
+        const pullFraction = Math.min(dragDistance / PULL_THRESHOLD, 1);
+        const pullValue = pullFraction * 60;
 
-//         mainContent.style.transform = `translateY(${pullValue}px)`;
-//         indicator.style.transform = `translateX(-50%) translateY(${
-//           20 + pullValue
-//         }px) scale(${0.5 + pullFraction / 2})`;
-//         indicator.style.opacity = pullFraction;
+        mainContent.style.transform = `translateY(${pullValue}px)`;
+        indicator.style.transform = `translateX(-50%) translateY(${
+          20 + pullValue
+        }px) scale(${0.5 + pullFraction / 2})`;
+        indicator.style.opacity = pullFraction;
 
-//         if (dragDistance >= PULL_THRESHOLD && !refreshTriggered) {
-//           refreshTriggered = true;
-//           indicator.classList.add("ready");
-//           if (navigator.vibrate) navigator.vibrate(50);
-//         } else if (dragDistance < PULL_THRESHOLD && refreshTriggered) {
-//           refreshTriggered = false;
-//           indicator.classList.remove("ready");
-//         }
-//       }
-//     });
+        if (dragDistance >= PULL_THRESHOLD && !refreshTriggered) {
+          refreshTriggered = true;
+          indicator.classList.add("ready");
+          if (navigator.vibrate) navigator.vibrate(50);
+        } else if (dragDistance < PULL_THRESHOLD && refreshTriggered) {
+          refreshTriggered = false;
+          indicator.classList.remove("ready");
+        }
+      }
+    });
 
-//     mainContent.addEventListener("touchend", async () => {
-//       if (!isDragging) return;
+    mainContent.addEventListener("touchend", async () => {
+      if (!isDragging) return;
 
-//       isDragging = false;
-//       mainContent.style.transition = "transform 0.3s ease-out";
+      isDragging = false;
+      mainContent.style.transition = "transform 0.3s ease-out";
 
-//       if (refreshTriggered) {
-//         indicator.classList.add("loading");
-//         await TimelineManager.refresh();
-//         indicator.classList.remove("loading", "ready");
-//       }
+      if (refreshTriggered) {
+        indicator.classList.add("loading");
+        await TimelineManager.refresh();
+        indicator.classList.remove("loading", "ready");
+      }
 
-//       // Reset positions
-//       mainContent.style.transform = "translateY(0)";
-//       indicator.style.transform = "translateX(-50%) translateY(-50px) scale(0)";
-//       indicator.style.opacity = "0";
+      // Reset positions
+      mainContent.style.transform = "translateY(0)";
+      indicator.style.transform = "translateX(-50%) translateY(-50px) scale(0)";
+      indicator.style.opacity = "0";
 
-//       refreshTriggered = false;
-//     });
-//   }
-// }
+      refreshTriggered = false;
+    });
+  }
+}
 
 // ===============================
 // SISTEMA DE BUSCA MOBILE
