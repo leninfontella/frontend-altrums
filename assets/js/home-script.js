@@ -715,7 +715,7 @@ function createDonationModal(user) {
             <button class="confirm-donation-btn" onclick="confirmDonation('${
               user.id || user._id
             }')">
-              Confirmar Doação
+              Confirmar
             </button>
           </div>
         </div>

@@ -654,7 +654,7 @@ class TimelineManager {
   static async refresh() {
     DonationService.clearCache();
     await this.loadData(currentFilter);
-    NotificationService.show("Timeline atualizada!", "success");
+    // NotificationService.show("Timeline atualizada!", "success");
   }
 
   static getTimeAgo(dateString) {
@@ -1472,9 +1472,9 @@ async function initialize() {
     AutoUpdateManager.start();
 
     // Feedback de sucesso
-    setTimeout(() => {
-      NotificationService.show("✨ Timeline carregada com sucesso!", "success");
-    }, 1000);
+    // setTimeout(() => {
+    //   NotificationService.show(" Timeline carregada com sucesso!", "success");
+    // }, 1000);
 
     console.log("✅ Timeline mobile inicializada com sucesso");
     return true;
