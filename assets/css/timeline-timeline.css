@@ -108,6 +108,8 @@ body {
   padding: 24px;
   max-width: 440px;
   margin: 0 auto;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  border-radius: 20px;
 }
 
 /* Header */
@@ -846,10 +848,14 @@ body {
   justify-content: space-around;
   align-items: center;
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-  padding: 15px 20px;
+  padding: 5px 20px;
   border-top: 1px solid #333;
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 440px; /* Define a largura máxima, alinhando com o container */
+  margin: 0 auto; /* Centraliza a barra de navegação */
   z-index: 10;
 }
 
@@ -862,6 +868,8 @@ body {
   transition: all 0.3s ease;
   padding: 8px 12px;
   border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .nav-item i {
@@ -890,6 +898,20 @@ body {
 .nav-item:hover span {
   color: #00d4ff;
   transform: scale(1.1);
+}
+
+/* Ensure link styling doesn't override nav-item styling */
+a.nav-item {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.nav-item:visited {
+  color: inherit;
+}
+
+a.nav-item:hover {
+  text-decoration: none;
 }
 
 /* Notifications */
