@@ -1070,19 +1070,27 @@ function showNotification(message, type = "info") {
 document.addEventListener("DOMContentLoaded", async () => {
   // Verificar se usuário está logado
   if (!Auth.checkSession()) {
-    console.log("Usuario não logado - redirecionando");
+    console.log("Usuário não logado - redirecionando");
     Auth.redirectToLogin();
     return;
   }
 
-  console.log("Iniciando carregamento dos dados do usuario...");
+  console.log("Iniciando carregamento dos dados do usuário...");
 
   try {
-    // Mostrar loading state
+    // Mostrar loading state para os elementos principais
     const balanceElement = document.querySelector("#user-balance");
-    if (balanceElement && !balanceElement.textContent.includes("placeholder")) {
-      balanceElement.innerHTML =
-        '<div class="data-placeholder" style="width: 80px; display: inline-block"></div>';
+    const earnedCoinsCard = document.getElementById("earned-coins-card");
+    const donatedCoinsCard = document.getElementById("donated-coins-card");
+
+    if (balanceElement) {
+      balanceElement.innerHTML = '<div class="data-placeholder"></div>';
+    }
+    if (earnedCoinsCard) {
+      earnedCoinsCard.classList.add("loading");
+    }
+    if (donatedCoinsCard) {
+      donatedCoinsCard.classList.add("loading");
     }
 
     // Carregar dados do usuário em paralelo
@@ -1097,17 +1105,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       balance.status === "fulfilled" ? balance.value : Auth.getUserBalance();
     const statsData = stats.status === "fulfilled" ? stats.value : null;
 
+    // Chamar as funções de atualização com base nos dados carregados
     if (profileData) {
-      console.log("Perfil carregado");
+      UserSystem.updateUserInterface(profileData);
     }
-
     if (balanceData !== null) {
-      LevelSystem.addLevelBadge(balanceData);
-      console.log("Saldo carregado e nivel calculado");
+      UserSystem.updateBalanceInterface(balanceData);
     }
-
     if (statsData) {
-      console.log("Estatisticas carregadas");
+      UserSystem.updateStatsInterface(statsData);
+      LevelSystem.addLevelBadge(statsData); // A chamada para o badge de nível
     }
 
     // Habilitar botão de doação
@@ -1116,12 +1123,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       searchDonateBtn.disabled = false;
       searchDonateBtn.style.opacity = "1";
       searchDonateBtn.style.cursor = "pointer";
-      console.log("Botao de doacao habilitado");
+      console.log("Botão de doação habilitado");
     }
 
-    console.log("Inicializacao concluida!");
+    console.log("Inicialização concluída!");
   } catch (error) {
-    console.error("Erro durante inicializacao:", error);
+    console.error("Erro durante inicialização:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
 
     const searchDonateBtn = document.getElementById("search-donate-btn");
@@ -1173,7 +1180,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const newBalance = event.detail.balance;
     if (newBalance !== null && newBalance !== undefined) {
       UserSystem.updateBalanceInterface(newBalance);
-      LevelSystem.addLevelBadge(newBalance);
+      // Aqui, a chamada para o badge deve idealmente também usar os stats
+      // Mas para o evento balanceUpdated, não temos os stats disponíveis
+      LevelSystem.addLevelBadge(); // Chama sem parâmetro para buscar os stats novamente
     }
   });
 });
