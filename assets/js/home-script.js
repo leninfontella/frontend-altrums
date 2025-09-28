@@ -90,7 +90,7 @@ const UserSystem = {
 
       const balance = Auth.getUserBalance();
       const mockStats = {
-        totalReceived: balance + Math.floor(Math.random() * 500),
+        totalReceived: 0,
         totalDonated: Math.floor(Math.random() * balance * 0.3),
         bonusCoins: Math.floor(Math.random() * 200),
         monthlyCoins: Math.floor(Math.random() * 300),
@@ -1070,27 +1070,19 @@ function showNotification(message, type = "info") {
 document.addEventListener("DOMContentLoaded", async () => {
   // Verificar se usuário está logado
   if (!Auth.checkSession()) {
-    console.log("Usuário não logado - redirecionando");
+    console.log("Usuario não logado - redirecionando");
     Auth.redirectToLogin();
     return;
   }
 
-  console.log("Iniciando carregamento dos dados do usuário...");
+  console.log("Iniciando carregamento dos dados do usuario...");
 
   try {
-    // Mostrar loading state para os elementos principais
+    // Mostrar loading state
     const balanceElement = document.querySelector("#user-balance");
-    const earnedCoinsCard = document.getElementById("earned-coins-card");
-    const donatedCoinsCard = document.getElementById("donated-coins-card");
-
-    if (balanceElement) {
-      balanceElement.innerHTML = '<div class="data-placeholder"></div>';
-    }
-    if (earnedCoinsCard) {
-      earnedCoinsCard.classList.add("loading");
-    }
-    if (donatedCoinsCard) {
-      donatedCoinsCard.classList.add("loading");
+    if (balanceElement && !balanceElement.textContent.includes("placeholder")) {
+      balanceElement.innerHTML =
+        '<div class="data-placeholder" style="width: 80px; display: inline-block"></div>';
     }
 
     // Carregar dados do usuário em paralelo
@@ -1105,16 +1097,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       balance.status === "fulfilled" ? balance.value : Auth.getUserBalance();
     const statsData = stats.status === "fulfilled" ? stats.value : null;
 
-    // Chamar as funções de atualização com base nos dados carregados
     if (profileData) {
-      UserSystem.updateUserInterface(profileData);
+      console.log("Perfil carregado");
     }
+
     if (balanceData !== null) {
-      UserSystem.updateBalanceInterface(balanceData);
+      LevelSystem.addLevelBadge(balanceData);
+      console.log("Saldo carregado e nivel calculado");
     }
+
     if (statsData) {
-      UserSystem.updateStatsInterface(statsData);
-      LevelSystem.addLevelBadge(statsData); // A chamada para o badge de nível
+      console.log("Estatisticas carregadas");
     }
 
     // Habilitar botão de doação
@@ -1123,12 +1116,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       searchDonateBtn.disabled = false;
       searchDonateBtn.style.opacity = "1";
       searchDonateBtn.style.cursor = "pointer";
-      console.log("Botão de doação habilitado");
+      console.log("Botao de doacao habilitado");
     }
 
-    console.log("Inicialização concluída!");
+    console.log("Inicializacao concluida!");
   } catch (error) {
-    console.error("Erro durante inicialização:", error);
+    console.error("Erro durante inicializacao:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
 
     const searchDonateBtn = document.getElementById("search-donate-btn");
@@ -1180,9 +1173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const newBalance = event.detail.balance;
     if (newBalance !== null && newBalance !== undefined) {
       UserSystem.updateBalanceInterface(newBalance);
-      // Aqui, a chamada para o badge deve idealmente também usar os stats
-      // Mas para o evento balanceUpdated, não temos os stats disponíveis
-      LevelSystem.addLevelBadge(); // Chama sem parâmetro para buscar os stats novamente
+      LevelSystem.addLevelBadge(newBalance);
     }
   });
 });
