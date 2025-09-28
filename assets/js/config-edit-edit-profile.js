@@ -419,7 +419,7 @@ async function handleSuccessfulUpdate(updatedUserData) {
 
   updateProfilePhotoDisplayFixed(
     updatedUserData.profilePhotoUrl || updatedUserData.avatar,
-    hasNewPhoto // Só força refresh se realmente mudou
+    true // Só força refresh se realmente mudou
   );
 
   // Resto da função permanece igual...
