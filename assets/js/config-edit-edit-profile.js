@@ -19,27 +19,20 @@ function showMessage(message, type = "success") {
   }, 3000);
 }
 
-// 📱 NOVA FUNÇÃO: Detectar dispositivos móveis
-function isMobileDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
-}
-
 // ✨ FUNÇÃO CORRIGIDA: Gerar a URL do placeholder com as iniciais do usuário
 function getInitialsPlaceholderUrl(userName) {
+  // Se o nome não for uma string válida, use uma string vazia para as iniciais.
+  // A API ui-avatars.com irá gerar um círculo sem texto.
   const nameToPass = userName && typeof userName === "string" ? userName : "";
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
     nameToPass
   )}&background=00d4ff&color=fff&size=120`;
 }
 
-// 📱 FUNÇÃO MELHORADA: Atualizar foto com otimizações para mobile
-function updateProfilePhotoDisplay(photoUrl, forceRefresh = false) {
+// Função para atualizar a exibição da foto de perfil
+function updateProfilePhotoDisplay(photoUrl) {
   const profileImage = document.getElementById("profile-image");
   if (!profileImage) return;
-
-  console.log("📸 Atualizando foto de perfil:", photoUrl);
 
   if (photoUrl) {
     let imageUrl = photoUrl;
@@ -53,13 +46,6 @@ function updateProfilePhotoDisplay(photoUrl, forceRefresh = false) {
       imageUrl = window.apiConfig.baseURL + photoUrl;
     }
 
-    // 📱 MOBILE: Cache busting mais agressivo para dispositivos móveis
-    if (forceRefresh || isMobileDevice()) {
-      const separator = imageUrl.includes("?") ? "&" : "?";
-      imageUrl = `${imageUrl}${separator}t=${Date.now()}&mobile=1`;
-      console.log("📱 Mobile: Cache busting aplicado:", imageUrl);
-    }
-
     profileImage.src = imageUrl;
 
     // Efeito visual de atualização
@@ -68,9 +54,54 @@ function updateProfilePhotoDisplay(photoUrl, forceRefresh = false) {
       profileImage.style.opacity = "1";
     }, 300);
 
-    // 📱 MOBILE: Fallback melhorado para dispositivos móveis
+    // Fallback em caso de erro
     profileImage.onerror = function () {
-      console.log("❌ Erro ao carregar imagem:", imageUrl);
+      console.log("Erro ao carregar imagem:", imageUrl);
+      this.src = getInitialsPlaceholderUrl("");
+    };
+  } else {
+    // Se não há foto, usar placeholder
+    profileImage.src = getInitialsPlaceholderUrl(
+      JSON.parse(localStorage.getItem("userData"))?.name ||
+        JSON.parse(localStorage.getItem("userData"))?.fullName
+    );
+  }
+}
+
+function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
+  const profileImage = document.getElementById("profile-image");
+  if (!profileImage) return;
+
+  if (photoUrl) {
+    let imageUrl = photoUrl;
+
+    // Construir URL completa se necessário
+    if (
+      !photoUrl.startsWith("http") &&
+      window.apiConfig &&
+      window.apiConfig.baseURL
+    ) {
+      imageUrl = window.apiConfig.baseURL + photoUrl;
+    }
+
+    // ✅ APENAS adicionar timestamp quando REALMENTE necessário
+    if (forceRefresh) {
+      const separator = imageUrl.includes("?") ? "&" : "?";
+      imageUrl = `${imageUrl}${separator}t=${Date.now()}`;
+      console.log("🔄 Cache busting aplicado:", imageUrl);
+    }
+
+    profileImage.src = imageUrl;
+
+    // Animação suave
+    profileImage.style.opacity = "0.7";
+    setTimeout(() => {
+      profileImage.style.opacity = "1";
+    }, 300);
+
+    // ✅ CORREÇÃO: Fallback melhorado
+    profileImage.onerror = function () {
+      console.warn("Erro ao carregar:", imageUrl);
 
       // Se falhou com cache bust, tentar sem
       if (forceRefresh && imageUrl.includes("?t=")) {
@@ -80,27 +111,13 @@ function updateProfilePhotoDisplay(photoUrl, forceRefresh = false) {
         return;
       }
 
-      // Fallback final
+      // Fallback final usando a nova função com as iniciais
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const userName = userData.name || userData.fullName || "";
       this.src = getInitialsPlaceholderUrl(userName);
     };
-
-    // 📱 MOBILE: Verificação adicional após carregamento
-    profileImage.onload = function () {
-      console.log("✅ Imagem carregada com sucesso");
-
-      // Disparar evento customizado para sincronização
-      if (isMobileDevice()) {
-        window.dispatchEvent(
-          new CustomEvent("mobilePhotoLoaded", {
-            detail: { imageUrl, success: true },
-          })
-        );
-      }
-    };
   } else {
-    // Usar placeholder com iniciais
+    // Usar a nova função
     const userData = JSON.parse(localStorage.getItem("userData")) || {};
     const userName = userData.name || userData.fullName || "";
     profileImage.src = getInitialsPlaceholderUrl(userName);
@@ -121,7 +138,7 @@ function clearUserData() {
   if (emailInput) emailInput.value = "";
   if (phoneInput) phoneInput.value = "";
 
-  // Usar um placeholder genérico
+  // Usar um placeholder genérico, pois não temos o nome do usuário nesta função
   if (profileImage) {
     profileImage.src = getInitialsPlaceholderUrl("");
   }
@@ -130,10 +147,10 @@ function clearUserData() {
   originalFormData = {};
 }
 
-// 🔧 FUNÇÃO MELHORADA: Carregar dados da API com otimizações mobile
+// 🔧 FUNÇÃO MELHORADA: Carregar dados da API com limpeza prévia
 async function loadUserDataFromAPI() {
   try {
-    console.log("🔄 PRIORIDADE: Carregando dados da API...");
+    console.log("📄 PRIORIDADE: Carregando dados da API...");
 
     // Verificar se Auth está disponível
     if (typeof Auth === "undefined" || !Auth.getToken()) {
@@ -150,16 +167,16 @@ async function loadUserDataFromAPI() {
     // Sempre limpar dados anteriores ANTES de carregar novos
     clearUserData();
 
-    // Usar Auth para buscar dados atualizados
+    // Usar Auth para buscar dados atualizados do usuário atual
     const userData = await Auth.getProfile();
 
     if (userData) {
       console.log("✅ Dados atualizados recebidos da API:", userData);
 
-      // Preencher formulário
+      // Preencher formulário com dados do usuário correto
       populateFormWithData(userData);
 
-      // Definir dados originais
+      // Definir dados originais para comparação
       setOriginalFormData({
         name: userData.name || userData.fullName || "",
         email: userData.email || "",
@@ -169,13 +186,6 @@ async function loadUserDataFromAPI() {
 
       // ✅ CRÍTICO: Atualizar localStorage apenas com dados do usuário atual
       localStorage.setItem("userData", JSON.stringify(userData));
-
-      // 📱 MOBILE: Forçar sincronização adicional
-      if (isMobileDevice()) {
-        setTimeout(() => {
-          forceMobileSync(userData);
-        }, 200);
-      }
     } else {
       throw new Error("Dados não recebidos da API");
     }
@@ -190,47 +200,12 @@ async function loadUserDataFromAPI() {
       return;
     }
 
-    // Fallback: usar dados locais
+    // Fallback: usar dados locais apenas se API falhar
     console.log("⚠️ Usando dados locais como fallback...");
     loadUserProfileFromLocalStorage();
     showMessage(
       "Carregado do cache local. Algumas informações podem estar desatualizadas.",
       "error"
-    );
-  }
-}
-
-// 📱 NOVA FUNÇÃO: Sincronização forçada para mobile
-function forceMobileSync(userData) {
-  if (!isMobileDevice()) return;
-
-  console.log("📱 Forçando sincronização mobile...");
-
-  // Atualizar UserService se disponível
-  if (window.userService) {
-    window.userService.updateUserData(userData);
-  }
-
-  // Forçar atualização da foto com delay
-  const photoUrl = userData.profilePhotoUrl || userData.avatar;
-  if (photoUrl) {
-    setTimeout(() => {
-      updateProfilePhotoDisplay(photoUrl, true);
-    }, 300);
-  }
-
-  // Disparar eventos customizados para sincronização global
-  window.dispatchEvent(
-    new CustomEvent("userDataUpdated", {
-      detail: { userData },
-    })
-  );
-
-  if (photoUrl) {
-    window.dispatchEvent(
-      new CustomEvent("profilePhotoUpdated", {
-        detail: { photoUrl },
-      })
     );
   }
 }
@@ -248,11 +223,11 @@ function populateFormWithData(userData) {
   if (emailInput) emailInput.value = userData.email || "";
   if (phoneInput) phoneInput.value = userData.phone || "";
 
-  // 🛠 CORREÇÃO CRÍTICA: Lógica para exibir a foto ou o placeholder
+  // 🐛 CORREÇÃO CRÍTICA: Lógica para exibir a foto ou o placeholder
   if (profileImage) {
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
     if (photoUrl) {
-      updateProfilePhotoDisplay(photoUrl, isMobileDevice());
+      updateProfilePhotoDisplayFixed(photoUrl, false);
     } else {
       profileImage.src = getInitialsPlaceholderUrl(
         userData.name || userData.fullName
@@ -261,12 +236,12 @@ function populateFormWithData(userData) {
   }
 }
 
-// Função para carregar do localStorage (fallback)
+// Função renomeada: Carregar do localStorage apenas como fallback
 function loadUserProfileFromLocalStorage() {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (userData) {
-    console.log("📝 Carregando dados locais como fallback:", userData);
+    console.log("📁 Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
     setOriginalFormData({
       name: userData.name || userData.fullName || "",
@@ -283,7 +258,13 @@ function loadUserProfileFromLocalStorage() {
   }
 }
 
-// 📱 FUNÇÃO CORRIGIDA: Salvar perfil com otimizações mobile
+// Função depreciada: Manter apenas para compatibilidade
+function loadUserProfile() {
+  console.warn("⚠️ loadUserProfile() é deprecated. Use loadUserDataFromAPI()");
+  loadUserProfileFromLocalStorage();
+}
+
+// 🔧 FUNÇÃO CRÍTICA CORRIGIDA: Salvar perfil apenas com dados do usuário atual
 async function saveProfile() {
   try {
     // Verificar autenticação
@@ -315,6 +296,15 @@ async function saveProfile() {
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
+    // 🔧 VALIDAÇÃO CRÍTICA: Verificar se o email pertence ao usuário atual
+    if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
+      showMessage(
+        "Não é possível alterar o email para outro usuário.",
+        "error"
+      );
+      return;
+    }
+
     // Validações básicas
     if (!name) {
       showMessage("Nome é obrigatório", "error");
@@ -333,8 +323,12 @@ async function saveProfile() {
       return;
     }
 
-    // Preparar dados
-    const profileData = { name, email, phone };
+    // Preparar dados para atualização
+    const profileData = {
+      name,
+      email,
+      phone,
+    };
 
     // Verificar se há nova foto
     const photoInput = document.getElementById("photo-input");
@@ -351,28 +345,29 @@ async function saveProfile() {
         return;
       }
 
-      // Usar FormData quando há arquivo
+      // 🔧 CORREÇÃO: Usar FormData quando há arquivo
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
       formData.append("phone", phone);
       formData.append("profilePhoto", file);
 
+      // Usar apiConfig diretamente para FormData
       const response = await window.apiConfig.put("/api/profile", formData);
       const result = await response.json();
 
       if (response.ok && result.success) {
-        await handleSuccessfulUpdate(result.user, true); // true = tem nova foto
+        await handleSuccessfulUpdate(result.user);
         photoInput.value = "";
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
     } else {
-      // Usar Auth.updateProfile para dados sem foto
+      // 🔧 CORREÇÃO: Usar Auth.updateProfile para dados sem foto
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
-        await handleSuccessfulUpdate(result.data, false); // false = sem nova foto
+        await handleSuccessfulUpdate(result.data);
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
@@ -385,6 +380,12 @@ async function saveProfile() {
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
+    } else if (error.message.includes("413")) {
+      showMessage("Arquivo muito grande. Máximo 5MB.", "error");
+    } else if (error.message.includes("400")) {
+      showMessage("Dados inválidos. Verifique as informações.", "error");
+    } else if (error.name === "TypeError" && error.message.includes("fetch")) {
+      showMessage("Erro de conexão. Verifique sua internet.", "error");
     } else {
       showMessage(
         error.message || "Erro inesperado. Tente novamente.",
@@ -405,42 +406,23 @@ async function saveProfile() {
   }
 }
 
-// 📱 FUNÇÃO MELHORADA: Tratar atualização bem-sucedida com otimizações mobile
-async function handleSuccessfulUpdate(updatedUserData, hasNewPhoto = false) {
-  console.log("✅ Atualização bem-sucedida:", updatedUserData);
-
+// Função para tratar atualização bem-sucedida
+async function handleSuccessfulUpdate(updatedUserData) {
   // Atualizar localStorage com dados corretos
   localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-  // 📱 MOBILE: Atualização especial para dispositivos móveis
-  if (isMobileDevice()) {
-    console.log("📱 Aplicando otimizações para mobile...");
+  // ✅ CORRIGIR: Usar forceRefresh=true APENAS quando há nova foto
+  const hasNewPhoto =
+    updatedUserData.profilePhotoUrl &&
+    JSON.parse(localStorage.getItem("userData") || "{}").profilePhotoUrl !==
+      updatedUserData.profilePhotoUrl;
 
-    // Limpar cache de imagens primeiro
-    if (hasNewPhoto) {
-      clearImageCacheMobile();
-    }
+  updateProfilePhotoDisplayFixed(
+    updatedUserData.profilePhotoUrl || updatedUserData.avatar,
+    true // Só força refresh se realmente mudou
+  );
 
-    // Delay maior para dispositivos móveis processarem a mudança
-    setTimeout(() => {
-      updateProfilePhotoDisplay(
-        updatedUserData.profilePhotoUrl || updatedUserData.avatar,
-        hasNewPhoto // Só força refresh se realmente há nova foto
-      );
-
-      // Segunda tentativa com delay adicional para garantir
-      setTimeout(() => {
-        forceMobilePhotoSync(updatedUserData);
-      }, 800);
-    }, 200);
-  } else {
-    // Desktop: atualização normal
-    updateProfilePhotoDisplay(
-      updatedUserData.profilePhotoUrl || updatedUserData.avatar,
-      hasNewPhoto
-    );
-  }
-
+  // Resto da função permanece igual...
   // Sincronização: Usar Auth para atualizar dados globalmente
   if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
     const photoUrl = updatedUserData.profilePhotoUrl || updatedUserData.avatar;
@@ -449,12 +431,7 @@ async function handleSuccessfulUpdate(updatedUserData, hasNewPhoto = false) {
     }
   }
 
-  // Atualizar UserService se disponível
-  if (window.userService) {
-    window.userService.updateUserData(updatedUserData);
-  }
-
-  // Disparar eventos para sincronização global
+  // Disparar eventos para sincronização
   window.dispatchEvent(
     new CustomEvent("userDataUpdated", {
       detail: { userData: updatedUserData },
@@ -469,70 +446,12 @@ async function handleSuccessfulUpdate(updatedUserData, hasNewPhoto = false) {
     );
   }
 
-  // 📱 MOBILE: Evento específico para mobile
-  if (isMobileDevice()) {
-    window.dispatchEvent(
-      new CustomEvent("mobileProfileUpdated", {
-        detail: {
-          userData: updatedUserData,
-          hasNewPhoto,
-          timestamp: Date.now(),
-        },
-      })
-    );
-  }
-
   // Atualizar dados originais
   setOriginalFormData(getCurrentFormData());
 
   showMessage("Perfil salvo com sucesso!", "success");
 }
-
-// 📱 NOVA FUNÇÃO: Limpar cache de imagens específico para mobile
-function clearImageCacheMobile() {
-  console.log("📱 Limpando cache de imagens para mobile...");
-
-  const profileImage = document.getElementById("profile-image");
-  if (profileImage) {
-    // Técnica mais agressiva de limpeza de cache para mobile
-    const originalSrc = profileImage.src;
-    profileImage.src =
-      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; // 1x1 transparent gif
-
-    setTimeout(() => {
-      profileImage.src = originalSrc;
-    }, 100);
-  }
-}
-
-// 📱 NOVA FUNÇÃO: Sincronização forçada da foto no mobile
-function forceMobilePhotoSync(userData) {
-  if (!isMobileDevice()) return;
-
-  console.log("📱 Sincronização forçada da foto no mobile...");
-
-  const photoUrl = userData.profilePhotoUrl || userData.avatar;
-
-  // Múltiplas tentativas de atualização para garantir sincronização
-  const attempts = [500, 1000, 2000];
-
-  attempts.forEach((delay, index) => {
-    setTimeout(() => {
-      console.log(`📱 Tentativa ${index + 1} de sincronização mobile`);
-      updateProfilePhotoDisplay(photoUrl, true);
-
-      // Atualizar também via UserService
-      if (window.userService) {
-        window.userService.forceUpdateAllPhotos();
-      }
-
-      // Disparar evento de força atualização
-      window.dispatchEvent(new CustomEvent("forcePhotoUpdate"));
-    }, delay);
-  });
-}
-
-// 🔧 NOVA FUNÇÃO: Upload APENAS da foto (separado dos dados pessoais) - Otimizado para Mobile
+// 🔧 NOVA FUNÇÃO: Upload APENAS da foto (separado dos dados pessoais)
 async function uploadPhotoOnly() {
   const photoInput = document.getElementById("photo-input");
 
@@ -563,20 +482,7 @@ async function uploadPhotoOnly() {
         '<i class="fas fa-spinner fa-spin"></i> Enviando...';
     }
 
-    // 📱 MOBILE: Preview imediato da imagem selecionada
-    if (isMobileDevice()) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const profileImage = document.getElementById("profile-image");
-        if (profileImage) {
-          profileImage.src = e.target.result;
-          profileImage.style.opacity = "0.7"; // Indicar que está carregando
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // Usar endpoint específico apenas para foto
+    // 🔧 CRÍTICO: Usar endpoint específico apenas para foto
     const formData = new FormData();
     formData.append("profilePhoto", file);
 
@@ -584,34 +490,15 @@ async function uploadPhotoOnly() {
       "/api/profile/upload-photo",
       formData
     );
+
     const result = await response.json();
 
     if (response.ok && result.success) {
       showMessage("Foto atualizada com sucesso!", "success");
 
-      // 📱 MOBILE: Atualização otimizada
-      if (isMobileDevice()) {
-        console.log("📱 Mobile: Foto enviada, iniciando sincronização...");
-
-        // Limpar cache primeiro
-        clearImageCacheMobile();
-
-        setTimeout(() => {
-          if (result.profilePhoto && result.profilePhoto.url) {
-            updateProfilePhotoDisplay(result.profilePhoto.url, true);
-          }
-
-          // Sincronização completa dos dados
-          if (result.user) {
-            localStorage.setItem("userData", JSON.stringify(result.user));
-            forceMobilePhotoSync(result.user);
-          }
-        }, 200);
-      } else {
-        // Desktop: atualização normal
-        if (result.profilePhoto && result.profilePhoto.url) {
-          updateProfilePhotoDisplay(result.profilePhoto.url, true);
-        }
+      // Atualizar foto na página atual
+      if (result.profilePhoto && result.profilePhoto.url) {
+        updateProfilePhotoDisplay(result.profilePhoto.url);
       }
 
       // Usar Auth para sincronizar globalmente
@@ -621,42 +508,19 @@ async function uploadPhotoOnly() {
         if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
           Auth.updateProfilePhoto(result.user.profilePhotoUrl);
         }
-
-        if (window.userService) {
-          window.userService.updateUserData(result.user);
-        }
       }
 
       // Disparar evento customizado
-      const photoUrl = result.profilePhoto?.url || result.user?.profilePhotoUrl;
-      if (photoUrl) {
-        window.dispatchEvent(
-          new CustomEvent("profilePhotoUpdated", {
-            detail: { photoUrl },
-          })
-        );
-      }
+      window.dispatchEvent(
+        new CustomEvent("profilePhotoUpdated", {
+          detail: { photoUrl: result.profilePhoto.url },
+        })
+      );
 
       // Limpar input
       photoInput.value = "";
     } else {
       showMessage(result.message || "Erro ao atualizar foto", "error");
-
-      // 📱 MOBILE: Restaurar imagem anterior em caso de erro
-      if (isMobileDevice()) {
-        const userData = JSON.parse(localStorage.getItem("userData")) || {};
-        const previousPhotoUrl = userData.profilePhotoUrl || userData.avatar;
-        if (previousPhotoUrl) {
-          updateProfilePhotoDisplay(previousPhotoUrl, false);
-        } else {
-          const profileImage = document.getElementById("profile-image");
-          if (profileImage) {
-            profileImage.src = getInitialsPlaceholderUrl(
-              userData.name || userData.fullName
-            );
-          }
-        }
-      }
     }
   } catch (error) {
     console.error("Erro ao fazer upload da foto:", error);
@@ -668,27 +532,14 @@ async function uploadPhotoOnly() {
       uploadBtn.disabled = false;
       uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Enviar Foto';
     }
-
-    // 📱 MOBILE: Restaurar opacidade da imagem
-    if (isMobileDevice()) {
-      const profileImage = document.getElementById("profile-image");
-      if (profileImage) {
-        profileImage.style.opacity = "1";
-      }
-    }
   }
 }
 
-// 🔧 CORREÇÃO CRÍTICA: Inicialização da página com limpeza - Otimizada para Mobile
+// 🔧 CORREÇÃO CRÍTICA: Inicialização da página com limpeza
 document.addEventListener("DOMContentLoaded", async function () {
   console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
 
-  // 📱 MOBILE: Log do tipo de dispositivo
-  if (isMobileDevice()) {
-    console.log("📱 Dispositivo móvel detectado - aplicando otimizações");
-  }
-
-  // CRÍTICO: Sempre limpar dados anteriores ao carregar página
+  // 🔧 CRÍTICO: Sempre limpar dados anteriores ao carregar página
   clearUserData();
 
   // PRIORIDADE: Sempre carregar da API primeiro
@@ -702,65 +553,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   setupChangeDetection();
   setupKeyboardShortcuts();
   setupPhotoPreview();
-
-  // 📱 MOBILE: Configurações específicas para dispositivos móveis
-  if (isMobileDevice()) {
-    setupMobileOptimizations();
-  }
 });
-
-// 📱 NOVA FUNÇÃO: Configurações específicas para mobile
-function setupMobileOptimizations() {
-  console.log("📱 Configurando otimizações para mobile...");
-
-  // Listener para mudanças de orientação
-  window.addEventListener("orientationchange", () => {
-    setTimeout(() => {
-      const userData = JSON.parse(localStorage.getItem("userData"));
-      if (userData && userData.profilePhotoUrl) {
-        console.log("📱 Orientação mudou - recarregando foto");
-        updateProfilePhotoDisplay(userData.profilePhotoUrl, true);
-      }
-    }, 500);
-  });
-
-  // Listener para quando a página volta ao foco
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      setTimeout(() => {
-        const userData = JSON.parse(localStorage.getItem("userData"));
-        if (userData && userData.profilePhotoUrl) {
-          console.log("📱 Página focada - verificando foto");
-          updateProfilePhotoDisplay(userData.profilePhotoUrl, false);
-        }
-      }, 200);
-    }
-  });
-
-  // Listener específico para atualização mobile
-  window.addEventListener("mobileProfileUpdated", (event) => {
-    console.log("📱 Evento mobileProfileUpdated recebido:", event.detail);
-    const { userData, hasNewPhoto } = event.detail;
-
-    if (userData && userData.profilePhotoUrl) {
-      setTimeout(() => {
-        updateProfilePhotoDisplay(userData.profilePhotoUrl, hasNewPhoto);
-      }, 100);
-    }
-  });
-
-  // Touch events para melhor responsividade
-  const profileImage = document.getElementById("profile-image");
-  if (profileImage) {
-    profileImage.addEventListener(
-      "touchstart",
-      function (e) {
-        e.preventDefault(); // Previne zoom acidental
-      },
-      { passive: false }
-    );
-  }
-}
 
 // Voltar para configurações
 const goBack = document.getElementById("go-back");
@@ -812,7 +605,7 @@ function setOriginalFormData(data) {
   originalFormData = { ...data };
 }
 
-// 📱 FUNÇÃO MELHORADA: Configurar pré-visualização da imagem com otimizações mobile
+// Configurar pré-visualização da imagem
 function setupPhotoPreview() {
   const photoInput = document.getElementById("photo-input");
   const profileImage = document.getElementById("profile-image");
@@ -840,18 +633,6 @@ function setupPhotoPreview() {
       return;
     }
 
-    // 📱 MOBILE: Validação adicional para dispositivos móveis
-    if (isMobileDevice() && file.size > 2 * 1024 * 1024) {
-      if (
-        !confirm(
-          "Imagem grande detectada. Pode demorar para carregar em dispositivos móveis. Continuar?"
-        )
-      ) {
-        photoInput.value = "";
-        return;
-      }
-    }
-
     // Validar dimensões mínimas
     const img = new Image();
     img.onload = function () {
@@ -865,20 +646,10 @@ function setupPhotoPreview() {
       const reader = new FileReader();
       reader.onload = function (e) {
         profileImage.src = e.target.result;
-
-        // 📱 MOBILE: Efeito visual otimizado para dispositivos móveis
-        if (isMobileDevice()) {
-          profileImage.style.transition = "all 0.3s ease";
-          profileImage.style.transform = "scale(0.95)";
-          setTimeout(() => {
-            profileImage.style.transform = "scale(1)";
-          }, 150);
-        } else {
-          profileImage.style.transform = "scale(1.02)";
-          setTimeout(() => {
-            profileImage.style.transform = "scale(1)";
-          }, 200);
-        }
+        profileImage.style.transform = "scale(1.02)";
+        setTimeout(() => {
+          profileImage.style.transform = "scale(1)";
+        }, 200);
       };
       reader.readAsDataURL(file);
     };
@@ -897,6 +668,7 @@ function setupChangeDetection() {
   const inputs = document.querySelectorAll("#name, #email, #phone");
   inputs.forEach((input) => {
     input.addEventListener("input", () => {
+      // Adicionar indicador visual de mudança não salva (opcional)
       input.classList.add("changed");
     });
   });
@@ -926,7 +698,11 @@ function showRemovePhotoModal() {
   const modal = document.getElementById("remove-photo-modal");
   if (modal) {
     modal.classList.add("show");
+
+    // Adicionar evento para fechar com ESC
     document.addEventListener("keydown", handleModalEscape);
+
+    // Focar no botão cancelar para melhor acessibilidade
     setTimeout(() => {
       const cancelBtn = modal.querySelector(".modal-btn-cancel");
       if (cancelBtn) {
@@ -941,16 +717,22 @@ function closeRemovePhotoModal() {
   const modal = document.getElementById("remove-photo-modal");
   if (modal) {
     modal.classList.remove("show");
+
+    // Remover listener do ESC
     document.removeEventListener("keydown", handleModalEscape);
   }
 }
 
 // Confirmar remoção da foto
 async function confirmRemovePhoto() {
+  // Fechar modal primeiro
   closeRemovePhotoModal();
+
+  // Executar a remoção
   await removeProfilePhotoWithoutConfirm();
 }
 
+// Função para lidar com tecla ESC na modal
 function handleModalEscape(event) {
   if (event.key === "Escape") {
     closeRemovePhotoModal();
@@ -965,12 +747,13 @@ document.addEventListener("click", function (event) {
   }
 });
 
-// Modal "Alterações não salvas"
+// ===== Modal "Alterações não salvas" =====
 function showUnsavedChangesModal() {
   const modal = document.getElementById("unsaved-modal");
   if (modal) {
     modal.classList.add("show");
     document.addEventListener("keydown", handleUnsavedModalEscape);
+    // Acessibilidade: focar o botão cancelar
     setTimeout(() => {
       modal.querySelector(".modal-btn-cancel")?.focus();
     }, 100);
@@ -996,6 +779,7 @@ function handleUnsavedModalEscape(event) {
   }
 }
 
+// Fechar a modal clicando fora
 document.addEventListener("click", function (event) {
   const modal = document.getElementById("unsaved-modal");
   if (modal && event.target === modal) {
@@ -1003,9 +787,10 @@ document.addEventListener("click", function (event) {
   }
 });
 
-// 📱 FUNÇÃO MELHORADA: Remover foto com otimizações mobile
+// Versão da função removeProfilePhoto sem o confirm (para usar na modal)
 async function removeProfilePhotoWithoutConfirm() {
   try {
+    // Mostrar loading no botão de remoção
     const removeBtn = document.querySelector(".remove-photo-btn");
     if (removeBtn) {
       removeBtn.disabled = true;
@@ -1022,23 +807,16 @@ async function removeProfilePhotoWithoutConfirm() {
       // Atualizar imagem para placeholder
       const profileImage = document.getElementById("profile-image");
       if (profileImage) {
+        // Usar a nova função para gerar o placeholder com as iniciais
         const userData = JSON.parse(localStorage.getItem("userData")) || {};
         const userName = userData.name || userData.fullName || "";
         profileImage.src = getInitialsPlaceholderUrl(userName);
 
-        // 📱 MOBILE: Efeito visual otimizado
-        if (isMobileDevice()) {
-          profileImage.style.transition = "all 0.3s ease";
-          profileImage.style.opacity = "0.5";
-          setTimeout(() => {
-            profileImage.style.opacity = "1";
-          }, 300);
-        } else {
-          profileImage.style.opacity = "0.5";
-          setTimeout(() => {
-            profileImage.style.opacity = "1";
-          }, 300);
-        }
+        // Efeito visual de remoção
+        profileImage.style.opacity = "0.5";
+        setTimeout(() => {
+          profileImage.style.opacity = "1";
+        }, 300);
       }
 
       // Atualizar localStorage
@@ -1051,28 +829,14 @@ async function removeProfilePhotoWithoutConfirm() {
         Auth.updateProfilePhoto(null);
       }
 
-      // Atualizar UserService
-      if (window.userService) {
-        window.userService.updateProfilePhoto(null);
-      }
-
       // Limpar input de arquivo
       const photoInput = document.getElementById("photo-input");
       if (photoInput) {
         photoInput.value = "";
       }
 
-      // Disparar eventos customizados
+      // Disparar evento customizado
       window.dispatchEvent(new CustomEvent("profilePhotoRemoved"));
-
-      // 📱 MOBILE: Evento específico para mobile
-      if (isMobileDevice()) {
-        window.dispatchEvent(
-          new CustomEvent("mobilePhotoRemoved", {
-            detail: { timestamp: Date.now() },
-          })
-        );
-      }
     } else {
       showMessage(result.message || "Erro ao remover foto", "error");
     }
@@ -1080,6 +844,7 @@ async function removeProfilePhotoWithoutConfirm() {
     console.error("Erro ao remover foto:", error);
     showMessage("Erro de conexão", "error");
   } finally {
+    // Restaurar botão
     const removeBtn = document.querySelector(".remove-photo-btn");
     if (removeBtn) {
       removeBtn.disabled = false;
@@ -1107,6 +872,7 @@ function validateForm() {
   }
 
   if (phone && phone.length > 0) {
+    // Validação básica para telefone brasileiro
     const phoneRegex =
       /^(\+55\s?)?(\(?[1-9]{2}\)?\s?)?9?[0-9]{4}[-\s]?[0-9]{4}$/;
     if (!phoneRegex.test(phone)) {
@@ -1117,7 +883,7 @@ function validateForm() {
   return errors;
 }
 
-// 📱 NOVA FUNÇÃO: Sincronizar dados periodicamente (otimizada para mobile)
+// 🔧 NOVA FUNÇÃO: Sincronizar dados periodicamente apenas se não houver mudanças
 async function syncUserDataSafe() {
   try {
     // Só sincronizar se não há mudanças não salvas
@@ -1127,27 +893,20 @@ async function syncUserDataSafe() {
       navigator.onLine
     ) {
       console.log("🔄 Sincronização automática segura...");
-
-      // 📱 MOBILE: Verificar se está em background (economizar bateria)
-      if (isMobileDevice() && document.hidden) {
-        console.log("📱 Mobile em background - pulando sincronização");
-        return;
-      }
-
       await loadUserDataFromAPI();
     }
   } catch (error) {
-    console.log("⚠ Erro na sincronização automática:", error);
+    console.log("⚠️ Erro na sincronização automática:", error);
   }
 }
 
-// 📱 MOBILE: Intervalo de sincronização maior para economizar bateria
-const syncInterval = isMobileDevice() ? 10 * 60 * 1000 : 5 * 60 * 1000; // 10min mobile, 5min desktop
-setInterval(syncUserDataSafe, syncInterval);
+// Configurar sincronização automática a cada 5 minutos (mais segura)
+setInterval(syncUserDataSafe, 5 * 60 * 1000);
 
 // Eventos de conectividade
 window.addEventListener("online", () => {
   console.log("🌐 Reconectado à internet");
+  // Sincronizar apenas se não há mudanças pendentes
   if (!hasUnsavedChanges()) {
     syncUserDataSafe();
   }
@@ -1168,20 +927,18 @@ async function forceReloadUserData() {
   await loadUserDataFromAPI();
 }
 
-// 📱 LISTENER GLOBAL: Detectar mudanças de usuário (otimizado para mobile)
+// 🔧 LISTENER GLOBAL: Detectar mudanças de usuário
 window.addEventListener("storage", function (e) {
+  // Se o token mudou, significa que houve login/logout
   if (e.key === "authToken" || e.key === "userData") {
     console.log("👤 Mudança de usuário detectada, recarregando dados...");
-
-    // 📱 MOBILE: Delay maior para processamento
-    const delay = isMobileDevice() ? 300 : 100;
     setTimeout(() => {
       forceReloadUserData();
-    }, delay);
+    }, 100);
   }
 });
 
-// Exportar funções para uso global
+// Exportar funções para uso global se necessário
 window.editProfileFunctions = {
   saveProfile,
   uploadPhotoOnly,
@@ -1192,7 +949,4 @@ window.editProfileFunctions = {
   validateForm,
   syncUserDataSafe,
   clearUserData,
-  isMobileDevice,
-  forceMobilePhotoSync,
-  clearImageCacheMobile,
 };
