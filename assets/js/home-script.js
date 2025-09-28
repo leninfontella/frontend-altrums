@@ -258,8 +258,6 @@ const UserSystem = {
   },
 };
 
-// Sistema de níveis baseado no saldo
-
 // Sistema de níveis baseado no total doado
 const LevelSystem = {
   levels: {
@@ -488,24 +486,20 @@ const LevelSystem = {
     }
   },
 
-  // Nova função para obter informações do nível de um usuário específico
   getUserLevel(totalDonated) {
     return this.calculateLevel(totalDonated);
   },
 
-  // Nova função para obter o próximo nível
   getNextLevel(currentLevel) {
     if (currentLevel >= 10) return null;
     return this.levels[currentLevel + 1];
   },
 
-  // Nova função para calcular quantas moedas faltam para o próximo nível
   getCoinsToNextLevel(totalDonated) {
     const currentLevel = this.calculateLevel(totalDonated);
     const nextLevel = this.getNextLevel(currentLevel.level);
 
-    if (!nextLevel) return 0; // Já está no nível máximo
-
+    if (!nextLevel) return 0;
     return nextLevel.min - totalDonated;
   },
 };
@@ -675,14 +669,14 @@ function createDonationModal(user) {
         }`;
 
     recipientAvatarHTML = `
-      <div class="recipient-avatar" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #667eea;">
+      <div class="recipient-avatar" style="width: 72px; height: 72px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); position: relative;">
         <img 
           src="${fullPhotoUrl}" 
           alt="${user.name}"
           style="width: 100%; height: 100%; object-fit: cover;"
           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
         />
-        <div style="width: 100%; height: 100%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 20px;">
+        <div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 24px;">
           ${user.name
             .split(" ")
             .map((word) => word[0])
@@ -700,7 +694,7 @@ function createDonationModal(user) {
       .toUpperCase()
       .substring(0, 2);
     recipientAvatarHTML = `
-      <div class="recipient-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
+      <div class="recipient-avatar" style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px);">
         ${initials}
       </div>
     `;
@@ -746,7 +740,7 @@ function createDonationModal(user) {
                 max="${currentBalance}" 
                 placeholder="Digite a quantidade"
               >
-              <span class="coin-icon">🪙</span>
+            
             </div>
             
             <div class="quick-amounts">
@@ -770,8 +764,8 @@ function createDonationModal(user) {
             <button class="cancel-btn" onclick="closeDonationModal()">Cancelar</button>
             <button class="confirm-donation-btn" onclick="confirmDonation('${
               user.id || user._id
-            }')">
-              Confirmar
+            }', '${user.name}')">
+              Confirmar 
             </button>
           </div>
         </div>
@@ -787,8 +781,59 @@ function createDonationModal(user) {
   messageTextarea.addEventListener("input", function () {
     const count = this.value.length;
     charCounter.textContent = `${count}/200`;
-    charCounter.style.color = count > 180 ? "#ff6b6b" : "#666";
+    charCounter.style.color =
+      count > 180 ? "#ff6b6b" : "rgba(255, 255, 255, 0.5)";
   });
+}
+
+// ========== POP-UP DE SUCESSO MODERNO ==========
+
+function createSuccessPopup(amount, recipientName) {
+  const popupHTML = `
+    <div id="success-popup" class="success-popup">
+      <div class="success-popup-backdrop" onclick="closeSuccessPopup()"></div>
+      <div class="success-popup-content">
+        <div class="success-popup-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h2 class="success-popup-title">Doação Realizada!</h2>
+        
+        <p class="success-popup-message">
+          Parabéns! Sua generosidade fez a diferença.
+        </p>
+        
+        <div class="success-popup-details">
+          <div class="success-popup-amount">
+            <span class="coin-icon">🪙</span>
+            ${amount.toLocaleString()} moedas
+          </div>
+          <div class="success-popup-recipient">
+            doadas para <strong>${recipientName}</strong>
+          </div>
+        </div>
+        
+        <button class="success-popup-close" onclick="closeSuccessPopup()">
+          Continuar
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", popupHTML);
+
+  // Auto-close após 8 segundos
+  setTimeout(() => {
+    closeSuccessPopup();
+  }, 8000);
+}
+
+function closeSuccessPopup() {
+  const popup = document.getElementById("success-popup");
+  if (popup) {
+    popup.classList.add("closing");
+    setTimeout(() => popup.remove(), 300);
+  }
 }
 
 function renderSearchResults(users) {
@@ -813,14 +858,14 @@ function renderSearchResults(users) {
             }`;
 
         avatarHTML = `
-          <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #667eea;">
+          <div class="user-avatar" style="width: 54px; height: 54px; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); position: relative;">
             <img 
               src="${fullPhotoUrl}" 
               alt="${user.name}"
               style="width: 100%; height: 100%; object-fit: cover;"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             />
-            <div style="width: 100%; height: 100%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 14px;">
+            <div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 16px;">
               ${user.name
                 .split(" ")
                 .map((word) => word[0])
@@ -838,7 +883,7 @@ function renderSearchResults(users) {
           .toUpperCase()
           .substring(0, 2);
         avatarHTML = `
-          <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+          <div class="user-avatar" style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);">
             ${initials}
           </div>
         `;
@@ -935,7 +980,7 @@ function setDonationAmount(amount) {
   input.focus();
 }
 
-async function confirmDonation(recipientId) {
+async function confirmDonation(recipientId, recipientName) {
   const amountInput = document.getElementById("donation-amount");
   const messageInput = document.getElementById("donation-message");
 
@@ -953,6 +998,12 @@ async function confirmDonation(recipientId) {
     return;
   }
 
+  // Desabilitar botão para evitar cliques duplos
+  const confirmBtn = document.querySelector(".confirm-donation-btn");
+  const originalText = confirmBtn.textContent;
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "Processando...";
+
   try {
     const result = await UserSearchAPI.processDonation(
       recipientId,
@@ -961,14 +1012,21 @@ async function confirmDonation(recipientId) {
     );
 
     if (result.success || result.data) {
+      // Atualizar saldo local
       const newBalance = await Auth.getBalance();
       UserSystem.updateBalanceInterface(newBalance);
+
+      // Fechar modal de doação
       closeDonationModal();
-      showNotification(
-        `Doação de ${amount} moedas realizada com sucesso!`,
-        "success"
-      );
-      setTimeout(() => UserSystem.loadUserStats(), 1000);
+
+      // Mostrar pop-up de sucesso moderno
+      setTimeout(() => {
+        createSuccessPopup(amount, recipientName);
+      }, 400);
+
+      // Atualizar estatísticas após um delay
+      setTimeout(() => UserSystem.loadUserStats(), 1500);
+
       console.log("Doação realizada com sucesso:", result);
     } else {
       throw new Error(result.message || "Erro ao processar doação");
@@ -976,6 +1034,10 @@ async function confirmDonation(recipientId) {
   } catch (error) {
     console.error("Erro na doação:", error);
     showNotification(error.message || "Erro ao processar doação", "error");
+
+    // Reabilitar botão em caso de erro
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = originalText;
   }
 }
 
@@ -1058,7 +1120,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     console.log("Inicializacao concluida!");
-    // showNotification("Bem-vindo ao Altrums!", "success");
   } catch (error) {
     console.error("Erro durante inicializacao:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
@@ -1221,7 +1282,6 @@ const coinCards = document.querySelectorAll(".coin-card");
 coinCards.forEach((card) => {
   addTouchFeedback(card);
   card.addEventListener("click", () => {
-    // Pode redirecionar para página de estatísticas detalhadas
     console.log("Card de moeda clicado");
   });
 });
@@ -1230,7 +1290,6 @@ const awardItems = document.querySelectorAll(".award-item");
 awardItems.forEach((item) => {
   addTouchFeedback(item);
   item.addEventListener("click", () => {
-    // Pode redirecionar para página de prêmios
     if (viewAwardsBtn) {
       viewAwardsBtn.click();
     }
@@ -1242,44 +1301,57 @@ const balanceCard = document.getElementById("balance-card");
 if (balanceCard) {
   addTouchFeedback(balanceCard);
   balanceCard.addEventListener("click", () => {
-    // Pode mostrar histórico de transações ou detalhes do saldo
     console.log("Balance card clicado");
   });
 }
 
-// Status de conexão
-// function updateConnectionStatus() {
-//   const statusElement = document.getElementById("connection-status");
-//   const statusText = document.getElementById("connection-text");
+// Pull-to-refresh
+let startY = 0;
+let isRefreshing = false;
 
-//   if (navigator.onLine) {
-//     statusElement.className = "connection-status online";
-//     if (statusText) statusText.textContent = "Conectado";
-//   } else {
-//     statusElement.className = "connection-status offline";
-//     if (statusText) statusText.textContent = "Offline";
-//   }
-// }
+document.addEventListener(
+  "touchstart",
+  function (e) {
+    startY = e.touches[0].pageY;
+  },
+  { passive: true }
+);
 
-// window.addEventListener("online", updateConnectionStatus);
-// window.addEventListener("offline", updateConnectionStatus);
-// updateConnectionStatus();
+document.addEventListener(
+  "touchmove",
+  function (e) {
+    const y = e.touches[0].pageY;
+    const pullDistance = y - startY;
 
-// Atualizar horário (se necessário)
-// function updateTime() {
-//   const now = new Date();
-//   const hours = now.getHours().toString().padStart(2, "0");
-//   const minutes = now.getMinutes().toString().padStart(2, "0");
-//   const statusBarTime = document.querySelector("#status-time");
-//   if (statusBarTime) {
-//     statusBarTime.textContent = `${hours}:${minutes}`;
-//   }
-// }
+    if (
+      window.scrollY === 0 &&
+      pullDistance > 0 &&
+      pullDistance > 100 &&
+      !isRefreshing
+    ) {
+      isRefreshing = true;
 
-// setInterval(updateTime, 60000);
-// updateTime();
+      showNotification("Atualizando dados...", "info");
 
-// Prevenção de zoom acidental em dispositivos móveis
+      Promise.allSettled([
+        UserSystem.loadUserProfile(),
+        UserSystem.loadUserBalance(),
+        UserSystem.loadUserStats(),
+      ])
+        .then(() => {
+          isRefreshing = false;
+          showNotification("Dados atualizados!", "success");
+        })
+        .catch(() => {
+          isRefreshing = false;
+          showNotification("Erro ao atualizar", "error");
+        });
+    }
+  },
+  { passive: true }
+);
+
+// Prevenção de zoom acidental
 document.addEventListener(
   "touchstart",
   function (event) {
@@ -1303,56 +1375,8 @@ document.addEventListener(
   { passive: false }
 );
 
-// Pull-to-refresh (pode ser implementado se necessário)
-let startY = 0;
-let isRefreshing = false;
-
-document.addEventListener(
-  "touchstart",
-  function (e) {
-    startY = e.touches[0].pageY;
-  },
-  { passive: true }
-);
-
-document.addEventListener(
-  "touchmove",
-  function (e) {
-    const y = e.touches[0].pageY;
-    const pullDistance = y - startY;
-
-    // Se estiver no topo da página e puxando para baixo
-    if (
-      window.scrollY === 0 &&
-      pullDistance > 0 &&
-      pullDistance > 100 &&
-      !isRefreshing
-    ) {
-      isRefreshing = true;
-
-      // Recarregar dados
-      showNotification("Atualizando dados...", "info");
-
-      Promise.allSettled([
-        UserSystem.loadUserProfile(),
-        UserSystem.loadUserBalance(),
-        UserSystem.loadUserStats(),
-      ])
-        .then(() => {
-          isRefreshing = false;
-          showNotification("Dados atualizados!", "success");
-        })
-        .catch(() => {
-          isRefreshing = false;
-          showNotification("Erro ao atualizar", "error");
-        });
-    }
-  },
-  { passive: true }
-);
-
 console.log(
-  "Sistema mobile HOME integrado com Auth.js e API real carregado com sucesso!"
+  "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
 );
 
 // Exportar funções globalmente para compatibilidade
@@ -1366,3 +1390,5 @@ window.closeDonationModal = closeDonationModal;
 window.setDonationAmount = setDonationAmount;
 window.confirmDonation = confirmDonation;
 window.showNotification = showNotification;
+window.createSuccessPopup = createSuccessPopup;
+window.closeSuccessPopup = closeSuccessPopup;

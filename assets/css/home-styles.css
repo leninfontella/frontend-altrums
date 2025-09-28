@@ -107,9 +107,8 @@ body {
   z-index: 10;
   max-width: 440px;
   margin: 0 auto;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-     border-radius: 20px;
-
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  border-radius: 20px;
 }
 
 /* Header */
@@ -562,7 +561,6 @@ body {
   max-width: 440px; /* Define a largura máxima, alinhando com o container */
   margin: 0 auto; /* Centraliza a barra de navegação */
   z-index: 10;
-  
 }
 
 .nav-item {
@@ -762,9 +760,9 @@ body {
   }
 }
 
-/* ========== ESTILOS PARA SISTEMA DE BUSCA E DOAÇÃO ========== */
+/* ========== ESTILOS PARA SISTEMA DE BUSCA E DOAÇÃO - GLASS EFFECT ========== */
 
-/* Modal Base */
+/* Modal Base com Glass Effect */
 .search-modal,
 .donation-modal {
   position: fixed;
@@ -776,7 +774,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: modalFadeIn 0.3s ease-out;
+  animation: modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-backdrop {
@@ -785,60 +783,85 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .modal-content {
   position: relative;
-  background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-  border-radius: 24px;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
   width: 90%;
-  max-width: 420px;
+  max-width: 440px;
   max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 212, 255, 0.5),
+    transparent
+  );
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 24px 16px;
-  border-bottom: 1px solid #333;
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .modal-header h3 {
   color: #ffffff;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .close-btn {
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .close-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
 }
 
-/* Busca de Usuários */
+/* Busca de Usuários com Glass Effect */
 .search-container {
-  padding: 20px 24px;
+  padding: 24px 28px;
 }
 
 .search-input-wrapper {
@@ -847,66 +870,101 @@ body {
 
 #user-search-input {
   width: 100%;
-  height: 50px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid #333;
-  border-radius: 16px;
-  padding: 0 50px 0 20px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 0 60px 0 24px;
   font-size: 16px;
   color: #ffffff;
   font-weight: 400;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 #user-search-input::placeholder {
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 #user-search-input:focus {
   outline: none;
-  border-color: #00d4ff;
-  background: rgba(0, 212, 255, 0.08);
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2),
+    0 8px 32px rgba(0, 212, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 .search-icon {
   position: absolute;
-  right: 16px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
-  color: #666;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.4);
   pointer-events: none;
+  transition: color 0.3s ease;
 }
 
-/* Resultados da Busca */
+#user-search-input:focus + .search-icon {
+  color: rgba(0, 212, 255, 0.8);
+}
+
+/* Resultados da Busca com Glass Effect */
 .search-results {
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
-  padding: 0 24px 24px;
+  padding: 0 28px 28px;
+}
+
+.search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.6),
+    rgba(0, 153, 204, 0.6)
+  );
+  border-radius: 3px;
 }
 
 .no-results {
   text-align: center;
-  color: #666;
-  font-size: 14px;
-  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  padding: 60px 20px;
   font-style: italic;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .user-result {
   display: flex;
   align-items: center;
-  padding: 16px;
-  margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid #333;
-  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .user-result::before {
@@ -919,17 +977,18 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 212, 255, 0.1),
+    rgba(0, 212, 255, 0.15),
     transparent
   );
-  transition: left 0.5s ease;
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-result:hover {
-  background: rgba(0, 212, 255, 0.08);
-  border-color: rgba(0, 212, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.4);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 212, 255, 0.25),
+    0 0 0 1px rgba(0, 212, 255, 0.2);
 }
 
 .user-result:hover::before {
@@ -938,14 +997,19 @@ body {
 
 .user-avatar {
   font-size: 32px;
-  margin-right: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  width: 48px;
-  height: 48px;
+  margin-right: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  width: 54px;
+  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .user-info {
@@ -954,20 +1018,21 @@ body {
 
 .user-info h4 {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0 0 4px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .user-info .username {
-  color: #00d4ff;
+  color: rgba(0, 212, 255, 0.9);
   font-size: 14px;
   font-weight: 500;
   margin: 0 0 4px 0;
 }
 
 .user-info .institution {
-  color: #999;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
   margin: 0 0 8px 0;
 }
@@ -980,271 +1045,353 @@ body {
 
 .coins-count {
   color: #ffa500;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  background: rgba(255, 165, 0, 0.1);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 165, 0, 0.2);
 }
 
 .level-badge {
-  background: linear-gradient(135deg, #666 0%, #444 100%);
+  background: rgba(102, 102, 102, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: #ffffff;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .level-badge.doador-iniciante {
-  background: linear-gradient(135deg, #8e7cc3 0%, #6a5acd 100%);
+  background: rgba(142, 124, 195, 0.3);
+  border-color: rgba(142, 124, 195, 0.4);
 }
 
 .level-badge.doador-bronze {
-  background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
+  background: rgba(205, 127, 50, 0.3);
+  border-color: rgba(205, 127, 50, 0.4);
 }
 
 .level-badge.doador-prata {
-  background: linear-gradient(135deg, #c0c0c0 0%, #999999 100%);
+  background: rgba(192, 192, 192, 0.3);
+  border-color: rgba(192, 192, 192, 0.4);
 }
 
 .level-badge.doador-ouro {
-  background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+  background: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.4);
   color: #000;
 }
 
 .level-badge.doador-platina {
-  background: linear-gradient(135deg, #e5e4e2 0%, #bcc6cc 100%);
+  background: rgba(229, 228, 226, 0.3);
+  border-color: rgba(229, 228, 226, 0.4);
   color: #000;
 }
 
 .donate-icon {
-  font-size: 20px;
-  margin-left: 12px;
-  opacity: 0.7;
-  transition: all 0.3s ease;
+  font-size: 22px;
+  margin-left: 16px;
+  opacity: 0.6;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-result:hover .donate-icon {
   opacity: 1;
-  transform: scale(1.2);
+  transform: scale(1.3) rotate(10deg);
 }
 
-/* Modal de Doação */
+/* Modal de Doação com Glass Effect */
 .donation-content {
   max-height: 90vh;
+  overflow-y: auto;
+}
+
+.donation-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.donation-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.donation-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.6),
+    rgba(0, 153, 204, 0.6)
+  );
+  border-radius: 3px;
 }
 
 .donation-info {
-  padding: 20px 24px 24px;
+  padding: 24px 28px 28px;
 }
 
 .recipient-info {
   display: flex;
   align-items: center;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  margin-bottom: 24px;
-  border: 1px solid #333;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .recipient-avatar {
   font-size: 40px;
-  margin-right: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  width: 64px;
-  height: 64px;
+  margin-right: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 20px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .recipient-details h4 {
   color: #ffffff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .recipient-details .username {
-  color: #00d4ff;
-  font-size: 14px;
+  color: rgba(0, 212, 255, 0.9);
+  font-size: 15px;
   font-weight: 500;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
 }
 
 .recipient-details .institution {
-  color: #999;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 13px;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
 }
 
 .balance-info {
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 24px;
+  background: rgba(0, 212, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 28px;
   text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .current-balance {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 17px;
   margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .current-balance strong {
-  color: #00d4ff;
+  color: rgba(0, 212, 255, 1);
+  font-weight: 700;
 }
 
-/* Seção de Valor */
+/* Seção de Valor com Glass Effect */
 .donation-amount-section {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .donation-amount-section label {
   display: block;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .amount-input-wrapper {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 #donation-amount {
   width: 100%;
-  height: 56px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid #333;
-  border-radius: 16px;
-  padding: 0 50px 0 20px;
-  font-size: 18px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 0 60px 0 24px;
+  font-size: 20px;
   color: #ffffff;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 #donation-amount:focus {
   outline: none;
-  border-color: #00d4ff;
-  background: rgba(0, 212, 255, 0.08);
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2),
+    0 12px 40px rgba(0, 212, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .amount-input-wrapper .coin-icon {
   position: absolute;
-  right: 20px;
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 20px;
+  font-size: 24px;
   pointer-events: none;
+  opacity: 0.7;
 }
 
 .quick-amounts {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .quick-amount {
   background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 8px 16px;
+  border-radius: 16px;
+  padding: 12px 20px;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .quick-amount:hover {
   background: rgba(0, 212, 255, 0.2);
   border-color: rgba(0, 212, 255, 0.4);
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
 }
 
-/* Seção de Mensagem */
+/* Seção de Mensagem com Glass Effect */
 .donation-message-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .donation-message-section label {
   display: block;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 #donation-message {
   width: 100%;
-  min-height: 80px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid #333;
-  border-radius: 16px;
-  padding: 16px;
-  font-size: 14px;
+  min-height: 90px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 20px;
+  font-size: 15px;
   color: #ffffff;
   font-family: inherit;
   resize: vertical;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+#donation-message::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 #donation-message:focus {
   outline: none;
-  border-color: #00d4ff;
-  background: rgba(0, 212, 255, 0.08);
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2),
+    0 12px 40px rgba(0, 212, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 .char-counter {
   text-align: right;
-  color: #666;
-  font-size: 12px;
-  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin-top: 12px;
+  font-weight: 500;
 }
 
-/* Ações do Modal */
+/* Ações do Modal com Glass Effect */
 .donation-actions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .cancel-btn,
 .confirm-donation-btn {
   flex: 1;
-  height: 50px;
+  height: 56px;
   border: none;
-  border-radius: 16px;
-  font-size: 16px;
+  border-radius: 20px;
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .cancel-btn {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .cancel-btn:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.1);
 }
 
 .confirm-donation-btn {
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.9) 0%,
+    rgba(0, 153, 204, 0.9) 100%
+  );
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -1259,51 +1406,230 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.3),
     transparent
   );
-  transition: left 0.5s ease;
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .confirm-donation-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.5);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 50px rgba(0, 212, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.confirm-donation-btn:hover::before {
+  left: 100%;
 }
 
 .confirm-donation-btn:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
 }
 
-/* Notificações */
+/* ========== POP-UP DE SUCESSO MODERNO ========== */
+
+.success-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: successPopupFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.success-popup-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+}
+
+.success-popup-content {
+  position: relative;
+  background: rgba(16, 185, 129, 0.95);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  border-radius: 32px;
+  width: 90%;
+  max-width: 480px;
+  padding: 48px 32px;
+  text-align: center;
+  box-shadow: 0 35px 100px rgba(16, 185, 129, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  animation: successPopupSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.success-popup-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  animation: successShimmer 2s ease-in-out infinite;
+}
+
+.success-popup-icon {
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #ffffff;
+  margin: 0 auto 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(255, 255, 255, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  animation: successIconBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.success-popup-title {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+.success-popup-message {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.success-popup-details {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.success-popup-amount {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.success-popup-recipient {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.success-popup-close {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 16px 32px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.success-popup-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.3);
+}
+
+/* Notificações padrão (simplificadas) */
 .notification {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 10000;
   max-width: 350px;
-  background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+  background: rgba(30, 30, 30, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
   animation: notificationSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.notification::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
 }
 
 .notification.success {
-  border-left: 4px solid #4caf50;
+  border-left: 4px solid #10b981;
+  background: rgba(16, 185, 129, 0.1);
 }
 
 .notification.error {
   border-left: 4px solid #f44336;
+  background: rgba(244, 67, 54, 0.1);
 }
 
 .notification.info {
   border-left: 4px solid #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.notification.warning {
+  border-left: 4px solid #ff9800;
+  background: rgba(255, 152, 0, 0.1);
 }
 
 .notification-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 18px 22px;
 }
 
 .notification-content span {
@@ -1312,21 +1638,24 @@ body {
   font-weight: 500;
   flex: 1;
   margin-right: 12px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .notification-content button {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .notification-content button:hover {
@@ -1358,11 +1687,58 @@ body {
 @keyframes modalSlideUp {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.95);
+    transform: translateY(40px) scale(0.95);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes successPopupFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes successPopupSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes successIconBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes successShimmer {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
   }
 }
 
@@ -1378,12 +1754,14 @@ body {
 }
 
 .search-modal.closing,
-.donation-modal.closing {
+.donation-modal.closing,
+.success-popup.closing {
   animation: modalFadeOut 0.3s ease-in;
 }
 
 .search-modal.closing .modal-content,
-.donation-modal.closing .modal-content {
+.donation-modal.closing .modal-content,
+.success-popup.closing .success-popup-content {
   animation: modalSlideDown 0.3s ease-in;
 }
 
@@ -1412,13 +1790,40 @@ body {
   .home-container {
     padding: 20px;
   }
-  
+
   .header {
     padding: 20px 20px 30px;
   }
-  
+
   .main-content {
     padding: 0 20px 100px 20px;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .modal-header {
+    padding: 24px 20px 16px;
+  }
+
+  .search-container,
+  .donation-info {
+    padding: 20px;
+  }
+
+  .success-popup-content {
+    width: 95%;
+    padding: 40px 24px;
+  }
+
+  .success-popup-title {
+    font-size: 24px;
+  }
+
+  .success-popup-message {
+    font-size: 16px;
   }
 }
 
@@ -1426,11 +1831,11 @@ body {
   .home-container {
     padding: 16px;
   }
-  
+
   .header {
     padding: 20px 16px 30px;
   }
-  
+
   .main-content {
     padding: 0 16px 100px 16px;
   }
@@ -1444,9 +1849,29 @@ body {
     height: 50px;
     font-size: 20px;
   }
-  
+
   .balance-amount {
     font-size: 28px;
+  }
+
+  .modal-content {
+    width: 98%;
+    margin: 10px;
+  }
+
+  .success-popup-content {
+    width: 98%;
+    padding: 36px 20px;
+  }
+
+  .success-popup-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 36px;
+  }
+
+  .success-popup-title {
+    font-size: 22px;
   }
 }
 
@@ -1466,3 +1891,4 @@ body {
   border-radius: 8px;
   margin: 8px 0;
   font-size: 14px;
+}
