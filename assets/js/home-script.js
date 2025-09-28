@@ -198,9 +198,9 @@ const UserSystem = {
       const statsMap = [
         {
           id: "earned-coins-card",
-          value: stats.totalReceived || stats.totalEarned,
+          value: stats.totalReceived ?? stats.totalEarned,
         },
-        { id: "donated-coins-card", value: stats.totalDonated },
+        { id: "donated-coins-card", value: stats.totalDonated ?? 0 },
       ];
 
       statsMap.forEach(({ id, value }) => {
