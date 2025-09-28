@@ -322,7 +322,7 @@ class UserService {
     }
 
     setTimeout(() => {
-      window.location.href = "../../login/html/login.html";
+      window.location.href = "/index.html";
     }, 3000);
   }
 
@@ -1315,7 +1315,7 @@ class NavigationManager {
     if (document.referrer) {
       window.history.back();
     } else {
-      window.location.href = "../../login/html/login.html";
+      window.location.href = "/index.html";
     }
   }
 
@@ -1573,7 +1573,7 @@ class RanksApp {
     });
 
     setTimeout(() => {
-      window.location.href = "../../login/html/login.html";
+      window.location.href = "/index.html";
     }, 3000);
   }
 

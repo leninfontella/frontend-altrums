@@ -9,7 +9,7 @@ homeButton.addEventListener("click", () => {
     window.history.back();
   } else {
     // Se não existe (ex: usuário entrou direto), vai para uma página padrão
-    window.location.href = "../../login/html/login.html";
+    window.location.href = "/index.html";
   }
 });
 // goHome.onclick = goHomeButton;
@@ -21,7 +21,7 @@ function goBack() {
   // window.history.back();
 
   // Ou redirecionar para uma página específica:
-  // window.location.href = '../login/html/login.html';
+  // window.location.href = "/index.html";
 }
 
 // Função para abrir WhatsApp

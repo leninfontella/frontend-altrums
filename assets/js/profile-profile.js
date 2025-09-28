@@ -788,7 +788,7 @@ if (goBackButton) {
     if (document.referrer) {
       window.history.back();
     } else {
-      window.location.href = "../../login/html/login.html";
+      window.location.href = "/index.html";
     }
   });
 }

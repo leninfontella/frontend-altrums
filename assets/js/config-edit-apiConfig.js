@@ -157,7 +157,7 @@ class ApiConfig {
         Auth.redirectToLogin?.();
       } else {
         // Fallback: redirecionar para página de login
-        window.location.href = "/login.html";
+        window.location.href = "/index.html";
       }
 
       throw new Error("Sessão expirada. Redirecionando para login...");
@@ -333,7 +333,7 @@ class ApiConfig {
             Auth.logout?.();
             Auth.redirectToLogin?.();
           } else {
-            window.location.href = "/login.html";
+            window.location.href = "/index.html";
           }
 
           reject(new Error("Sessão expirada"));

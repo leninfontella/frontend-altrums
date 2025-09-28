@@ -75,7 +75,7 @@ const CONFIG = {
 
     // Páginas
     pages: {
-      login: "/login/html/login.html",
+      login: "/index.html",
       register: "/pages/register/html/signup.html",
       dashboard: "/pages/home/html/index.html",
       profile: "/profile/pages/profile.html",

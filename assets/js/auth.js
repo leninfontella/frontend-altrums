@@ -433,14 +433,14 @@ const Auth = {
 
     // Se Auth.js está em /js/ global
     if (currentPath.includes("/home/html/")) {
-      redirectPath = "../../../login/html/login.html";
+      redirectPath = "/index.html";
     } else if (currentPath.includes("/profile/html/")) {
-      redirectPath = "../../../login/html/login.html";
+      redirectPath = "/index.html";
     } else if (currentPath.includes("/ranking/html/")) {
-      redirectPath = "../../../login/html/login.html";
+      redirectPath = "/index.html";
     } else {
       // Fallback padrão
-      redirectPath = "../../login/html/login.html";
+      redirectPath = "/index.html";
     }
 
     window.location.href = redirectPath;
@@ -974,7 +974,7 @@ if (typeof window !== "undefined" && !window.CONFIG) {
     },
     UI: {
       pages: {
-        login: "../../login/html/login.html",
+        login: "/index.html",
         dashboard: "../../home/html/index.html",
       },
     },

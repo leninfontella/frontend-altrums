@@ -159,7 +159,7 @@ async function loadUserDataFromAPI() {
       );
       showMessage("Sessão expirada. Redirecionando...", "error");
       setTimeout(() => {
-        window.location.href = "../../login/html/login.html";
+        window.location.href = "/index.html";
       }, 2000);
       return;
     }
@@ -195,7 +195,7 @@ async function loadUserDataFromAPI() {
     if (error.message.includes("401") || error.message.includes("Token")) {
       showMessage("Sessão expirada. Redirecionando...", "error");
       setTimeout(() => {
-        window.location.href = "../../login/html/login.html";
+        window.location.href = "/index.html";
       }, 2000);
       return;
     }
@@ -253,7 +253,7 @@ function loadUserProfileFromLocalStorage() {
     console.log("⚠ Nenhum dado local encontrado");
     showMessage("Nenhum dado encontrado. Faça login novamente.", "error");
     setTimeout(() => {
-      window.location.href = "../../login/html/login.html";
+      window.location.href = "/index.html";
     }, 2000);
   }
 }
@@ -378,7 +378,7 @@ async function saveProfile() {
     if (error.message.includes("401") || error.message.includes("Token")) {
       showMessage("Sessão expirada. Faça login novamente.", "error");
       setTimeout(() => {
-        window.location.href = "../../login/html/login.html";
+        window.location.href = "/index.html";
       }, 2000);
     } else if (error.message.includes("413")) {
       showMessage("Arquivo muito grande. Máximo 5MB.", "error");
