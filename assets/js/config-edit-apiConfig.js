@@ -1,10 +1,25 @@
-// Configuração unificada da API - Living Coins
-// Configuração unificada da API - Living Coins
+// Configuração unificada da API - Living Coins - Otimizada para Mobile
 class ApiConfig {
   constructor() {
     this.baseURL = this.detectApiBaseURL();
-    this.timeout = 30000; // 30 segundos
+    this.timeout = this.detectTimeout(); // Timeout dinâmico baseado no dispositivo
     this.token = this.getAuthToken();
+    this.isMobile = this.detectMobileDevice();
+    this.retryAttempts = this.isMobile ? 3 : 2; // Mais tentativas em mobile
+    this.retryDelay = this.isMobile ? 1000 : 500; // Delay maior em mobile
+  }
+
+  // 📱 NOVA FUNÇÃO: Detectar dispositivos móveis
+  detectMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  }
+
+  // 📱 NOVA FUNÇÃO: Timeout dinâmico baseado no dispositivo
+  detectTimeout() {
+    // Mobile: timeout maior devido a conexões mais lentas
+    return this.detectMobileDevice() ? 45000 : 30000; // 45s mobile, 30s desktop
   }
 
   // Auto-detecção da URL base da API
@@ -22,16 +37,13 @@ class ApiConfig {
       }`;
     }
 
-    // ✨ CORREÇÃO CRÍTICA: Forçar a URL correta da API em produção
-    // O endereço do servidor da API (Render) é diferente do frontend (Vercel)
-    return "https://api-backend-coins.onrender.com"; // Substitua por sua URL real no Render
+    // CORREÇÃO CRÍTICA: Forçar a URL correta da API em produção
+    return "https://api-backend-coins.onrender.com";
   }
-
-  // ... o restante da classe permanece o mesmo
 
   // Obter token de autenticação de múltiplas fontes
   getAuthToken() {
-    // Tentar Auth global primeiro (compatibilidade com código antigo)
+    // Tentar Auth global primeiro
     if (typeof Auth !== "undefined" && Auth?.getToken) {
       const token = Auth.getToken();
       if (token) {
@@ -111,6 +123,12 @@ class ApiConfig {
       Accept: "application/json",
     };
 
+    // 📱 MOBILE: Headers específicos para mobile
+    if (this.isMobile) {
+      headers["X-Mobile-Device"] = "true";
+      headers["X-Connection-Type"] = this.getConnectionType();
+    }
+
     // Reobter token mais recente
     if (!this.token) {
       this.token = this.getAuthToken();
@@ -129,6 +147,12 @@ class ApiConfig {
       Accept: "application/json",
     };
 
+    // 📱 MOBILE: Headers específicos para mobile
+    if (this.isMobile) {
+      headers["X-Mobile-Device"] = "true";
+      headers["X-Connection-Type"] = this.getConnectionType();
+    }
+
     // Reobter token mais recente
     if (!this.token) {
       this.token = this.getAuthToken();
@@ -138,11 +162,41 @@ class ApiConfig {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
-    // NÃO definir Content-Type para FormData - o browser fará isso automaticamente
     return headers;
   }
 
-  // Método para tratar respostas e erros globalmente
+  // 📱 NOVA FUNÇÃO: Detectar tipo de conexão (mobile)
+  getConnectionType() {
+    if (!this.isMobile) return "unknown";
+
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (connection) {
+      return connection.effectiveType || connection.type || "unknown";
+    }
+    return "unknown";
+  }
+
+  // 📱 NOVA FUNÇÃO: Verificar se a conexão é lenta
+  isSlowConnection() {
+    if (!this.isMobile) return false;
+
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (connection) {
+      return (
+        connection.effectiveType === "slow-2g" ||
+        connection.effectiveType === "2g"
+      );
+    }
+    return false;
+  }
+
+  // 📱 FUNÇÃO MELHORADA: Método para tratar respostas e erros globalmente
   async handleResponse(response) {
     // Se não autenticado (401), redirecionar para login
     if (response.status === 401) {
@@ -168,17 +222,36 @@ class ApiConfig {
       const errorData = await response
         .json()
         .catch(() => ({ message: "Muitas requisições" }));
+
+      // 📱 MOBILE: Delay maior para rate limit em mobile
+      if (this.isMobile) {
+        const retryAfter = response.headers.get("Retry-After");
+        const delay = retryAfter ? parseInt(retryAfter) * 1000 : 5000;
+        console.log(`📱 Mobile: Rate limit - aguardando ${delay}ms`);
+        await this.sleep(delay);
+      }
+
       throw new Error(
         errorData.message ||
           "Muitas requisições. Tente novamente em alguns minutos."
       );
     }
 
-    // Para outros erros HTTP, não fazer nada aqui - deixar o código chamador tratar
+    // 📱 MOBILE: Tratamento específico para timeouts
+    if (response.status === 408 || response.status === 504) {
+      console.warn("📱 Timeout detectado em mobile");
+      throw new Error("Conexão lenta detectada. Tente novamente.");
+    }
+
     return response;
   }
 
-  // Método principal para fazer requisições
+  // 📱 NOVA FUNÇÃO: Sleep utility para delays
+  sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // 📱 FUNÇÃO MELHORADA: Método principal para fazer requisições com retry
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
 
@@ -199,6 +272,12 @@ class ApiConfig {
       defaultOptions.headers.Authorization = `Bearer ${this.token}`;
     }
 
+    // 📱 MOBILE: Headers específicos
+    if (this.isMobile) {
+      defaultOptions.headers["X-Mobile-Device"] = "true";
+      defaultOptions.headers["X-Connection-Type"] = this.getConnectionType();
+    }
+
     // Se não é FormData, adicionar Content-Type
     if (options.body && !(options.body instanceof FormData)) {
       defaultOptions.headers["Content-Type"] = "application/json";
@@ -208,28 +287,60 @@ class ApiConfig {
 
     console.log("Fazendo requisição para:", url);
     console.log("Method:", finalOptions.method || "GET");
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-      const response = await fetch(url, {
-        ...finalOptions,
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      // Usar o handleResponse para tratar erros globalmente
-      await this.handleResponse(response);
-
-      return response;
-    } catch (error) {
-      if (error.name === "AbortError") {
-        throw new Error("Requisição expirou. Verifique sua conexão.");
-      }
-      throw error;
+    if (this.isMobile) {
+      console.log("📱 Mobile request - Connection:", this.getConnectionType());
     }
+
+    // 📱 MOBILE: Sistema de retry mais robusto
+    for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        const response = await fetch(url, {
+          ...finalOptions,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        // Usar o handleResponse para tratar erros globalmente
+        await this.handleResponse(response);
+
+        return response;
+      } catch (error) {
+        console.warn(
+          `📱 Tentativa ${attempt}/${this.retryAttempts} falhou:`,
+          error.message
+        );
+
+        // Se é o último attempt ou erro não é de rede, throw
+        if (attempt === this.retryAttempts || !this.isNetworkError(error)) {
+          if (error.name === "AbortError") {
+            throw new Error("Requisição expirou. Verifique sua conexão.");
+          }
+          throw error;
+        }
+
+        // 📱 MOBILE: Aguardar antes da próxima tentativa
+        if (attempt < this.retryAttempts) {
+          const delay = this.retryDelay * attempt; // Delay crescente
+          console.log(`📱 Aguardando ${delay}ms antes da próxima tentativa...`);
+          await this.sleep(delay);
+        }
+      }
+    }
+  }
+
+  // 📱 NOVA FUNÇÃO: Verificar se é erro de rede
+  isNetworkError(error) {
+    return (
+      error.name === "AbortError" ||
+      (error.name === "TypeError" && error.message.includes("fetch")) ||
+      error.message.includes("Network") ||
+      error.message.includes("timeout") ||
+      error.message.includes("connection")
+    );
   }
 
   // Método GET
@@ -292,7 +403,7 @@ class ApiConfig {
     return response;
   }
 
-  // Método específico para upload de arquivo com progresso (XMLHttpRequest)
+  // 📱 MÉTODO MELHORADO: Upload de arquivo com progresso otimizado para mobile
   async uploadFile(endpoint, formData, onProgress) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -306,12 +417,26 @@ class ApiConfig {
         xhr.setRequestHeader("Authorization", `Bearer ${this.token}`);
       }
 
-      // Progress callback
+      // 📱 MOBILE: Headers específicos
+      if (this.isMobile) {
+        xhr.setRequestHeader("X-Mobile-Device", "true");
+        xhr.setRequestHeader("X-Connection-Type", this.getConnectionType());
+      }
+
+      // Progress callback otimizado para mobile
       if (onProgress) {
         xhr.upload.addEventListener("progress", (e) => {
           if (e.lengthComputable) {
             const percentComplete = (e.loaded / e.total) * 100;
-            onProgress(percentComplete);
+
+            // 📱 MOBILE: Throttle do callback de progresso para economizar recursos
+            if (this.isMobile) {
+              this.throttledProgress =
+                this.throttledProgress || this.throttle(onProgress, 200);
+              this.throttledProgress(percentComplete);
+            } else {
+              onProgress(percentComplete);
+            }
           }
         });
       }
@@ -321,6 +446,12 @@ class ApiConfig {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const response = JSON.parse(xhr.responseText);
+
+            // 📱 MOBILE: Log específico para mobile
+            if (this.isMobile) {
+              console.log("📱 Upload mobile concluído com sucesso");
+            }
+
             resolve(response);
           } catch (e) {
             resolve({ success: true, message: "Upload concluído" });
@@ -350,20 +481,147 @@ class ApiConfig {
       });
 
       xhr.addEventListener("error", () => {
-        reject(new Error("Erro de conexão durante upload"));
+        // 📱 MOBILE: Mensagem específica para mobile
+        const errorMsg = this.isMobile
+          ? "Erro de conexão durante upload. Verifique sua rede móvel."
+          : "Erro de conexão durante upload";
+        reject(new Error(errorMsg));
       });
 
       xhr.addEventListener("timeout", () => {
-        reject(new Error("Timeout durante upload"));
+        const timeoutMsg = this.isMobile
+          ? "Upload expirou. Tente com uma imagem menor ou verifique sua conexão."
+          : "Timeout durante upload";
+        reject(new Error(timeoutMsg));
       });
 
-      // Configurar timeout
-      xhr.timeout = this.timeout;
+      // 📱 MOBILE: Timeout maior para dispositivos móveis
+      xhr.timeout = this.isMobile ? this.timeout + 15000 : this.timeout;
 
       // Enviar requisição
       xhr.open("POST", `${this.baseURL}${endpoint}`);
       xhr.send(formData);
     });
+  }
+
+  // 📱 NOVA FUNÇÃO: Throttle para otimizar callbacks em mobile
+  throttle(func, delay) {
+    let timeoutId;
+    let lastExecTime = 0;
+    return function (...args) {
+      const currentTime = Date.now();
+
+      if (currentTime - lastExecTime > delay) {
+        func(...args);
+        lastExecTime = currentTime;
+      } else {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          func(...args);
+          lastExecTime = Date.now();
+        }, delay);
+      }
+    };
+  }
+
+  // 📱 NOVA FUNÇÃO: Verificar qualidade da conexão
+  getConnectionQuality() {
+    if (!this.isMobile) return "good";
+
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (connection) {
+      const effectiveType = connection.effectiveType;
+      switch (effectiveType) {
+        case "slow-2g":
+        case "2g":
+          return "poor";
+        case "3g":
+          return "moderate";
+        case "4g":
+        default:
+          return "good";
+      }
+    }
+    return "unknown";
+  }
+
+  // 📱 NOVA FUNÇÃO: Ajustar timeout baseado na conexão
+  getAdaptiveTimeout() {
+    if (!this.isMobile) return this.timeout;
+
+    const quality = this.getConnectionQuality();
+    switch (quality) {
+      case "poor":
+        return this.timeout * 2; // Dobrar timeout para conexões ruins
+      case "moderate":
+        return this.timeout * 1.5; // Aumentar 50% para 3G
+      default:
+        return this.timeout;
+    }
+  }
+
+  // 📱 NOVA FUNÇÃO: Método de requisição otimizado para mobile com imagens
+  async requestWithImageOptimization(endpoint, data, options = {}) {
+    // Se é mobile e há FormData com imagem, aplicar otimizações
+    if (this.isMobile && data instanceof FormData) {
+      const fileInput = data.get("profilePhoto");
+      if (
+        fileInput &&
+        fileInput instanceof File &&
+        fileInput.type.startsWith("image/")
+      ) {
+        console.log("📱 Detectada imagem em mobile - aplicando otimizações");
+
+        // Verificar tamanho da imagem
+        if (fileInput.size > 2 * 1024 * 1024) {
+          // 2MB
+          console.warn("📱 Imagem grande detectada em mobile:", fileInput.size);
+        }
+
+        // Usar timeout adaptativo
+        options.timeout = this.getAdaptiveTimeout();
+      }
+    }
+
+    return this.request(endpoint, {
+      method: "POST",
+      body: data,
+      ...options,
+    });
+  }
+
+  // 📱 NOVA FUNÇÃO: Debug específico para mobile
+  debugMobileConnection() {
+    if (!this.isMobile) {
+      console.log("⚠️ Esta função é específica para dispositivos móveis");
+      return;
+    }
+
+    console.log("=== DEBUG MOBILE CONNECTION ===");
+    console.log("Base URL:", this.baseURL);
+    console.log("Timeout:", this.timeout);
+    console.log("Retry attempts:", this.retryAttempts);
+    console.log("Connection type:", this.getConnectionType());
+    console.log("Connection quality:", this.getConnectionQuality());
+    console.log("Adaptive timeout:", this.getAdaptiveTimeout());
+    console.log("Is slow connection:", this.isSlowConnection());
+
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (connection) {
+      console.log("Connection details:", {
+        downlink: connection.downlink,
+        effectiveType: connection.effectiveType,
+        rtt: connection.rtt,
+        saveData: connection.saveData,
+      });
+    }
+    console.log("==============================");
   }
 }
 
@@ -373,6 +631,14 @@ const apiConfig = new ApiConfig();
 // Disponibilizar como window.apiConfig (compatibilidade com código antigo)
 window.apiConfig = apiConfig;
 
+// 📱 MOBILE: Log específico para dispositivos móveis
+if (apiConfig.isMobile) {
+  console.log("📱 API Config Mobile otimizado carregado");
+  console.log("📱 Base URL:", apiConfig.baseURL);
+  console.log("📱 Timeout mobile:", apiConfig.timeout);
+  console.log("📱 Connection type:", apiConfig.getConnectionType());
+}
+
 // Exportar para uso em módulos
 if (typeof module !== "undefined" && module.exports) {
   module.exports = apiConfig;
@@ -381,13 +647,19 @@ if (typeof module !== "undefined" && module.exports) {
 console.log("API Config Unificado carregado - Base URL:", apiConfig.baseURL);
 console.log("Token disponível:", !!apiConfig.token);
 
-// apiConfig.js
-
-// Cria a instância única
+// Criar instância única
 const api = new ApiConfig();
 
-// Exporta para o escopo global
+// Exportar para o escopo global
 window.api = api;
+
+// 📱 MOBILE: Listener para mudanças na conexão
+if (api.isMobile && navigator.connection) {
+  navigator.connection.addEventListener("change", () => {
+    console.log("📱 Conexão mudou:", api.getConnectionType());
+    api.debugMobileConnection();
+  });
+}
 
 console.log("API Config Unificado carregado - Base URL:", api.baseURL);
 console.log("Token disponível:", !!api.token);
