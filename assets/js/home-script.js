@@ -259,6 +259,8 @@ const UserSystem = {
 };
 
 // Sistema de níveis baseado no saldo
+
+// Sistema de níveis baseado no total doado
 const LevelSystem = {
   levels: {
     1: { min: 0, max: 199, name: "Iniciante", color: "#8B5CF6", icon: "🌱" },
@@ -323,16 +325,36 @@ const LevelSystem = {
     return { level: 1, ...this.levels[1], progress: 0 };
   },
 
-  calculateProgress(balance, levelInfo) {
+  calculateProgress(totalDonated, levelInfo) {
     if (levelInfo.max === Infinity) return 100;
     const range = levelInfo.max - levelInfo.min + 1;
-    const current = balance - levelInfo.min;
+    const current = totalDonated - levelInfo.min;
     return Math.min(100, Math.max(0, (current / range) * 100));
   },
 
-  addLevelBadge(balance) {
+  async addLevelBadge(stats = null) {
     try {
-      const levelInfo = this.calculateLevel(balance);
+      // Se não recebeu stats como parâmetro, tenta carregar
+      let totalDonated = 0;
+
+      if (stats && stats.totalDonated !== undefined) {
+        totalDonated = stats.totalDonated;
+      } else {
+        // Tenta carregar as estatísticas para obter o total doado
+        try {
+          const userStats = await Auth.getStats();
+          totalDonated = userStats?.totalDonated || 0;
+        } catch (error) {
+          console.warn(
+            "Não foi possível carregar estatísticas para o nível:",
+            error
+          );
+          // Como fallback, usa 0 (nível iniciante)
+          totalDonated = 0;
+        }
+      }
+
+      const levelInfo = this.calculateLevel(totalDonated);
       const headerContent = document.querySelector(".header-content");
 
       if (headerContent) {
@@ -443,14 +465,48 @@ const LevelSystem = {
                 ${Math.round(levelInfo.progress)}%
               </div>
             </div>
+            
+            <div style="
+              margin-top: 8px;
+              font-size: 11px;
+              color: ${levelInfo.color}80;
+              text-align: center;
+              font-weight: 500;
+            ">
+              ${totalDonated.toLocaleString()} moedas doadas
+            </div>
           </div>
         `;
 
-        console.log("Badge de nível adicionado:", levelInfo);
+        console.log("Badge de nível adicionado baseado no total doado:", {
+          totalDonated,
+          levelInfo,
+        });
       }
     } catch (error) {
       console.error("Erro ao adicionar badge de nível:", error);
     }
+  },
+
+  // Nova função para obter informações do nível de um usuário específico
+  getUserLevel(totalDonated) {
+    return this.calculateLevel(totalDonated);
+  },
+
+  // Nova função para obter o próximo nível
+  getNextLevel(currentLevel) {
+    if (currentLevel >= 10) return null;
+    return this.levels[currentLevel + 1];
+  },
+
+  // Nova função para calcular quantas moedas faltam para o próximo nível
+  getCoinsToNextLevel(totalDonated) {
+    const currentLevel = this.calculateLevel(totalDonated);
+    const nextLevel = this.getNextLevel(currentLevel.level);
+
+    if (!nextLevel) return 0; // Já está no nível máximo
+
+    return nextLevel.min - totalDonated;
   },
 };
 
