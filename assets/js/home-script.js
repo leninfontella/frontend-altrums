@@ -309,14 +309,14 @@ const LevelSystem = {
     },
   },
 
-  calculateLevel(balance) {
+  calculateLevel(totalDonated) {
     for (let level = 1; level <= 10; level++) {
       const levelInfo = this.levels[level];
-      if (balance >= levelInfo.min && balance <= levelInfo.max) {
+      if (totalDonated >= levelInfo.min && totalDonated <= levelInfo.max) {
         return {
           level: level,
           ...levelInfo,
-          progress: this.calculateProgress(balance, levelInfo),
+          progress: this.calculateProgress(totalDonated, levelInfo),
         };
       }
     }
