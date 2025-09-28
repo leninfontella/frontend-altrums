@@ -185,9 +185,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 18px;
+
   color: #00d4ff;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -205,14 +204,6 @@ body {
   background: rgba(0, 212, 255, 0.1);
   border-color: rgba(0, 212, 255, 0.3);
   box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
-}
-
-.back-button i,
-.back-button svg {
-  font-size: 22px;
-  color: #00d4ff;
-  transition: color 0.3s ease;
-  pointer-events: none;
 }
 
 .page-title {
