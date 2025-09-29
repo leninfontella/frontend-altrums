@@ -1,10 +1,17 @@
-// Configuração unificada da API - Living Coins
-// Configuração unificada da API - Living Coins
+// Configuração unificada da API - Living Coins - Versão Simplificada
 class ApiConfig {
   constructor() {
     this.baseURL = this.detectApiBaseURL();
-    this.timeout = 30000; // 30 segundos
+    this.timeout = 30000; // 30 segundos padrão
     this.token = this.getAuthToken();
+    this.isMobile = this.detectMobileDevice();
+  }
+
+  // Detectar dispositivos móveis
+  detectMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
   }
 
   // Auto-detecção da URL base da API
@@ -22,16 +29,13 @@ class ApiConfig {
       }`;
     }
 
-    // ✨ CORREÇÃO CRÍTICA: Forçar a URL correta da API em produção
-    // O endereço do servidor da API (Render) é diferente do frontend (Vercel)
-    return "https://api-backend-coins.onrender.com"; // Substitua por sua URL real no Render
+    // CORREÇÃO CRÍTICA: Forçar a URL correta da API em produção
+    return "https://api-backend-coins.onrender.com";
   }
-
-  // ... o restante da classe permanece o mesmo
 
   // Obter token de autenticação de múltiplas fontes
   getAuthToken() {
-    // Tentar Auth global primeiro (compatibilidade com código antigo)
+    // Tentar Auth global primeiro
     if (typeof Auth !== "undefined" && Auth?.getToken) {
       const token = Auth.getToken();
       if (token) {
@@ -59,15 +63,6 @@ class ApiConfig {
           }
         }
         return null;
-      },
-      () => {
-        // Verificar cookies
-        const cookieValue = document.cookie
-          .split("; ")
-          .find(
-            (row) => row.startsWith("authToken=") || row.startsWith("token=")
-          );
-        return cookieValue ? cookieValue.split("=")[1] : null;
       },
     ];
 
@@ -138,7 +133,6 @@ class ApiConfig {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
-    // NÃO definir Content-Type para FormData - o browser fará isso automaticamente
     return headers;
   }
 
@@ -174,11 +168,10 @@ class ApiConfig {
       );
     }
 
-    // Para outros erros HTTP, não fazer nada aqui - deixar o código chamador tratar
     return response;
   }
 
-  // Método principal para fazer requisições
+  // Método principal para fazer requisições (simplificado)
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
 
@@ -292,7 +285,7 @@ class ApiConfig {
     return response;
   }
 
-  // Método específico para upload de arquivo com progresso (XMLHttpRequest)
+  // Método para upload de arquivo com progresso (simplificado)
   async uploadFile(endpoint, formData, onProgress) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -380,8 +373,6 @@ if (typeof module !== "undefined" && module.exports) {
 
 console.log("API Config Unificado carregado - Base URL:", apiConfig.baseURL);
 console.log("Token disponível:", !!apiConfig.token);
-
-// apiConfig.js
 
 // Cria a instância única
 const api = new ApiConfig();

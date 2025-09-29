@@ -1,11 +1,26 @@
-// globalInit.js - Inicializador global para todas as páginas
+// globalInit.js - Inicializador global para todas as páginas - Versão Simplificada
 (function () {
   "use strict";
+
+  // Detectar dispositivos móveis
+  function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  }
+
+  const IS_MOBILE = isMobileDevice();
+
+  if (IS_MOBILE) {
+    console.log("Dispositivo móvel detectado");
+  }
 
   // Função para carregar e exibir dados do usuário
   function loadUserInterface() {
     const userData = getUserData();
     if (!userData) return;
+
+    console.log("Carregando interface do usuário...");
 
     // Atualizar nome do usuário
     const nameElements = document.querySelectorAll(
@@ -31,14 +46,8 @@
       element.textContent = userData.phone || "";
     });
 
-    // 🔧 CORREÇÃO: Atualizar foto de perfil com melhor lógica
-    if (window.userService) {
-      const photoUrl = userData.profilePhotoUrl || userData.avatar;
-      window.userService.updateProfilePhotoEverywhere(photoUrl);
-    } else {
-      // Fallback caso userService não esteja disponível
-      loadProfilePhotos();
-    }
+    // Atualizar foto de perfil
+    loadProfilePhotos();
 
     // Atualizar informações específicas (coins, level, etc.)
     updateUserStats(userData);
@@ -97,7 +106,6 @@
         bar.style.width = `${percentage}%`;
       }
 
-      // Atualizar texto da barra se houver
       const progressText = bar.querySelector(".progress-text");
       if (progressText) {
         progressText.textContent = `${currentXp}/${maxXp} XP`;
@@ -114,7 +122,7 @@
     }
   }
 
-  // ✨ FUNÇÃO ADICIONADA: Gerar a URL do placeholder com as iniciais do usuário
+  // Função para gerar URL do placeholder com iniciais
   function getInitialsPlaceholderUrl(userName) {
     const nameToPass = userName && typeof userName === "string" ? userName : "";
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -122,17 +130,16 @@
     )}&background=00d4ff&color=fff&size=120`;
   }
 
-  // ✅ FUNÇÃO CORRIGIDA: Função para carregar foto de perfil em elementos específicos
+  // Função para carregar foto de perfil (simplificada)
   function loadProfilePhotos() {
     const userData = getUserData();
     if (!userData) return;
 
-    console.log("🔄 Carregando fotos de perfil:", userData.profilePhotoUrl);
+    console.log("Carregando fotos de perfil:", userData.profilePhotoUrl);
 
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
-
-    // A URL final deve ser a URL da foto ou o placeholder
     let finalUrl;
+
     if (photoUrl) {
       if (photoUrl.startsWith("http")) {
         finalUrl = photoUrl;
@@ -140,19 +147,19 @@
         photoUrl.startsWith("/uploads/") ||
         photoUrl.includes("uploads")
       ) {
-        finalUrl = `http://localhost:5000${
+        const baseURL = window.apiConfig?.baseURL || "http://localhost:5000";
+        finalUrl = `${baseURL}${
           photoUrl.startsWith("/") ? "" : "/"
         }${photoUrl}`;
       } else {
         finalUrl = photoUrl;
       }
     } else {
-      // Usar a nova função de placeholder se não houver foto
       finalUrl = getInitialsPlaceholderUrl(userData.name || userData.fullName);
     }
 
-    // ✅ CORREÇÃO: Remover a lógica que adiciona o ?t=
-    console.log("📸 URL final da imagem:", finalUrl);
+    console.log("URL final da imagem:", finalUrl);
+
     const profileImages = document.querySelectorAll(
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
     );
@@ -160,29 +167,32 @@
     profileImages.forEach((img) => {
       const currentSrcBase = img.src.split("?")[0];
       const newSrcBase = finalUrl.split("?")[0];
+
       if (currentSrcBase !== newSrcBase) {
-        console.log(
-          `🔄 Atualizando imagem: ${currentSrcBase} -> ${newSrcBase}`
-        );
+        console.log(`Atualizando imagem: ${currentSrcBase} -> ${newSrcBase}`);
         img.src = finalUrl;
+
         img.onerror = function () {
-          console.error("❌ Erro ao carregar imagem:", finalUrl);
+          console.error("Erro ao carregar imagem:", finalUrl);
           this.src = getInitialsPlaceholderUrl(
             userData.name || userData.fullName
           );
         };
-        img.style.transition = "opacity 0.3s ease";
-        img.style.opacity = "0.7";
+
+        // Efeito visual simples
+        img.style.transition = "opacity 0.2s ease";
+        img.style.opacity = "0.8";
         setTimeout(() => {
           img.style.opacity = "1";
-        }, 150);
+        }, 100);
       }
     });
 
-    // 🔧 CORREÇÃO: Atualizar também elementos com background-image
+    // Atualizar elementos com background-image
     const profileElements = document.querySelectorAll(
       "[data-user-photo]:not(img), .profile-image:not(img), .user-avatar:not(img), .profile-avatar:not(img)"
     );
+
     profileElements.forEach((element) => {
       if (element.style) {
         element.style.backgroundImage = `url(${finalUrl})`;
@@ -193,35 +203,30 @@
     });
   }
 
-  // 🔧 NOVA FUNÇÃO: Inicializar foto de perfil no carregamento da página
+  // Inicializar foto de perfil
   function initializeProfilePhoto() {
-    console.log("🔄 Inicializando foto de perfil...");
+    console.log("Inicializando foto de perfil...");
 
-    // Aguardar um momento para garantir que Auth está carregado
     setTimeout(() => {
       const userData = getUserData();
       if (userData && userData.profilePhotoUrl) {
-        console.log(
-          "📸 Foto de perfil encontrada no userData:",
-          userData.profilePhotoUrl
-        );
+        console.log("Foto de perfil encontrada:", userData.profilePhotoUrl);
+
         loadProfilePhotos();
 
-        // Disparar evento para sincronizar com outras partes do sistema
+        // Disparar evento para sincronização
         window.dispatchEvent(
           new CustomEvent("profilePhotoUpdated", {
             detail: { photoUrl: userData.profilePhotoUrl },
           })
         );
-      } else {
-        console.log("📷 Nenhuma foto de perfil encontrada no userData");
       }
     }, 100);
   }
 
   // Função principal de inicialização
   function initGlobal() {
-    console.log("🚀 Inicializando sistema global...");
+    console.log("Inicializando sistema global...");
 
     // Aguardar carregamento do userService
     if (window.userService) {
@@ -229,7 +234,7 @@
       setupUpdateListeners();
       loadProfilePhotos();
     } else {
-      // Tentar novamente após um breve delay
+      // Tentar novamente após delay
       setTimeout(() => {
         if (window.userService) {
           loadUserInterface();
@@ -243,7 +248,6 @@
       }, 100);
     }
 
-    // 🔧 CORREÇÃO: Sempre inicializar foto de perfil
     initializeProfilePhoto();
   }
 
@@ -254,16 +258,21 @@
     initGlobal();
   }
 
-  // Re-inicializar quando a página ficar visível (útil para PWAs)
+  // Re-inicializar quando a página ficar visível
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-      initGlobal();
+      setTimeout(
+        () => {
+          initGlobal();
+        },
+        IS_MOBILE ? 300 : 100
+      );
     }
   });
 
-  // 🔧 CORREÇÃO: Listener aprimorado para mudanças na foto de perfil
+  // Listener para mudanças na foto de perfil
   window.addEventListener("profilePhotoUpdated", (event) => {
-    console.log("📸 Evento de foto atualizada recebido:", event.detail);
+    console.log("Evento de foto atualizada recebido:", event.detail);
 
     const newPhotoUrl = event.detail.photoUrl;
 
@@ -272,23 +281,22 @@
     if (userData) {
       userData.profilePhotoUrl = newPhotoUrl;
 
-      // Salvar tanto no localStorage quanto no sessionStorage
       if (typeof Auth !== "undefined" && Auth.saveUserData) {
         Auth.saveUserData({ user: userData });
       } else {
         localStorage.setItem("userData", JSON.stringify(userData));
       }
 
-      console.log("💾 userData atualizado com nova foto:", newPhotoUrl);
+      console.log("userData atualizado com nova foto:", newPhotoUrl);
     }
 
-    // Recarregar fotos em todos os elementos
+    // Recarregar fotos
     loadProfilePhotos();
   });
 
-  // 🔧 CORREÇÃO: Listener para remoção de foto
+  // Listener para remoção de foto
   window.addEventListener("profilePhotoRemoved", () => {
-    console.log("🗑️ Evento de foto removida recebido");
+    console.log("Evento de foto removida recebido");
 
     // Atualizar userData removendo a foto
     const userData = getUserData();
@@ -301,7 +309,7 @@
         localStorage.setItem("userData", JSON.stringify(userData));
       }
 
-      console.log("💾 Foto removida do userData");
+      console.log("Foto removida do userData");
     }
 
     // Restaurar imagens padrão
@@ -309,14 +317,28 @@
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
     );
 
+    const placeholderUrl = getInitialsPlaceholderUrl(
+      userData?.name || userData?.fullName
+    );
+
     profileImages.forEach((img) => {
-      img.src = getInitialsPlaceholderUrl(userData.name || userData.fullName);
+      img.src = placeholderUrl;
     });
   });
 
+  // Mobile: listener para orientação
+  if (IS_MOBILE) {
+    window.addEventListener("orientationchange", () => {
+      setTimeout(() => {
+        console.log("Orientação mudou - recarregando interface");
+        loadUserInterface();
+      }, 500);
+    });
+  }
+
   // Função global para forçar atualização
   window.refreshUserInterface = function () {
-    console.log("🔄 Atualizacao forcada da interface...");
+    console.log("Atualização forçada da interface...");
     initGlobal();
   };
 
@@ -326,6 +348,7 @@
     console.log("UserData:", getUserData());
     console.log("UserService:", window.userService);
     console.log("Auth disponível:", typeof Auth !== "undefined");
+    console.log("É Mobile:", IS_MOBILE);
 
     const userData = getUserData();
     if (userData) {
@@ -335,10 +358,46 @@
     console.log("=======================");
   };
 
-  // 🔧 NOVA FUNÇÃO: Forçar recarregamento da foto de perfil
+  // Forçar recarregamento da foto de perfil
   window.reloadProfilePhoto = function () {
-    console.log("🔄 Recarregamento forçado da foto de perfil...");
-    initializeProfilePhoto();
+    console.log("Recarregamento forçado da foto de perfil...");
     loadProfilePhotos();
+    initializeProfilePhoto();
   };
+
+  // Mobile: funções específicas simplificadas
+  if (IS_MOBILE) {
+    window.forceMobileSync = function () {
+      console.log("Mobile: Forçando sincronização...");
+
+      // Recarregar dados
+      const userData = getUserData();
+      if (userData) {
+        loadProfilePhotos();
+      }
+
+      // Notificar UserService
+      if (window.userService && window.userService.mobileRefreshProfile) {
+        window.userService.mobileRefreshProfile();
+      }
+
+      // Disparar evento
+      window.dispatchEvent(new CustomEvent("forcePhotoUpdate"));
+    };
+
+    window.debugMobile = function () {
+      console.log("=== DEBUG MOBILE ===");
+      console.log("É Mobile:", IS_MOBILE);
+      console.log("User Agent:", navigator.userAgent);
+      console.log("UserData:", getUserData());
+      console.log("===================");
+    };
+  }
+
+  console.log("GlobalInit.js carregado completamente");
+  if (IS_MOBILE) {
+    console.log(
+      "Funcionalidades mobile disponíveis: forceMobileSync(), debugMobile()"
+    );
+  }
 })();
