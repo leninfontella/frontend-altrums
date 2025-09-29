@@ -9,8 +9,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../../assets/css/home-styles.css" />
-    <!-- Socket.IO para notificações em tempo real -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
       /* Script inline para evitar piscar da foto */
       .profile-pic {
@@ -241,63 +239,5 @@
     <script src="../../../assets/js/config-edit-userService.js"></script>
     <script src="../../../assets/js/config-edit-globalInit.js"></script>
     <script src="../../../assets/js/home-script.js"></script>
-    <!-- Popup de Doação Recebida -->
-    <div
-      id="donation-received-popup"
-      class="donation-received-popup"
-      style="display: none"
-    >
-      <div
-        class="donation-received-backdrop"
-        onclick="closeDonationReceivedPopup()"
-      ></div>
-      <div class="donation-received-content">
-        <div class="donation-received-header">
-          <div class="donation-received-icon">
-            <i class="fas fa-gift"></i>
-          </div>
-          <button
-            class="donation-received-close"
-            onclick="closeDonationReceivedPopup()"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-
-        <h3 class="donation-received-title">Você recebeu uma doação!</h3>
-
-        <div class="donation-received-from">
-          <span class="donation-received-label">De:</span>
-          <span class="donation-received-donor" id="donation-donor-name"
-            >...</span
-          >
-        </div>
-
-        <div class="donation-received-amount">
-          <span class="coin-icon">💰</span>
-          <span id="donation-amount-value">0</span>
-          <span class="donation-received-coins-label">moedas</span>
-        </div>
-
-        <div
-          class="donation-received-message-container"
-          id="donation-message-container"
-          style="display: none"
-        >
-          <div class="donation-received-message-label">Mensagem:</div>
-          <div
-            class="donation-received-message"
-            id="donation-message-text"
-          ></div>
-        </div>
-
-        <button
-          class="donation-received-button"
-          onclick="closeDonationReceivedPopup()"
-        >
-          Obrigado!
-        </button>
-      </div>
-    </div>
   </body>
 </html>
