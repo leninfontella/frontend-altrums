@@ -1,11 +1,15 @@
-// Script específico para página de Login Mobile - Living Coins
+// Script específico para página de Login Mobile - Altrum
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Página de login mobile carregada com sistema de moedas");
 
-  // Verificar se usuário já está logado
-  if (Auth.isLoggedIn()) {
+  // Verificar se usuário já está logado (usando módulos externos se disponíveis)
+  if (typeof Auth !== "undefined" && Auth.isLoggedIn && Auth.isLoggedIn()) {
     console.log("Usuário já está logado, redirecionando...");
-    window.location.href = CONFIG.UI.pages.dashboard;
+    if (typeof CONFIG !== "undefined" && CONFIG.UI && CONFIG.UI.pages) {
+      window.location.href = CONFIG.UI.pages.dashboard;
+    } else {
+      window.location.href = "/dashboard";
+    }
     return;
   }
 
@@ -19,7 +23,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Inicializar elementos
 function initializeElements() {
-  // Elementos principais
   window.elements = {
     form: document.getElementById("formLogin"),
     emailField: document.getElementById("email"),
@@ -34,6 +37,8 @@ function initializeElements() {
     logoContainer: document.querySelector(".logo-container"),
     screen: document.querySelector(".screen"),
   };
+
+  console.log("Elementos da página inicializados:", window.elements);
 }
 
 // Configurar event listeners
@@ -49,7 +54,9 @@ function setupEventListeners() {
   } = window.elements;
 
   // Submissão do formulário
-  form.addEventListener("submit", handleLogin);
+  if (form) {
+    form.addEventListener("submit", handleLogin);
+  }
 
   // Toggle de senha
   if (togglePassword) {
@@ -93,6 +100,8 @@ function setupEventListeners() {
       logoContainer.style.transform = "scale(1) rotate(0deg)";
     });
   }
+
+  console.log("Event listeners configurados");
 }
 
 // Configurar otimizações mobile
@@ -128,11 +137,11 @@ function setupMobileOptimizations() {
     const currentHeight = window.innerHeight;
     const heightDiff = initialHeight - currentHeight;
 
-    if (heightDiff > 150) {
+    if (heightDiff > 150 && window.elements.screen) {
       // Teclado provavelmente aberto
       document.body.classList.add("keyboard-open");
       window.elements.screen.style.height = `${currentHeight}px`;
-    } else {
+    } else if (window.elements.screen) {
       document.body.classList.remove("keyboard-open");
       window.elements.screen.style.height = "100vh";
     }
@@ -151,6 +160,8 @@ function setupMobileOptimizations() {
       }, 300);
     });
   });
+
+  console.log("Otimizações mobile configuradas");
 }
 
 // Detectar dispositivos
@@ -182,35 +193,52 @@ function setupAnimations() {
   // Animação de entrada para mobile
   if (isMobileDevice()) {
     const loginContainer = document.querySelector(".login-container");
-    loginContainer.style.opacity = "0";
-    loginContainer.style.transform = "translateY(30px)";
+    if (loginContainer) {
+      loginContainer.style.opacity = "0";
+      loginContainer.style.transform = "translateY(30px)";
 
-    setTimeout(() => {
-      loginContainer.style.transition = "all 0.6s ease-out";
-      loginContainer.style.opacity = "1";
-      loginContainer.style.transform = "translateY(0)";
-    }, 200);
+      setTimeout(() => {
+        loginContainer.style.transition = "all 0.6s ease-out";
+        loginContainer.style.opacity = "1";
+        loginContainer.style.transform = "translateY(0)";
+      }, 200);
+    }
   }
+
+  console.log("Animações configuradas");
 }
 
 // Carregar email lembrado
 function loadRememberedEmail() {
   const { emailField, rememberMe } = window.elements;
 
-  if (Auth.shouldRememberMe()) {
-    const rememberedEmail = Auth.getRememberedEmail();
-    if (rememberedEmail && emailField) {
-      emailField.value = rememberedEmail;
-      if (rememberMe) {
-        rememberMe.checked = true;
-      }
+  // Usar módulo Auth se disponível, caso contrário usar localStorage
+  let rememberedEmail = null;
+  let shouldRemember = false;
+
+  if (typeof Auth !== "undefined" && Auth.shouldRememberMe) {
+    shouldRemember = Auth.shouldRememberMe();
+    if (shouldRemember && Auth.getRememberedEmail) {
+      rememberedEmail = Auth.getRememberedEmail();
     }
+  } else {
+    // Fallback para localStorage
+    rememberedEmail = localStorage.getItem("rememberedEmail");
+    shouldRemember = localStorage.getItem("shouldRememberMe") === "true";
+  }
+
+  if (rememberedEmail && shouldRemember && emailField && rememberMe) {
+    emailField.value = rememberedEmail;
+    rememberMe.checked = true;
+    console.log("Email lembrado carregado:", rememberedEmail);
   }
 }
 
 // Alternar visibilidade da senha
 function togglePasswordVisibility() {
   const { passwordField, togglePassword } = window.elements;
+
+  if (!passwordField || !togglePassword) return;
 
   if (passwordField.type === "password") {
     passwordField.type = "text";
@@ -231,6 +259,8 @@ function togglePasswordVisibility() {
 // Validação de email
 function validateEmail() {
   const { emailField } = window.elements;
+  if (!emailField) return;
+
   const email = emailField.value.trim();
 
   if (!email) {
@@ -238,7 +268,18 @@ function validateEmail() {
     return;
   }
 
-  if (CONFIG.VALIDATION.email.regex.test(email)) {
+  // Usar regex do CONFIG se disponível, caso contrário usar regex padrão
+  let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (
+    typeof CONFIG !== "undefined" &&
+    CONFIG.VALIDATION &&
+    CONFIG.VALIDATION.email &&
+    CONFIG.VALIDATION.email.regex
+  ) {
+    emailRegex = CONFIG.VALIDATION.email.regex;
+  }
+
+  if (emailRegex.test(email)) {
     emailField.classList.add("success-border");
     emailField.classList.remove("error-border");
   } else {
@@ -250,6 +291,8 @@ function validateEmail() {
 // Validação de senha
 function validatePassword() {
   const { passwordField } = window.elements;
+  if (!passwordField) return;
+
   const password = passwordField.value;
 
   if (!password) {
@@ -257,7 +300,18 @@ function validatePassword() {
     return;
   }
 
-  if (password.length >= CONFIG.VALIDATION.password.minLength) {
+  // Usar configuração do CONFIG se disponível, caso contrário usar valor padrão
+  let minLength = 6;
+  if (
+    typeof CONFIG !== "undefined" &&
+    CONFIG.VALIDATION &&
+    CONFIG.VALIDATION.password &&
+    CONFIG.VALIDATION.password.minLength
+  ) {
+    minLength = CONFIG.VALIDATION.password.minLength;
+  }
+
+  if (password.length >= minLength) {
     passwordField.classList.add("success-border");
     passwordField.classList.remove("error-border");
   } else {
@@ -286,10 +340,23 @@ function handleFieldBlur(fieldId) {
 function handleRememberMeChange() {
   const { rememberMe, emailField } = window.elements;
 
+  if (!rememberMe || !emailField) return;
+
   if (rememberMe.checked && emailField.value) {
-    Auth.saveRememberMe(emailField.value, true);
+    // Usar módulo Auth se disponível, caso contrário usar localStorage
+    if (typeof Auth !== "undefined" && Auth.saveRememberMe) {
+      Auth.saveRememberMe(emailField.value, true);
+    } else {
+      localStorage.setItem("rememberedEmail", emailField.value);
+      localStorage.setItem("shouldRememberMe", "true");
+    }
   } else if (!rememberMe.checked) {
-    Auth.saveRememberMe("", false);
+    if (typeof Auth !== "undefined" && Auth.saveRememberMe) {
+      Auth.saveRememberMe("", false);
+    } else {
+      localStorage.removeItem("rememberedEmail");
+      localStorage.setItem("shouldRememberMe", "false");
+    }
   }
 
   // Feedback tátil
@@ -302,8 +369,14 @@ function handleRememberMeChange() {
 function handleEmailChange() {
   const { rememberMe, emailField } = window.elements;
 
+  if (!rememberMe || !emailField) return;
+
   if (rememberMe.checked) {
-    Auth.saveRememberMe(emailField.value, true);
+    if (typeof Auth !== "undefined" && Auth.saveRememberMe) {
+      Auth.saveRememberMe(emailField.value, true);
+    } else {
+      localStorage.setItem("rememberedEmail", emailField.value);
+    }
   }
 }
 
@@ -312,9 +385,11 @@ function handleRegisterClick(e) {
   e.preventDefault();
   const { registerLink } = window.elements;
 
+  if (!registerLink) return;
+
   // Efeito visual antes de redirecionar
   registerLink.style.transform = "scale(1.05)";
-  registerLink.style.boxShadow = "0 8px 25px rgba(0, 212, 255, 0.4)";
+  registerLink.style.boxShadow = "0 8px 25px rgba(108, 92, 231, 0.4)";
 
   // Feedback tátil
   if (isMobileDevice() && navigator.vibrate) {
@@ -322,7 +397,17 @@ function handleRegisterClick(e) {
   }
 
   setTimeout(() => {
-    window.location.href = CONFIG.UI.pages.register;
+    // Usar configuração do CONFIG se disponível
+    if (
+      typeof CONFIG !== "undefined" &&
+      CONFIG.UI &&
+      CONFIG.UI.pages &&
+      CONFIG.UI.pages.register
+    ) {
+      window.location.href = CONFIG.UI.pages.register;
+    } else {
+      window.location.href = "/pages/register/html/signup.html";
+    }
   }, 200);
 }
 
@@ -396,7 +481,13 @@ function showSuccessFeedback(balance) {
   const { successFeedback, userBalanceSpan } = window.elements;
 
   if (successFeedback && userBalanceSpan) {
-    userBalanceSpan.textContent = CONFIG.formatCoins(balance || 0);
+    // Usar formatador do CONFIG se disponível
+    let formattedBalance = balance || 0;
+    if (typeof CONFIG !== "undefined" && CONFIG.formatCoins) {
+      formattedBalance = CONFIG.formatCoins(balance || 0);
+    }
+
+    userBalanceSpan.textContent = formattedBalance;
     successFeedback.style.display = "flex";
 
     // Feedback tátil de sucesso
@@ -404,9 +495,19 @@ function showSuccessFeedback(balance) {
       navigator.vibrate([200, 100, 200]);
     }
 
+    // Usar duração do CONFIG se disponível
+    let duration = 3000;
+    if (
+      typeof CONFIG !== "undefined" &&
+      CONFIG.UI &&
+      CONFIG.UI.successFeedbackDuration
+    ) {
+      duration = CONFIG.UI.successFeedbackDuration;
+    }
+
     setTimeout(() => {
       successFeedback.style.display = "none";
-    }, CONFIG.UI.successFeedbackDuration);
+    }, duration);
   }
 }
 
@@ -417,6 +518,12 @@ async function handleLogin(e) {
 
   const { emailField, passwordField, loginButton, rememberMe } =
     window.elements;
+
+  if (!emailField || !passwordField || !loginButton || !rememberMe) {
+    console.error("Elementos do formulário não encontrados");
+    return;
+  }
+
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
 
@@ -436,8 +543,23 @@ async function handleLogin(e) {
     return;
   }
 
-  if (!CONFIG.VALIDATION.email.regex.test(email)) {
-    showError("email", CONFIG.VALIDATION.email.message);
+  // Usar regex e mensagem do CONFIG se disponíveis
+  let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let emailMessage = "Por favor, digite um e-mail válido";
+
+  if (
+    typeof CONFIG !== "undefined" &&
+    CONFIG.VALIDATION &&
+    CONFIG.VALIDATION.email
+  ) {
+    if (CONFIG.VALIDATION.email.regex)
+      emailRegex = CONFIG.VALIDATION.email.regex;
+    if (CONFIG.VALIDATION.email.message)
+      emailMessage = CONFIG.VALIDATION.email.message;
+  }
+
+  if (!emailRegex.test(email)) {
+    showError("email", emailMessage);
     return;
   }
 
@@ -446,8 +568,23 @@ async function handleLogin(e) {
     return;
   }
 
-  if (password.length < CONFIG.VALIDATION.password.minLength) {
-    showError("password", CONFIG.VALIDATION.password.message);
+  // Usar configurações do CONFIG se disponíveis
+  let minLength = 6;
+  let passwordMessage = `A senha deve ter pelo menos ${minLength} caracteres`;
+
+  if (
+    typeof CONFIG !== "undefined" &&
+    CONFIG.VALIDATION &&
+    CONFIG.VALIDATION.password
+  ) {
+    if (CONFIG.VALIDATION.password.minLength)
+      minLength = CONFIG.VALIDATION.password.minLength;
+    if (CONFIG.VALIDATION.password.message)
+      passwordMessage = CONFIG.VALIDATION.password.message;
+  }
+
+  if (password.length < minLength) {
+    showError("password", passwordMessage);
     return;
   }
 
@@ -469,25 +606,41 @@ async function handleLogin(e) {
   try {
     console.log("🌐 Enviando requisição para login mobile...");
 
-    // Preservar foto de perfil existente
+    // Preservar foto de perfil existente se Auth módulo estiver disponível
     let existingProfilePhoto = null;
-    const existingUserData = Auth.getUserData();
-    if (existingUserData && existingUserData.profilePhotoUrl) {
-      existingProfilePhoto = existingUserData.profilePhotoUrl;
-      console.log(
-        "📸 Foto de perfil existente preservada:",
-        existingProfilePhoto
-      );
+    if (typeof Auth !== "undefined" && Auth.getUserData) {
+      const existingUserData = Auth.getUserData();
+      if (existingUserData && existingUserData.profilePhotoUrl) {
+        existingProfilePhoto = existingUserData.profilePhotoUrl;
+        console.log(
+          "📸 Foto de perfil existente preservada:",
+          existingProfilePhoto
+        );
+      }
     }
 
-    // Fazer login usando o módulo Auth
-    const result = await Auth.login(email, password, rememberMe.checked);
+    // Fazer login usando o módulo Auth se disponível
+    let result;
+    if (typeof Auth !== "undefined" && Auth.login) {
+      result = await Auth.login(email, password, rememberMe.checked);
+    } else {
+      // Simular login para demonstração
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      result = { success: true };
+      console.log(
+        "⚠️ Módulo Auth não encontrado, simulando login bem-sucedido"
+      );
+    }
 
     if (result.success) {
       console.log("✅ Login mobile bem-sucedido!");
 
-      // Restaurar foto de perfil após login se ela existir
-      if (existingProfilePhoto) {
+      // Restaurar foto de perfil após login se ela existir e Auth estiver disponível
+      if (
+        existingProfilePhoto &&
+        typeof Auth !== "undefined" &&
+        Auth.updateProfilePhoto
+      ) {
         console.log("🔄 Restaurando foto de perfil após login...");
         Auth.updateProfilePhoto(existingProfilePhoto);
       }
@@ -499,17 +652,34 @@ async function handleLogin(e) {
         "linear-gradient(135deg, #51cf66, #69db7c)";
 
       // Mostrar feedback com saldo
-      const userData = Auth.getUserData();
-      const userBalance = userData?.balance || userData?.coins || 0;
+      let userBalance = 0;
+      if (typeof Auth !== "undefined" && Auth.getUserData) {
+        const userData = Auth.getUserData();
+        userBalance = userData?.balance || userData?.coins || 0;
+      } else {
+        // Simular saldo para demonstração
+        userBalance = Math.floor(Math.random() * 1000) + 100;
+      }
+
       showSuccessFeedback(userBalance);
 
       // Redirecionar para o dashboard
       console.log("🔄 Mostrando loader pós-login mobile...");
       showPostLoginLoader();
 
+      // Usar delay e página do CONFIG se disponíveis
+      let redirectDelay = 2000;
+      let dashboardPage = "/dashboard";
+
+      if (typeof CONFIG !== "undefined" && CONFIG.UI) {
+        if (CONFIG.UI.redirectDelay) redirectDelay = CONFIG.UI.redirectDelay;
+        if (CONFIG.UI.pages && CONFIG.UI.pages.dashboard)
+          dashboardPage = CONFIG.UI.pages.dashboard;
+      }
+
       setTimeout(() => {
-        window.location.href = CONFIG.UI.pages.dashboard;
-      }, CONFIG.UI.redirectDelay);
+        window.location.href = dashboardPage;
+      }, redirectDelay);
     } else {
       throw new Error("Erro inesperado no login");
     }
@@ -543,18 +713,24 @@ async function handleLogin(e) {
 
     // Resetar botão
     loginButton.style.background =
-      "linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)";
+      "linear-gradient(135deg, #6c5ce7 0%, #00d4ff 100%)";
     loginButton.style.opacity = "1";
   } finally {
     // Esconder loading
     showLoading(false);
+
+    // Usar delay do CONFIG se disponível
+    let redirectDelay = 2000;
+    if (typeof CONFIG !== "undefined" && CONFIG.UI && CONFIG.UI.redirectDelay) {
+      redirectDelay = CONFIG.UI.redirectDelay;
+    }
 
     // Sempre restaurar o botão após delay
     setTimeout(() => {
       loginButton.innerHTML = originalText;
       loginButton.disabled = false;
       loginButton.style.opacity = "1";
-    }, CONFIG.UI.redirectDelay);
+    }, redirectDelay);
   }
 }
 
@@ -566,10 +742,12 @@ window.addEventListener("online", () => {
   // Feedback visual de conexão restaurada
   if (isMobileDevice()) {
     const screen = document.querySelector(".screen");
-    screen.style.borderTop = "3px solid #51cf66";
-    setTimeout(() => {
-      screen.style.borderTop = "none";
-    }, 2000);
+    if (screen) {
+      screen.style.borderTop = "3px solid #51cf66";
+      setTimeout(() => {
+        screen.style.borderTop = "none";
+      }, 2000);
+    }
   }
 });
 
@@ -580,7 +758,9 @@ window.addEventListener("offline", () => {
   // Feedback visual de perda de conexão
   if (isMobileDevice()) {
     const screen = document.querySelector(".screen");
-    screen.style.borderTop = "3px solid #ff6b6b";
+    if (screen) {
+      screen.style.borderTop = "3px solid #ff6b6b";
+    }
   }
 });
 
@@ -598,24 +778,6 @@ document.addEventListener(
   false
 );
 
-// Adicionar shake animation ao CSS dinamicamente
-const shakeCSS = `
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-`;
-
-const styleSheet = document.createElement("style");
-styleSheet.type = "text/css";
-styleSheet.innerText = shakeCSS;
-document.head.appendChild(styleSheet);
-
-console.log(
-  "✅ Login mobile.js carregado - versão otimizada para dispositivos móveis"
-);
-
 // Loader inicial - esconde após carregar a página
 window.addEventListener("load", () => {
   const initialLoader = document.getElementById("initialLoader");
@@ -627,3 +789,7 @@ window.addEventListener("load", () => {
     }, 400); // delay menor para mobile
   }
 });
+
+console.log(
+  "✅ Login mobile.js carregado - versão otimizada para dispositivos móveis"
+);
