@@ -332,13 +332,11 @@ const LevelSystem = {
 
   async addLevelBadge(stats = null) {
     try {
-      // Se não recebeu stats como parâmetro, tenta carregar
       let totalDonated = 0;
 
       if (stats && stats.totalDonated !== undefined) {
         totalDonated = stats.totalDonated;
       } else {
-        // Tenta carregar as estatísticas para obter o total doado
         try {
           const userStats = await Auth.getStats();
           totalDonated = userStats?.totalDonated || 0;
@@ -347,7 +345,6 @@ const LevelSystem = {
             "Não foi possível carregar estatísticas para o nível:",
             error
           );
-          // Como fallback, usa 0 (nível iniciante)
           totalDonated = 0;
         }
       }
@@ -382,8 +379,8 @@ const LevelSystem = {
             overflow: hidden;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: default;
-          " onmouseover="this.style.transform='translateY(-1px)'" 
-             onmouseout="this.style.transform='translateY(0)'">
+          " ontouchstart="this.style.transform='scale(0.98)'" 
+             ontouchend="this.style.transform='scale(1)'">
             
             <div style="
               display: flex;
@@ -669,14 +666,14 @@ function createDonationModal(user) {
         }`;
 
     recipientAvatarHTML = `
-      <div class="recipient-avatar" style="width: 72px; height: 72px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); position: relative;">
+      <div class="recipient-avatar" style="width: 64px; height: 64px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); position: relative;">
         <img 
           src="${fullPhotoUrl}" 
           alt="${user.name}"
           style="width: 100%; height: 100%; object-fit: cover;"
           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
         />
-        <div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 24px;">
+        <div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; font-size: 20px;">
           ${user.name
             .split(" ")
             .map((word) => word[0])
@@ -694,7 +691,7 @@ function createDonationModal(user) {
       .toUpperCase()
       .substring(0, 2);
     recipientAvatarHTML = `
-      <div class="recipient-avatar" style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px);">
+      <div class="recipient-avatar" style="width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px);">
         ${initials}
       </div>
     `;
@@ -740,7 +737,6 @@ function createDonationModal(user) {
                 max="${currentBalance}" 
                 placeholder="Digite a quantidade"
               >
-            
             </div>
             
             <div class="quick-amounts">
@@ -822,7 +818,6 @@ function createSuccessPopup(amount, recipientName) {
 
   document.body.insertAdjacentHTML("beforeend", popupHTML);
 
-  // Auto-close após 8 segundos
   setTimeout(() => {
     closeSuccessPopup();
   }, 8000);
@@ -998,7 +993,6 @@ async function confirmDonation(recipientId, recipientName) {
     return;
   }
 
-  // Desabilitar botão para evitar cliques duplos
   const confirmBtn = document.querySelector(".confirm-donation-btn");
   const originalText = confirmBtn.textContent;
   confirmBtn.disabled = true;
@@ -1012,19 +1006,15 @@ async function confirmDonation(recipientId, recipientName) {
     );
 
     if (result.success || result.data) {
-      // Atualizar saldo local
       const newBalance = await Auth.getBalance();
       UserSystem.updateBalanceInterface(newBalance);
 
-      // Fechar modal de doação
       closeDonationModal();
 
-      // Mostrar pop-up de sucesso moderno
       setTimeout(() => {
         createSuccessPopup(amount, recipientName);
       }, 400);
 
-      // Atualizar estatísticas após um delay
       setTimeout(() => UserSystem.loadUserStats(), 1500);
 
       console.log("Doação realizada com sucesso:", result);
@@ -1035,7 +1025,6 @@ async function confirmDonation(recipientId, recipientName) {
     console.error("Erro na doação:", error);
     showNotification(error.message || "Erro ao processar doação", "error");
 
-    // Reabilitar botão em caso de erro
     confirmBtn.disabled = false;
     confirmBtn.textContent = originalText;
   }
@@ -1044,7 +1033,6 @@ async function confirmDonation(recipientId, recipientName) {
 // ========== SISTEMA DE NOTIFICAÇÕES ==========
 
 function showNotification(message, type = "info") {
-  // Remover notificações existentes
   const existingNotifications = document.querySelectorAll(".notification");
   existingNotifications.forEach((notif) => notif.remove());
 
@@ -1068,9 +1056,8 @@ function showNotification(message, type = "info") {
 // ========== INICIALIZAÇÃO E EVENTOS ==========
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Verificar se usuário está logado
   if (!Auth.checkSession()) {
-    console.log("Usuario não logado - redirecionando");
+    console.log("Usuario nao logado - redirecionando");
     Auth.redirectToLogin();
     return;
   }
@@ -1078,14 +1065,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("Iniciando carregamento dos dados do usuario...");
 
   try {
-    // Mostrar loading state
     const balanceElement = document.querySelector("#user-balance");
     if (balanceElement && !balanceElement.textContent.includes("placeholder")) {
       balanceElement.innerHTML =
         '<div class="data-placeholder" style="width: 80px; display: inline-block"></div>';
     }
 
-    // Carregar dados do usuário em paralelo
     const [profile, balance, stats] = await Promise.allSettled([
       UserSystem.loadUserProfile(),
       UserSystem.loadUserBalance(),
@@ -1110,7 +1095,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Estatisticas carregadas");
     }
 
-    // Habilitar botão de doação
     const searchDonateBtn = document.getElementById("search-donate-btn");
     if (searchDonateBtn) {
       searchDonateBtn.disabled = false;
@@ -1132,7 +1116,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Animações de entrada
   const animateElements = document.querySelectorAll(
     ".action-button, .coin-card, .award-item"
   );
@@ -1147,7 +1130,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, index * 100);
   });
 
-  // Event listeners para foto de perfil
   window.addEventListener("profilePhotoUpdated", (event) => {
     console.log("Evento de foto atualizada recebido:", event.detail);
     const newPhotoUrl = event.detail.photoUrl;
@@ -1167,7 +1149,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Event listener para atualização de saldo
   window.addEventListener("balanceUpdated", (event) => {
     console.log("Saldo atualizado:", event.detail);
     const newBalance = event.detail.balance;
@@ -1180,7 +1161,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // ========== EVENT LISTENERS ==========
 
-// Botão principal de busca e doação
 const searchDonateBtn = document.getElementById("search-donate-btn");
 if (searchDonateBtn) {
   searchDonateBtn.addEventListener("click", () => {
@@ -1189,17 +1169,11 @@ if (searchDonateBtn) {
       return;
     }
 
-    searchDonateBtn.style.transform = "scale(0.98)";
-    setTimeout(() => {
-      searchDonateBtn.style.transform = "scale(1)";
-    }, 200);
-
     openSearchModal();
     console.log("Modal de busca aberto");
   });
 }
 
-// Navegação
 const navItems = document.querySelectorAll(".nav-item");
 const profile = document.getElementById("profile");
 const ranks = document.getElementById("ranks");
@@ -1223,7 +1197,6 @@ if (buttonTimeline) {
   });
 }
 
-// Ver mais botões
 const viewAwardsBtn = document.getElementById("view-all");
 
 if (viewAwardsBtn) {
@@ -1232,55 +1205,15 @@ if (viewAwardsBtn) {
   });
 }
 
-// Navegação ativa
 navItems.forEach((item) => {
   item.addEventListener("click", () => {
     navItems.forEach((nav) => nav.classList.remove("active"));
     item.classList.add("active");
-
-    item.style.transform = "scale(0.95)";
-    setTimeout(() => {
-      item.style.transform = "scale(1)";
-    }, 150);
   });
 });
 
-// Feedback tátil para dispositivos móveis
-function addTouchFeedback(element) {
-  if (!element) return;
-
-  element.addEventListener(
-    "touchstart",
-    () => {
-      element.style.transform = "scale(0.98)";
-    },
-    { passive: true }
-  );
-
-  element.addEventListener(
-    "touchend",
-    () => {
-      element.style.transform = "scale(1)";
-    },
-    { passive: true }
-  );
-
-  element.addEventListener(
-    "touchcancel",
-    () => {
-      element.style.transform = "scale(1)";
-    },
-    { passive: true }
-  );
-}
-
-// Aplicar feedback tátil
-[searchDonateBtn, viewAwardsBtn, ...navItems].forEach(addTouchFeedback);
-
-// Cards clicáveis
 const coinCards = document.querySelectorAll(".coin-card");
 coinCards.forEach((card) => {
-  addTouchFeedback(card);
   card.addEventListener("click", () => {
     console.log("Card de moeda clicado");
   });
@@ -1288,7 +1221,6 @@ coinCards.forEach((card) => {
 
 const awardItems = document.querySelectorAll(".award-item");
 awardItems.forEach((item) => {
-  addTouchFeedback(item);
   item.addEventListener("click", () => {
     if (viewAwardsBtn) {
       viewAwardsBtn.click();
@@ -1296,16 +1228,13 @@ awardItems.forEach((item) => {
   });
 });
 
-// Balance card clicável
 const balanceCard = document.getElementById("balance-card");
 if (balanceCard) {
-  addTouchFeedback(balanceCard);
   balanceCard.addEventListener("click", () => {
     console.log("Balance card clicado");
   });
 }
 
-// Pull-to-refresh
 let startY = 0;
 let isRefreshing = false;
 
@@ -1351,7 +1280,6 @@ document.addEventListener(
   { passive: true }
 );
 
-// Prevenção de zoom acidental
 document.addEventListener(
   "touchstart",
   function (event) {
@@ -1379,7 +1307,6 @@ console.log(
   "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
 );
 
-// Exportar funções globalmente para compatibilidade
 window.UserSystem = UserSystem;
 window.LevelSystem = LevelSystem;
 window.UserSearchAPI = UserSearchAPI;
