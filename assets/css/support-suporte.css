@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 /* CSS para Support - Estilo Living Coins */
 * {
   margin: 0;

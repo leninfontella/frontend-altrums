@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 /* Dark Modern CSS for Altrum Login */
 * {
   margin: 0;
@@ -103,6 +107,7 @@ body {
   z-index: 10;
   box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
   border-radius: 20px;
+  min-height: 100vh; /* Adicione esta linha aqui */
 }
 
 .login-container::before {
