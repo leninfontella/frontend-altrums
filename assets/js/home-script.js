@@ -1423,8 +1423,23 @@ const DonationQueue = {
   save(queue) {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(queue));
+      console.log("Fila de doações salva com sucesso no localStorage."); // Adicionado para confirmação
     } catch (error) {
-      console.error("Erro ao salvar fila de doações:", error);
+      // ESTE CATCH AGORA É CRÍTICO
+      if (error.name === "QuotaExceededError") {
+        console.error(
+          "ERRO CRÍTICO: Quota do localStorage Excedida! Não foi possível salvar a doação.",
+          error
+        );
+      } else {
+        console.error(
+          "ERRO AO SALVAR FILA DE DOAÇÕES NO LOCALSTORAGE:",
+          error.name,
+          error.message,
+          error
+        );
+      }
+      // Se não salva, o sistema de persistência falha
     }
   },
 
