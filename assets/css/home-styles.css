@@ -1037,7 +1037,6 @@ body {
 .user-result:hover::before {
   left: 100%;
 }
-
 .user-avatar {
   font-size: 32px;
   margin-right: 20px;
@@ -1834,104 +1833,21 @@ body {
     padding: 20px;
   }
 
-  .header {
-    padding: 20px 20px 30px;
+  /* Melhorias para dispositivos com notch */
+  @supports (padding: env(safe-area-inset-top)) {
+    .screen {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
   }
 
-  .main-content {
-    padding: 0 20px 100px 20px;
+  .success-state {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-size: 14px;
   }
-
-  .modal-content {
-    width: 95%;
-    margin: 20px;
-  }
-
-  .modal-header {
-    padding: 24px 20px 16px;
-  }
-
-  .search-container,
-  .donation-info {
-    padding: 20px;
-  }
-
-  .success-popup-content {
-    width: 80%;
-    padding: 30px 18px;
-  }
-
-  .success-popup-title {
-    font-size: 18px;
-  }
-
-  .success-popup-message {
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 360px) {
-  .home-container {
-    padding: 16px;
-  }
-
-  .header {
-    padding: 20px 16px 30px;
-  }
-
-  .main-content {
-    padding: 0 16px 100px 16px;
-  }
-
-  .greeting h2 {
-    font-size: 18px;
-  }
-
-  .profile-pic {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-
-  .balance-amount {
-    font-size: 28px;
-  }
-
-  .modal-content {
-    width: 98%;
-    margin: 10px;
-  }
-
-  .success-popup-content {
-    width: 85%;
-    padding: 27px 15px;
-  }
-
-  .success-popup-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 27px;
-  }
-
-  .success-popup-title {
-    font-size: 16px;
-  }
-}
-
-/* Melhorias para dispositivos com notch */
-@supports (padding: env(safe-area-inset-top)) {
-  .screen {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-.success-state {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  padding: 12px;
-  border-radius: 8px;
-  margin: 8px 0;
-  font-size: 14px;
 }
