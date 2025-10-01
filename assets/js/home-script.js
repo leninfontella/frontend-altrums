@@ -1375,6 +1375,249 @@ document.addEventListener(
   { passive: false }
 );
 
+// ========== POPUP DE DOAÇÃO RECEBIDA - HOOK DIRETO ==========
+
+function createDonationReceivedPopup(amount, newBalance, donorName = null) {
+  console.log("🎁 Criando popup de doação recebida...", {
+    amount,
+    newBalance,
+    donorName,
+  });
+
+  const existingPopup = document.getElementById("donation-received-popup");
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+
+  document.body.style.overflow = "hidden";
+
+  const donorInfo = donorName
+    ? `<div class="donation-received-donor">Doação de <strong>${donorName}</strong></div>`
+    : "";
+
+  const popupHTML = `
+    <div id="donation-received-popup" class="donation-received-popup">
+      <div class="donation-received-backdrop"></div>
+      <div class="donation-received-content">
+        <div class="donation-confetti">
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+        </div>
+
+        <div class="donation-received-icon">
+          <i class="fas fa-gift"></i>
+        </div>
+        
+        <h2 class="donation-received-title">Parabéns!</h2>
+        
+        <p class="donation-received-message">
+          Você recebeu uma doação! Continue fazendo a diferença.
+        </p>
+        
+        <div class="donation-received-details">
+          <div class="donation-received-amount">
+            <span class="coin-emoji">🪙</span>
+            +${amount.toLocaleString()}
+          </div>
+          <div class="donation-received-new-balance">
+            Seu saldo atual é <strong>${newBalance.toLocaleString()} moedas</strong>
+          </div>
+          ${donorInfo}
+        </div>
+        
+        <button class="donation-received-close" id="close-donation-popup">
+          Continuar
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", popupHTML);
+
+  setTimeout(() => {
+    const backdrop = document.querySelector(".donation-received-backdrop");
+    const closeBtn = document.getElementById("close-donation-popup");
+
+    if (backdrop) {
+      backdrop.addEventListener("click", closeDonationReceivedPopup);
+      backdrop.addEventListener("touchend", closeDonationReceivedPopup);
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeDonationReceivedPopup);
+      closeBtn.addEventListener("touchend", closeDonationReceivedPopup);
+    }
+  }, 100);
+
+  playDonationSound();
+
+  window.donationPopupTimer = setTimeout(() => {
+    closeDonationReceivedPopup();
+  }, 10000);
+
+  console.log("✅ Popup exibido");
+}
+
+function closeDonationReceivedPopup() {
+  const popup = document.getElementById("donation-received-popup");
+  if (popup) {
+    popup.classList.add("closing");
+
+    if (window.donationPopupTimer) {
+      clearTimeout(window.donationPopupTimer);
+      window.donationPopupTimer = null;
+    }
+
+    setTimeout(() => {
+      popup.remove();
+      document.body.style.overflow = "";
+    }, 400);
+  }
+}
+
+function playDonationSound() {
+  try {
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 800;
+    oscillator.type = "sine";
+
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.5
+    );
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  } catch (error) {
+    console.log("Som não disponível:", error);
+  }
+}
+
+// ========== INTERCEPTAÇÃO DIRETA DO Auth.getBalance() ==========
+
+let lastKnownBalance = null;
+let isInitialized = false;
+
+// Armazena a função original
+const originalGetBalance = Auth.getBalance;
+
+// Sobrescreve com nossa versão que detecta mudanças
+Auth.getBalance = async function () {
+  try {
+    const newBalance = await originalGetBalance.call(Auth);
+
+    console.log(
+      "💰 Saldo obtido:",
+      newBalance,
+      "| Anterior:",
+      lastKnownBalance
+    );
+
+    // Inicializa na primeira vez
+    if (!isInitialized) {
+      lastKnownBalance = newBalance;
+      isInitialized = true;
+      console.log("🔄 Saldo inicial registrado:", lastKnownBalance);
+      return newBalance;
+    }
+
+    // Detecta aumento (doação recebida)
+    if (lastKnownBalance !== null && newBalance > lastKnownBalance) {
+      const difference = newBalance - lastKnownBalance;
+
+      console.log("🎁 DOAÇÃO DETECTADA!", {
+        anterior: lastKnownBalance,
+        novo: newBalance,
+        diferenca: difference,
+      });
+
+      // Mostra popup
+      setTimeout(() => {
+        createDonationReceivedPopup(difference, newBalance);
+      }, 500);
+    }
+
+    lastKnownBalance = newBalance;
+    return newBalance;
+  } catch (error) {
+    console.error("Erro ao obter saldo:", error);
+    throw error;
+  }
+};
+
+// ========== LISTENERS ADICIONAIS ==========
+
+// Listener para evento balanceUpdated (se existir)
+window.addEventListener("balanceUpdated", (event) => {
+  console.log("📡 Evento balanceUpdated recebido:", event.detail);
+  const newBalance = event.detail.balance;
+
+  if (
+    lastKnownBalance !== null &&
+    newBalance > lastKnownBalance &&
+    isInitialized
+  ) {
+    const difference = newBalance - lastKnownBalance;
+    console.log("🎁 Doação via evento:", difference);
+
+    setTimeout(() => {
+      createDonationReceivedPopup(difference, newBalance);
+    }, 500);
+  }
+
+  if (!isInitialized) {
+    isInitialized = true;
+  }
+  lastKnownBalance = newBalance;
+});
+
+// Listener para evento customizado com detalhes
+window.addEventListener("donationReceived", (event) => {
+  const { amount, newBalance, donorName } = event.detail;
+  console.log("🎁 Evento donationReceived:", event.detail);
+  createDonationReceivedPopup(amount, newBalance, donorName);
+});
+
+// ========== FUNÇÕES DE TESTE ==========
+
+function testDonationPopup() {
+  console.log("🧪 Testando popup...");
+  createDonationReceivedPopup(150, 2500, "Maria Santos");
+}
+
+// Simular atualização de saldo para teste
+function simulateDonation(amount) {
+  const currentBalance = Auth.getUserBalance();
+  const newBalance = currentBalance + amount;
+  console.log(`🧪 Simulando doação de ${amount} moedas`);
+  createDonationReceivedPopup(amount, newBalance, "Teste");
+}
+
+window.createDonationReceivedPopup = createDonationReceivedPopup;
+window.closeDonationReceivedPopup = closeDonationReceivedPopup;
+window.testDonationPopup = testDonationPopup;
+window.simulateDonation = simulateDonation;
+
+console.log("✅ Sistema de popup carregado (HOOK DIRETO)");
+console.log("💡 Testes disponíveis:");
+console.log("   testDonationPopup() - Popup de exemplo");
+console.log("   simulateDonation(100) - Simula doação de 100 moedas");
+
 console.log(
   "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
 );
