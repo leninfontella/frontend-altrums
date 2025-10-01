@@ -1375,13 +1375,110 @@ document.addEventListener(
   { passive: false }
 );
 
-// ========== POPUP DE DOAÇÃO RECEBIDA - HOOK DIRETO ==========
+// ========== SISTEMA DE FILA DE NOTIFICAÇÕES PERSISTENTE ==========
 
-function createDonationReceivedPopup(amount, newBalance, donorName = null) {
-  console.log("🎁 Criando popup de doação recebida...", {
+const DonationQueue = {
+  STORAGE_KEY: "pendingDonations",
+
+  // Adiciona uma doação à fila
+  add(amount, newBalance, donorName = null, timestamp = Date.now()) {
+    const queue = this.getAll();
+
+    const donation = {
+      id: `donation_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      amount,
+      newBalance,
+      donorName,
+      timestamp,
+      shown: false,
+    };
+
+    queue.push(donation);
+    this.save(queue);
+
+    console.log("Doação adicionada à fila:", donation);
+    return donation;
+  },
+
+  // Obtém todas as doações pendentes
+  getAll() {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error("Erro ao carregar fila de doações:", error);
+      return [];
+    }
+  },
+
+  // Obtém apenas doações não visualizadas
+  getPending() {
+    return this.getAll().filter((d) => !d.shown);
+  },
+
+  // Salva a fila
+  save(queue) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(queue));
+    } catch (error) {
+      console.error("Erro ao salvar fila de doações:", error);
+    }
+  },
+
+  // Marca uma doação como visualizada
+  markAsShown(donationId) {
+    const queue = this.getAll();
+    const donation = queue.find((d) => d.id === donationId);
+
+    if (donation) {
+      donation.shown = true;
+      this.save(queue);
+      console.log("Doação marcada como visualizada:", donationId);
+    }
+  },
+
+  // Remove doações antigas (mais de 7 dias)
+  cleanup() {
+    const queue = this.getAll();
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const cleaned = queue.filter((d) => d.timestamp > sevenDaysAgo);
+
+    if (cleaned.length < queue.length) {
+      this.save(cleaned);
+      console.log(
+        `Limpeza: ${queue.length - cleaned.length} doações antigas removidas`
+      );
+    }
+  },
+
+  // Limpa todas as doações (para teste)
+  clear() {
+    localStorage.removeItem(this.STORAGE_KEY);
+    console.log("Fila de doações limpa");
+  },
+
+  // Conta quantas doações pendentes existem
+  count() {
+    return this.getPending().length;
+  },
+};
+
+// ========== POPUP DE DOAÇÃO COM FILA ==========
+
+let currentPopupQueue = [];
+let isShowingPopup = false;
+
+function createDonationReceivedPopup(
+  amount,
+  newBalance,
+  donorName = null,
+  donationId = null
+) {
+  console.log("Criando popup de doação recebida...", {
     amount,
     newBalance,
     donorName,
+    donationId,
   });
 
   const existingPopup = document.getElementById("donation-received-popup");
@@ -1396,7 +1493,9 @@ function createDonationReceivedPopup(amount, newBalance, donorName = null) {
     : "";
 
   const popupHTML = `
-    <div id="donation-received-popup" class="donation-received-popup">
+    <div id="donation-received-popup" class="donation-received-popup" data-donation-id="${
+      donationId || ""
+    }">
       <div class="donation-received-backdrop"></div>
       <div class="donation-received-content">
         <div class="donation-confetti">
@@ -1433,7 +1532,11 @@ function createDonationReceivedPopup(amount, newBalance, donorName = null) {
         </div>
         
         <button class="donation-received-close" id="close-donation-popup">
-          Continuar
+          ${
+            currentPopupQueue.length > 0
+              ? `Continuar (${currentPopupQueue.length + 1} restantes)`
+              : "Continuar"
+          }
         </button>
       </div>
     </div>
@@ -1462,12 +1565,18 @@ function createDonationReceivedPopup(amount, newBalance, donorName = null) {
     closeDonationReceivedPopup();
   }, 10000);
 
-  console.log("✅ Popup exibido");
+  console.log("Popup exibido");
 }
 
 function closeDonationReceivedPopup() {
   const popup = document.getElementById("donation-received-popup");
   if (popup) {
+    // Marca como visualizada se tiver ID
+    const donationId = popup.getAttribute("data-donation-id");
+    if (donationId) {
+      DonationQueue.markAsShown(donationId);
+    }
+
     popup.classList.add("closing");
 
     if (window.donationPopupTimer) {
@@ -1478,7 +1587,52 @@ function closeDonationReceivedPopup() {
     setTimeout(() => {
       popup.remove();
       document.body.style.overflow = "";
+
+      // Mostra próxima doação da fila
+      showNextDonationFromQueue();
     }, 400);
+  }
+}
+
+// Mostra a próxima doação da fila
+function showNextDonationFromQueue() {
+  if (currentPopupQueue.length > 0) {
+    const nextDonation = currentPopupQueue.shift();
+    isShowingPopup = true;
+
+    setTimeout(() => {
+      createDonationReceivedPopup(
+        nextDonation.amount,
+        nextDonation.newBalance,
+        nextDonation.donorName,
+        nextDonation.id
+      );
+    }, 500);
+  } else {
+    isShowingPopup = false;
+  }
+}
+
+// Processa todas as doações pendentes ao carregar a página HOME
+function processAllPendingDonations() {
+  const pending = DonationQueue.getPending();
+
+  if (pending.length === 0) {
+    console.log("Nenhuma doação pendente");
+    return;
+  }
+
+  console.log(`${pending.length} doação(ões) pendente(s) encontrada(s)`);
+
+  // Ordena por timestamp (mais antigas primeiro)
+  pending.sort((a, b) => a.timestamp - b.timestamp);
+
+  // Adiciona à fila de exibição
+  currentPopupQueue = [...pending];
+
+  // Mostra a primeira
+  if (!isShowingPopup) {
+    showNextDonationFromQueue();
   }
 }
 
@@ -1508,31 +1662,23 @@ function playDonationSound() {
   }
 }
 
-// ========== INTERCEPTAÇÃO DIRETA DO Auth.getBalance() ==========
+// ========== DETECÇÃO DE DOAÇÕES ==========
 
 let lastKnownBalance = null;
 let isInitialized = false;
 
-// Armazena a função original
 const originalGetBalance = Auth.getBalance;
 
-// Sobrescreve com nossa versão que detecta mudanças
 Auth.getBalance = async function () {
   try {
     const newBalance = await originalGetBalance.call(Auth);
 
-    console.log(
-      "💰 Saldo obtido:",
-      newBalance,
-      "| Anterior:",
-      lastKnownBalance
-    );
+    console.log("Saldo obtido:", newBalance, "| Anterior:", lastKnownBalance);
 
-    // Inicializa na primeira vez
     if (!isInitialized) {
       lastKnownBalance = newBalance;
       isInitialized = true;
-      console.log("🔄 Saldo inicial registrado:", lastKnownBalance);
+      console.log("Saldo inicial registrado:", lastKnownBalance);
       return newBalance;
     }
 
@@ -1540,16 +1686,28 @@ Auth.getBalance = async function () {
     if (lastKnownBalance !== null && newBalance > lastKnownBalance) {
       const difference = newBalance - lastKnownBalance;
 
-      console.log("🎁 DOAÇÃO DETECTADA!", {
+      console.log("DOAÇÃO DETECTADA!", {
         anterior: lastKnownBalance,
         novo: newBalance,
         diferenca: difference,
       });
 
-      // Mostra popup
-      setTimeout(() => {
-        createDonationReceivedPopup(difference, newBalance);
-      }, 500);
+      // Verifica se estamos na página HOME
+      const isOnHomePage =
+        window.location.pathname.includes("home") ||
+        window.location.pathname.includes("index") ||
+        window.location.pathname === "/";
+
+      if (isOnHomePage && !isShowingPopup) {
+        // Mostra imediatamente se estiver na HOME
+        setTimeout(() => {
+          createDonationReceivedPopup(difference, newBalance);
+        }, 500);
+      } else {
+        // Adiciona à fila se não estiver na HOME
+        DonationQueue.add(difference, newBalance);
+        console.log("Doação adicionada à fila (usuário não está na HOME)");
+      }
     }
 
     lastKnownBalance = newBalance;
@@ -1560,11 +1718,32 @@ Auth.getBalance = async function () {
   }
 };
 
+// ========== INICIALIZAÇÃO NA PÁGINA HOME ==========
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Limpa doações antigas
+  DonationQueue.cleanup();
+
+  // Verifica se está na página HOME
+  const isOnHomePage =
+    window.location.pathname.includes("home") ||
+    window.location.pathname.includes("index") ||
+    window.location.pathname === "/";
+
+  if (isOnHomePage) {
+    console.log("Página HOME detectada - verificando doações pendentes...");
+
+    // Aguarda um pouco para garantir que a página carregou
+    setTimeout(() => {
+      processAllPendingDonations();
+    }, 2000);
+  }
+});
+
 // ========== LISTENERS ADICIONAIS ==========
 
-// Listener para evento balanceUpdated (se existir)
 window.addEventListener("balanceUpdated", (event) => {
-  console.log("📡 Evento balanceUpdated recebido:", event.detail);
+  console.log("Evento balanceUpdated recebido:", event.detail);
   const newBalance = event.detail.balance;
 
   if (
@@ -1573,11 +1752,19 @@ window.addEventListener("balanceUpdated", (event) => {
     isInitialized
   ) {
     const difference = newBalance - lastKnownBalance;
-    console.log("🎁 Doação via evento:", difference);
 
-    setTimeout(() => {
-      createDonationReceivedPopup(difference, newBalance);
-    }, 500);
+    const isOnHomePage =
+      window.location.pathname.includes("home") ||
+      window.location.pathname.includes("index") ||
+      window.location.pathname === "/";
+
+    if (isOnHomePage && !isShowingPopup) {
+      setTimeout(() => {
+        createDonationReceivedPopup(difference, newBalance);
+      }, 500);
+    } else {
+      DonationQueue.add(difference, newBalance);
+    }
   }
 
   if (!isInitialized) {
@@ -1586,37 +1773,68 @@ window.addEventListener("balanceUpdated", (event) => {
   lastKnownBalance = newBalance;
 });
 
-// Listener para evento customizado com detalhes
 window.addEventListener("donationReceived", (event) => {
   const { amount, newBalance, donorName } = event.detail;
-  console.log("🎁 Evento donationReceived:", event.detail);
-  createDonationReceivedPopup(amount, newBalance, donorName);
+  console.log("Evento donationReceived:", event.detail);
+
+  const isOnHomePage =
+    window.location.pathname.includes("home") ||
+    window.location.pathname.includes("index") ||
+    window.location.pathname === "/";
+
+  if (isOnHomePage && !isShowingPopup) {
+    createDonationReceivedPopup(amount, newBalance, donorName);
+  } else {
+    DonationQueue.add(amount, newBalance, donorName);
+  }
 });
 
 // ========== FUNÇÕES DE TESTE ==========
 
 function testDonationPopup() {
-  console.log("🧪 Testando popup...");
+  console.log("Testando popup...");
   createDonationReceivedPopup(150, 2500, "Maria Santos");
 }
 
-// Simular atualização de saldo para teste
 function simulateDonation(amount) {
   const currentBalance = Auth.getUserBalance();
   const newBalance = currentBalance + amount;
-  console.log(`🧪 Simulando doação de ${amount} moedas`);
+  console.log(`Simulando doação de ${amount} moedas`);
   createDonationReceivedPopup(amount, newBalance, "Teste");
 }
 
+function testDonationQueue() {
+  console.log("Adicionando 3 doações à fila para teste...");
+  DonationQueue.add(50, 1550, "João Silva");
+  DonationQueue.add(100, 1650, "Maria Santos");
+  DonationQueue.add(75, 1725);
+  console.log(
+    `${DonationQueue.count()} doações adicionadas. Recarregue a página HOME para visualizar.`
+  );
+}
+
+function showQueueStatus() {
+  const pending = DonationQueue.getPending();
+  console.log(`Doações pendentes: ${pending.length}`);
+  console.table(pending);
+}
+
+// Exportar funções globalmente
+window.DonationQueue = DonationQueue;
 window.createDonationReceivedPopup = createDonationReceivedPopup;
 window.closeDonationReceivedPopup = closeDonationReceivedPopup;
 window.testDonationPopup = testDonationPopup;
 window.simulateDonation = simulateDonation;
+window.testDonationQueue = testDonationQueue;
+window.showQueueStatus = showQueueStatus;
+window.processAllPendingDonations = processAllPendingDonations;
 
-console.log("✅ Sistema de popup carregado (HOOK DIRETO)");
-console.log("💡 Testes disponíveis:");
-console.log("   testDonationPopup() - Popup de exemplo");
-console.log("   simulateDonation(100) - Simula doação de 100 moedas");
+console.log("Sistema de fila de notificações carregado");
+console.log("Testes disponíveis:");
+console.log("  testDonationPopup() - Mostra popup imediato");
+console.log("  testDonationQueue() - Adiciona 3 doações à fila");
+console.log("  showQueueStatus() - Mostra status da fila");
+console.log("  DonationQueue.clear() - Limpa todas as doações");
 
 console.log(
   "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
