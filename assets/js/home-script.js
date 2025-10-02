@@ -1375,169 +1375,51 @@ document.addEventListener(
   { passive: false }
 );
 
-// ========== SISTEMA DE FILA DE NOTIFICAÇÕES PERSISTENTE (SEM MUDANÇAS ESTRUTURAIS) ==========
+// ========== POPUP DE DOAÇÃO RECEBIDA ==========
 
-const DonationQueue = {
-  STORAGE_KEY: "pendingDonations",
-
-  // Adiciona uma doação à fila (sempre chamado para persistir no localStorage)
-  add(amount, newBalance, donorName = null, timestamp = Date.now()) {
-    const queue = this.getAll();
-
-    const donation = {
-      id: `donation_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-      amount,
-      newBalance,
-      donorName,
-      timestamp,
-      shown: false,
-    };
-
-    queue.push(donation);
-    this.save(queue);
-
-    console.log("Doação adicionada à fila persistente:", donation);
-    return donation; // Retorna o objeto completo para uso imediato
-  },
-
-  // Obtém todas as doações pendentes
-  getAll() {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error("Erro ao carregar fila de doações:", error);
-      return [];
-    }
-  },
-
-  // Obtém apenas doações não visualizadas
-  getPending() {
-    // Filtra e garante que o retorno está ordenado por tempo
-    return this.getAll()
-      .filter((d) => !d.shown)
-      .sort((a, b) => a.timestamp - b.timestamp); // Mais antigas primeiro
-  },
-
-  // Salva a fila
-  save(queue) {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(queue));
-      console.log("Fila de doações salva com sucesso no localStorage."); // Adicionado para confirmação
-    } catch (error) {
-      // ESTE CATCH AGORA É CRÍTICO
-      if (error.name === "QuotaExceededError") {
-        console.error(
-          "ERRO CRÍTICO: Quota do localStorage Excedida! Não foi possível salvar a doação.",
-          error
-        );
-      } else {
-        console.error(
-          "ERRO AO SALVAR FILA DE DOAÇÕES NO LOCALSTORAGE:",
-          error.name,
-          error.message,
-          error
-        );
-      }
-      // Se não salva, o sistema de persistência falha
-    }
-  },
-
-  // Marca uma doação como visualizada
-  markAsShown(donationId) {
-    const queue = this.getAll();
-    const donation = queue.find((d) => d.id === donationId);
-
-    if (donation && !donation.shown) {
-      donation.shown = true;
-      this.save(queue);
-      console.log("Doação marcada como visualizada:", donationId);
-    }
-  },
-
-  // Remove doações antigas (mais de 7 dias)
-  cleanup() {
-    const queue = this.getAll();
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const cleaned = queue.filter((d) => d.timestamp > sevenDaysAgo);
-
-    if (cleaned.length < queue.length) {
-      this.save(cleaned);
-      console.log(
-        `Limpeza: ${queue.length - cleaned.length} doações antigas removidas`
-      );
-    }
-  },
-
-  // Limpa todas as doações (para teste)
-  clear() {
-    localStorage.removeItem(this.STORAGE_KEY);
-    console.log("Fila de doações limpa");
-  },
-
-  // Conta quantas doações pendentes existem
-  count() {
-    return this.getPending().length;
-  },
-};
-
-// ========== POPUP DE DOAÇÃO COM FILA (MELHORIA NO FLUXO isShowingPopup) ==========
-
-let currentPopupQueue = []; // Fila de exibição da sessão
-let isShowingPopup = false;
-
-function createDonationReceivedPopup(
-  amount,
-  newBalance,
-  donorName = null,
-  donationId = null
-) {
-  console.log("Criando popup de doação recebida...", {
-    amount,
-    newBalance,
-    donorName,
-    donationId,
-  });
-
-  // Remove qualquer popup existente antes de criar um novo
+function createDonationReceivedPopup(amount, newBalance, donorName = null) {
+  // Remove popup existente se houver
   const existingPopup = document.getElementById("donation-received-popup");
   if (existingPopup) {
     existingPopup.remove();
   }
 
-  document.body.style.overflow = "hidden";
-
+  // Monta o HTML do popup
   const donorInfo = donorName
     ? `<div class="donation-received-donor">Doação de <strong>${donorName}</strong></div>`
     : "";
 
-  const buttonText =
-    currentPopupQueue.length > 0
-      ? `Próxima (${currentPopupQueue.length} restante${
-          currentPopupQueue.length > 1 ? "s" : ""
-        })`
-      : "Continuar";
-
   const popupHTML = `
-    <div id="donation-received-popup" class="donation-received-popup" data-donation-id="${
-      donationId || ""
-    }">
-      <div class="donation-received-backdrop"></div>
+    <div id="donation-received-popup" class="donation-received-popup">
+      <div class="donation-received-backdrop" onclick="closeDonationReceivedPopup()"></div>
       <div class="donation-received-content">
+        <!-- Efeito confete -->
         <div class="donation-confetti">
-          <div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div><div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
+          <div class="confetti-piece"></div>
         </div>
 
+        <!-- Ícone de celebração -->
         <div class="donation-received-icon">
           <i class="fas fa-gift"></i>
         </div>
         
+        <!-- Título -->
         <h2 class="donation-received-title">Parabéns!</h2>
         
+        <!-- Mensagem -->
         <p class="donation-received-message">
           Você recebeu uma doação! Continue fazendo a diferença.
         </p>
         
+        <!-- Detalhes da doação -->
         <div class="donation-received-details">
           <div class="donation-received-amount">
             <span class="coin-emoji">🪙</span>
@@ -1549,118 +1431,50 @@ function createDonationReceivedPopup(
           ${donorInfo}
         </div>
         
-        <button class="donation-received-close" id="close-donation-popup">
-          ${buttonText}
+        <!-- Botão de fechar -->
+        <button class="donation-received-close" onclick="closeDonationReceivedPopup()">
+          Continuar
         </button>
       </div>
     </div>
   `;
 
+  // Insere o popup no DOM
   document.body.insertAdjacentHTML("beforeend", popupHTML);
 
-  setTimeout(() => {
-    const backdrop = document.querySelector(".donation-received-backdrop");
-    const closeBtn = document.getElementById("close-donation-popup");
-
-    if (backdrop) {
-      backdrop.addEventListener("click", closeDonationReceivedPopup);
-      backdrop.addEventListener("touchend", closeDonationReceivedPopup);
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener("click", closeDonationReceivedPopup);
-      closeBtn.addEventListener("touchend", closeDonationReceivedPopup);
-    }
-  }, 100);
-
+  // Adiciona som de celebração (opcional)
   playDonationSound();
 
-  // Fecha automaticamente após 10 segundos
-  window.donationPopupTimer = setTimeout(() => {
+  // Auto-close após 10 segundos
+  setTimeout(() => {
     closeDonationReceivedPopup();
   }, 10000);
 
-  console.log("Popup exibido");
+  console.log("✅ Popup de doação recebida exibido:", {
+    amount,
+    newBalance,
+    donorName,
+  });
 }
 
 function closeDonationReceivedPopup() {
   const popup = document.getElementById("donation-received-popup");
   if (popup) {
-    // 1. Marca como visualizada no localStorage
-    const donationId = popup.getAttribute("data-donation-id");
-    if (donationId) {
-      DonationQueue.markAsShown(donationId);
-    }
-
     popup.classList.add("closing");
-
-    if (window.donationPopupTimer) {
-      clearTimeout(window.donationPopupTimer);
-      window.donationPopupTimer = null;
-    }
-
     setTimeout(() => {
       popup.remove();
-      document.body.style.overflow = "";
-
-      // 2. Mostra a próxima doação da fila
-      showNextDonationFromQueue();
-    }, 400); // Duração da animação de fechamento
+    }, 400);
   }
 }
 
-// Mostra a próxima doação da fila
-function showNextDonationFromQueue() {
-  if (currentPopupQueue.length > 0) {
-    // O popup está prestes a ser exibido
-    isShowingPopup = true;
-    const nextDonation = currentPopupQueue.shift();
-
-    // Pequeno delay para transição suave entre popups sequenciais
-    setTimeout(() => {
-      createDonationReceivedPopup(
-        nextDonation.amount,
-        nextDonation.newBalance,
-        nextDonation.donorName,
-        nextDonation.id // Passa o ID para marcação
-      );
-    }, 500);
-  } else {
-    // A fila de exibição da sessão terminou
-    isShowingPopup = false;
-    console.log("Fila de popups concluída.");
-  }
-}
-
-// Processa todas as doações pendentes ao carregar a página HOME
-function processAllPendingDonations() {
-  // Já retorna ordenado por timestamp
-  const pending = DonationQueue.getPending();
-
-  if (pending.length === 0) {
-    console.log("Nenhuma doação pendente no localStorage.");
-    return;
-  }
-
-  console.log(
-    `${pending.length} doação(ões) pendente(s) encontrada(s) no localStorage.`
-  );
-
-  // Adiciona **TODAS** à fila de exibição da sessão
-  currentPopupQueue = [...pending];
-
-  // Mostra a primeira, se não houver popup em exibição
-  if (!isShowingPopup) {
-    showNextDonationFromQueue();
-  }
-}
-
-// ... playDonationSound (não alterado) ...
-
+// Função opcional para reproduzir som de notificação
 function playDonationSound() {
   try {
+    // Cria um som de notificação simples usando Web Audio API
     const audioContext = new (window.AudioContext ||
       window.webkitAudioContext)();
+
+    // Tom de sucesso
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -1679,210 +1493,79 @@ function playDonationSound() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
   } catch (error) {
-    console.log("Som não disponível:", error);
+    console.log("Som de notificação não disponível:", error);
   }
 }
 
-// ========== DETECÇÃO DE DOAÇÕES (CORRIGIDO) ==========
+// ========== INTEGRAÇÃO COM O SISTEMA DE SALDO ==========
 
-let lastKnownBalance = null;
-let isInitialized = false;
+// Modificar a função updateBalanceInterface para detectar aumento de saldo
+const originalUpdateBalanceInterface = UserSystem.updateBalanceInterface;
 
-// Assume-se que Auth e Auth.getBalance existem
-const originalGetBalance = Auth.getBalance;
+UserSystem.updateBalanceInterface = function (newBalance) {
+  const currentBalance = Auth.getUserBalance();
 
-Auth.getBalance = async function () {
-  try {
-    const newBalance = await originalGetBalance.call(Auth);
+  // Chama a função original
+  originalUpdateBalanceInterface.call(this, newBalance);
 
-    console.log("Saldo obtido:", newBalance, "| Anterior:", lastKnownBalance);
+  // Verifica se houve aumento no saldo (possível doação recebida)
+  if (newBalance > currentBalance && currentBalance > 0) {
+    const difference = newBalance - currentBalance;
 
-    if (!isInitialized) {
-      lastKnownBalance = newBalance;
-      isInitialized = true;
-      console.log("Saldo inicial registrado:", lastKnownBalance);
-      return newBalance;
-    }
+    // Exibe popup de doação recebida
+    setTimeout(() => {
+      createDonationReceivedPopup(difference, newBalance);
+    }, 500);
 
-    // Detecta aumento (doação recebida)
-    if (lastKnownBalance !== null && newBalance > lastKnownBalance) {
-      const difference = newBalance - lastKnownBalance;
-
-      console.log("DOAÇÃO DETECTADA!", {
-        anterior: lastKnownBalance,
-        novo: newBalance,
-        diferenca: difference,
-      });
-
-      // PASSO 1: SEMPRE salva a doação na fila persistente (localStorage)
-      const newDonation = DonationQueue.add(difference, newBalance);
-
-      // Verifica se estamos na página HOME
-      const isOnHomePage =
-        window.location.pathname.includes("home") ||
-        window.location.pathname.includes("index") ||
-        window.location.pathname === "/";
-
-      if (isOnHomePage) {
-        // PASSO 2: Se estiver na HOME, adiciona à fila de exibição da sessão
-        currentPopupQueue.push(newDonation);
-
-        // PASSO 3: Inicia a exibição se não houver popup visível
-        if (!isShowingPopup) {
-          showNextDonationFromQueue();
-        }
-      } else {
-        // Se não estiver na HOME, a doação permanece apenas no localStorage.
-        console.log(
-          "Doação salva na fila persistente (usuário em outra página)"
-        );
-      }
-    }
-
-    lastKnownBalance = newBalance;
-    return newBalance;
-  } catch (error) {
-    console.error("Erro ao obter saldo:", error);
-    throw error;
+    console.log("💰 Doação recebida detectada:", {
+      anterior: currentBalance,
+      novo: newBalance,
+      diferenca: difference,
+    });
   }
 };
 
-// ========== INICIALIZAÇÃO NA PÁGINA HOME (MANTIDO) ==========
+// ========== EVENT LISTENER PARA DOAÇÕES RECEBIDAS ==========
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Limpa doações antigas
-  DonationQueue.cleanup();
-
-  // Verifica se está na página HOME
-  const isOnHomePage =
-    window.location.pathname.includes("home") ||
-    window.location.pathname.includes("index") ||
-    window.location.pathname === "/";
-
-  if (isOnHomePage) {
-    console.log("Página HOME detectada - verificando doações pendentes...");
-
-    // Aguarda um pouco para garantir que a página e o Auth carregaram
-    setTimeout(() => {
-      processAllPendingDonations();
-    }, 2000);
-  }
-});
-
-// ========== LISTENERS ADICIONAIS (CORRIGIDO) ==========
-
-window.addEventListener("balanceUpdated", (event) => {
-  console.log("Evento balanceUpdated recebido:", event.detail);
-  const newBalance = event.detail.balance;
-
-  // Lógica de detecção de aumento (similar ao Auth.getBalance)
-  if (
-    lastKnownBalance !== null &&
-    newBalance > lastKnownBalance &&
-    isInitialized
-  ) {
-    const difference = newBalance - lastKnownBalance;
-
-    // PASSO 1: SEMPRE salva a doação na fila persistente
-    const newDonation = DonationQueue.add(difference, newBalance);
-
-    const isOnHomePage =
-      window.location.pathname.includes("home") ||
-      window.location.pathname.includes("index") ||
-      window.location.pathname === "/";
-
-    if (isOnHomePage) {
-      // PASSO 2: Se estiver na HOME, adiciona à fila de exibição da sessão
-      currentPopupQueue.push(newDonation);
-
-      // PASSO 3: Inicia a exibição se não houver popup visível
-      if (!isShowingPopup) {
-        showNextDonationFromQueue();
-      }
-    }
-  }
-
-  if (!isInitialized) {
-    isInitialized = true;
-  }
-  lastKnownBalance = newBalance;
-});
-
+// Escutar evento customizado de doação recebida (se disponível no backend)
 window.addEventListener("donationReceived", (event) => {
   const { amount, newBalance, donorName } = event.detail;
-  console.log("Evento donationReceived:", event.detail);
-
-  // PASSO 1: SEMPRE salva a doação na fila persistente
-  const newDonation = DonationQueue.add(amount, newBalance, donorName);
-
-  const isOnHomePage =
-    window.location.pathname.includes("home") ||
-    window.location.pathname.includes("index") ||
-    window.location.pathname === "/";
-
-  if (isOnHomePage) {
-    // PASSO 2: Se estiver na HOME, adiciona à fila de exibição da sessão
-    currentPopupQueue.push(newDonation);
-
-    // PASSO 3: Inicia a exibição se não houver popup visível
-    if (!isShowingPopup) {
-      showNextDonationFromQueue();
-    }
-  }
+  createDonationReceivedPopup(amount, newBalance, donorName);
 });
 
-// ========== FUNÇÕES DE TESTE (MANTIDAS) ==========
+// Polling periódico para verificar saldo (opcional, apenas se não houver WebSocket)
+let lastKnownBalance = null;
 
-function testDonationPopup() {
-  console.log("Testando popup imediato (sem persistência)...");
-  createDonationReceivedPopup(150, 2500, "Maria Santos");
-}
+async function checkForBalanceUpdates() {
+  try {
+    const currentBalance = await Auth.getBalance();
 
-function simulateDonation(amount) {
-  // Assumindo que Auth.getUserBalance() existe e retorna um valor numérico
-  const currentBalance = Auth.getUserBalance
-    ? Auth.getUserBalance()
-    : lastKnownBalance || 1000;
-  const newBalance = currentBalance + amount;
+    if (lastKnownBalance !== null && currentBalance > lastKnownBalance) {
+      const difference = currentBalance - lastKnownBalance;
+      createDonationReceivedPopup(difference, currentBalance);
+    }
 
-  // Dispara o fluxo de detecção (que agora é persistente)
-  console.log(`Simulando doação de ${amount} moedas`);
-  const newDonation = DonationQueue.add(amount, newBalance, "Simulação");
-
-  // Força a exibição como se tivesse ocorrido na HOME
-  if (!isShowingPopup) {
-    currentPopupQueue.push(newDonation);
-    showNextDonationFromQueue();
+    lastKnownBalance = currentBalance;
+  } catch (error) {
+    console.log("Erro ao verificar atualizações de saldo:", error);
   }
 }
 
-function testDonationQueue() {
-  console.log("Adicionando 3 doações à fila para teste...");
-  DonationQueue.add(50, 1550, "João Silva");
-  DonationQueue.add(100, 1650, "Maria Santos");
-  DonationQueue.add(75, 1725);
-  console.log(
-    `${DonationQueue.count()} doações adicionadas. Recarregue a página HOME para visualizar.`
-  );
-}
+// Verifica saldo a cada 30 segundos (ajuste conforme necessário)
+setInterval(checkForBalanceUpdates, 300);
 
-function showQueueStatus() {
-  const pending = DonationQueue.getPending();
-  console.log(`Doações pendentes: ${pending.length}`);
-  console.table(pending);
-}
+// ========== EXEMPLO DE USO MANUAL ==========
+
+// Para testar o popup manualmente, chame:
+// createDonationReceivedPopup(100, 1500, "João Silva");
+// ou sem nome do doador:
+// createDonationReceivedPopup(50, 1450);
 
 // Exportar funções globalmente
-window.DonationQueue = DonationQueue;
 window.createDonationReceivedPopup = createDonationReceivedPopup;
 window.closeDonationReceivedPopup = closeDonationReceivedPopup;
-window.testDonationPopup = testDonationPopup;
-window.simulateDonation = simulateDonation;
-window.testDonationQueue = testDonationQueue;
-window.showQueueStatus = showQueueStatus;
-window.processAllPendingDonations = processAllPendingDonations;
 
-console.log("Sistema de fila de notificações carregado (v2 - Corrigido)");
+console.log("✅ Sistema de popup de doação recebida carregado!");
 
 console.log(
   "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
