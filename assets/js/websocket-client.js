@@ -141,9 +141,25 @@ class GlobalWebSocketClient {
     // Salvar notificação como pendente
     this.addPendingNotification(donationData);
 
-    // Atualizar saldo local
+    // Atualizar saldo local no localStorage/sessionStorage
     if (donationData.newBalance !== undefined) {
-      Auth.updateLocalBalance(donationData.newBalance);
+      try {
+        // Atualizar no userData
+        const userData = Auth.getUserData();
+        if (userData) {
+          userData.coins = donationData.newBalance;
+
+          // Salvar de volta
+          const storage = localStorage.getItem("userData")
+            ? localStorage
+            : sessionStorage;
+          storage.setItem("userData", JSON.stringify(userData));
+
+          console.log("✅ Saldo local atualizado:", donationData.newBalance);
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar saldo local:", error);
+      }
 
       // Atualizar UI se disponível
       if (typeof UserSystem !== "undefined") {
