@@ -1375,6 +1375,375 @@ document.addEventListener(
   { passive: false }
 );
 
+// assets/js/websocket-client.js
+
+class WebSocketClient {
+  constructor() {
+    this.ws = null;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
+    this.reconnectDelay = 3000;
+    this.isConnecting = false;
+    this.isAuthenticated = false;
+    this.heartbeatInterval = null;
+    this.listeners = new Map();
+
+    console.log("🔌 WebSocket Client inicializado");
+  }
+
+  connect() {
+    if (
+      this.isConnecting ||
+      (this.ws && this.ws.readyState === WebSocket.OPEN)
+    ) {
+      console.log("⚠️ Já existe uma conexão ativa ou em andamento");
+      return;
+    }
+
+    this.isConnecting = true;
+
+    // Determinar URL do WebSocket baseado no ambiente
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.hostname;
+    const port = window.location.hostname === "localhost" ? ":5000" : "";
+    const wsUrl = `${protocol}//${host}${port}/ws`;
+
+    console.log(`🔌 Conectando ao WebSocket: ${wsUrl}`);
+
+    try {
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = () => {
+        console.log("✅ WebSocket conectado");
+        this.isConnecting = false;
+        this.reconnectAttempts = 0;
+        this.authenticate();
+        this.startHeartbeat();
+        this.emit("connected");
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          this.handleMessage(data);
+        } catch (error) {
+          console.error("❌ Erro ao processar mensagem:", error);
+        }
+      };
+
+      this.ws.onerror = (error) => {
+        console.error("❌ Erro no WebSocket:", error);
+        this.emit("error", error);
+      };
+
+      this.ws.onclose = (event) => {
+        console.log("🔌 WebSocket desconectado", event.code, event.reason);
+        this.isConnecting = false;
+        this.isAuthenticated = false;
+        this.stopHeartbeat();
+        this.emit("disconnected");
+        this.attemptReconnect();
+      };
+    } catch (error) {
+      console.error("❌ Erro ao criar WebSocket:", error);
+      this.isConnecting = false;
+      this.attemptReconnect();
+    }
+  }
+
+  authenticate() {
+    const token = Auth.getToken();
+
+    if (!token) {
+      console.error("❌ Token não encontrado para autenticação WebSocket");
+      this.disconnect();
+      return;
+    }
+
+    this.send({
+      type: "auth",
+      token: token,
+    });
+  }
+
+  handleMessage(data) {
+    console.log("📨 Mensagem recebida:", data.type);
+
+    switch (data.type) {
+      case "authenticated":
+        this.isAuthenticated = true;
+        console.log("✅ Autenticado no WebSocket");
+        this.emit("authenticated");
+        break;
+
+      case "donation_received":
+        console.log("💰 Doação recebida:", data.data);
+        this.handleDonationReceived(data.data);
+        break;
+
+      case "pong":
+        // Resposta ao heartbeat
+        break;
+
+      case "error":
+        console.error("❌ Erro do servidor:", data.message);
+        this.emit("error", data.message);
+        break;
+
+      default:
+        console.log("⚠️ Tipo de mensagem desconhecido:", data.type);
+    }
+
+    // Emitir evento genérico
+    this.emit("message", data);
+  }
+
+  handleDonationReceived(donationData) {
+    // Atualizar saldo local
+    if (donationData.newBalance !== undefined) {
+      Auth.updateLocalBalance(donationData.newBalance);
+
+      // Disparar evento para atualizar UI
+      if (typeof UserSystem !== "undefined") {
+        UserSystem.updateBalanceInterface(donationData.newBalance);
+      }
+    }
+
+    // Mostrar popup de doação recebida
+    this.showDonationReceivedPopup(donationData);
+
+    // Emitir evento para outros listeners
+    this.emit("donation_received", donationData);
+
+    // Atualizar estatísticas após 1 segundo
+    setTimeout(() => {
+      if (typeof UserSystem !== "undefined") {
+        UserSystem.loadUserStats();
+      }
+    }, 1000);
+  }
+
+  showDonationReceivedPopup(data) {
+    // Remover popup existente se houver
+    const existingPopup = document.getElementById("donation-received-popup");
+    if (existingPopup) {
+      existingPopup.remove();
+    }
+
+    const { amount, message, donor, newBalance } = data;
+
+    const popupHTML = `
+      <div id="donation-received-popup" class="donation-received-popup">
+        <div class="donation-received-backdrop" onclick="closeDonationReceivedPopup()"></div>
+        <div class="donation-received-content">
+          <div class="donation-confetti">
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+            <div class="confetti-piece"></div>
+          </div>
+          
+          <div class="donation-received-icon">
+            <i class="fas fa-gift"></i>
+          </div>
+          
+          <h2 class="donation-received-title">Você Recebeu uma Doação!</h2>
+          
+          <p class="donation-received-message">
+            ${message ? message : "Alguém acreditou em você e fez uma doação!"}
+          </p>
+          
+          <div class="donation-received-details">
+            <div class="donation-received-amount">
+              <span class="coin-emoji">🪙</span>
+              ${amount.toLocaleString()} moedas
+            </div>
+            
+            <div class="donation-received-new-balance">
+              Seu saldo atual é: <strong>${newBalance.toLocaleString()} moedas</strong>
+            </div>
+            
+            <div class="donation-received-donor">
+              Doação de <strong>${donor.name}</strong>
+              ${donor.username ? ` (@${donor.username})` : ""}
+            </div>
+          </div>
+          
+          <button class="donation-received-close" onclick="closeDonationReceivedPopup()">
+            Continuar
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", popupHTML);
+
+    // Som de notificação (opcional)
+    this.playNotificationSound();
+
+    // Auto-fechar após 10 segundos
+    setTimeout(() => {
+      closeDonationReceivedPopup();
+    }, 10000);
+  }
+
+  playNotificationSound() {
+    // Criar e tocar som de notificação
+    try {
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.5
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.log("⚠️ Não foi possível tocar som de notificação");
+    }
+  }
+
+  send(data) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      try {
+        this.ws.send(JSON.stringify(data));
+        return true;
+      } catch (error) {
+        console.error("❌ Erro ao enviar mensagem:", error);
+        return false;
+      }
+    } else {
+      console.warn("⚠️ WebSocket não está conectado");
+      return false;
+    }
+  }
+
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.send({ type: "ping" });
+      }
+    }, 30000); // A cada 30 segundos
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
+
+  attemptReconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.log("❌ Máximo de tentativas de reconexão atingido");
+      this.emit("max_reconnect_attempts");
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * this.reconnectAttempts;
+
+    console.log(
+      `🔄 Tentativa de reconexão ${this.reconnectAttempts}/${this.maxReconnectAttempts} em ${delay}ms`
+    );
+
+    setTimeout(() => {
+      if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+        this.connect();
+      }
+    }, delay);
+  }
+
+  disconnect() {
+    this.stopHeartbeat();
+
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+
+    this.isConnecting = false;
+    this.isAuthenticated = false;
+    this.reconnectAttempts = 0;
+
+    console.log("🔌 WebSocket desconectado manualmente");
+  }
+
+  // Sistema de eventos
+  on(event, callback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event).push(callback);
+  }
+
+  off(event, callback) {
+    if (this.listeners.has(event)) {
+      const callbacks = this.listeners.get(event);
+      const index = callbacks.indexOf(callback);
+      if (index > -1) {
+        callbacks.splice(index, 1);
+      }
+    }
+  }
+
+  emit(event, data) {
+    if (this.listeners.has(event)) {
+      this.listeners.get(event).forEach((callback) => {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error(
+            `❌ Erro ao executar callback para evento ${event}:`,
+            error
+          );
+        }
+      });
+    }
+  }
+
+  getStatus() {
+    return {
+      connected: this.ws && this.ws.readyState === WebSocket.OPEN,
+      authenticated: this.isAuthenticated,
+      reconnectAttempts: this.reconnectAttempts,
+    };
+  }
+}
+
+// Instância global do WebSocket Client
+const wsClient = new WebSocketClient();
+
+// Função global para fechar popup de doação recebida
+function closeDonationReceivedPopup() {
+  const popup = document.getElementById("donation-received-popup");
+  if (popup) {
+    popup.classList.add("closing");
+    setTimeout(() => popup.remove(), 400);
+  }
+}
+
+// Exportar para uso global
+window.wsClient = wsClient;
+window.closeDonationReceivedPopup = closeDonationReceivedPopup;
+
 console.log(
   "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
 );
