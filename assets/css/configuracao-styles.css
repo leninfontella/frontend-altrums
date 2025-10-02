@@ -585,4 +585,55 @@ body {
     margin-top: 30px;
   }
 
- 
+ /* Indicador de conexão WebSocket */
+.global-ws-indicator {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 30, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.global-ws-indicator.show {
+  opacity: 1;
+}
+
+.global-ws-indicator.connected {
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.global-ws-indicator.disconnected {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.ws-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #666;
+}
+
+.global-ws-indicator.connected .ws-dot {
+  background: #00d4ff;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.global-ws-indicator.disconnected .ws-dot {
+  background: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
