@@ -11,12 +11,21 @@ class GlobalWebSocketClient {
     this.isAuthenticated = false;
     this.heartbeatInterval = null;
     this.listeners = new Map();
-    this.pendingNotifications = []; // Notificações não visualizadas
 
-    // Carregar notificações pendentes do localStorage
-    this.loadPendingNotifications();
+    // Determinar URL da API baseado no ambiente
+    this.apiBaseUrl = this.getApiBaseUrl();
 
     console.log("🌐 WebSocket Global inicializado");
+  }
+
+  getApiBaseUrl() {
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      return "http://localhost:5000";
+    }
+    return "https://api-backend-coins.onrender.com";
   }
 
   connect() {
@@ -41,10 +50,8 @@ class GlobalWebSocketClient {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1"
     ) {
-      // Desenvolvimento local
       wsUrl = "ws://localhost:5000/ws";
     } else {
-      // Produção - Render.com
       wsUrl = "wss://api-backend-coins.onrender.com/ws";
     }
 
@@ -116,8 +123,8 @@ class GlobalWebSocketClient {
         this.isAuthenticated = true;
         console.log("✅ Autenticado no WebSocket Global");
         this.emit("authenticated");
-        // Verificar notificações pendentes ao autenticar
-        this.checkPendingNotifications();
+        // Buscar notificações pendentes do servidor ao autenticar
+        this.fetchPendingNotifications();
         break;
 
       case "donation_received":
@@ -137,19 +144,94 @@ class GlobalWebSocketClient {
     this.emit("message", data);
   }
 
-  handleDonationReceived(donationData) {
-    // Salvar notificação como pendente
-    this.addPendingNotification(donationData);
+  async fetchPendingNotifications() {
+    try {
+      const response = await fetch(
+        `${this.apiBaseUrl}/api/notifications/pending`,
+        {
+          headers: {
+            Authorization: `Bearer ${Auth.getToken()}`,
+          },
+        }
+      );
 
-    // Atualizar saldo local no localStorage/sessionStorage
+      if (!response.ok) {
+        console.error("Erro ao buscar notificações pendentes");
+        return;
+      }
+
+      const result = await response.json();
+      const notifications = result.data || [];
+
+      if (notifications.length > 0) {
+        console.log(
+          `📬 ${notifications.length} notificações pendentes encontradas`
+        );
+
+        // Mostrar apenas a mais recente
+        const latest = notifications[0];
+        this.showDonationReceivedPopup(latest.data);
+
+        // Marcar como exibida
+        await this.markAsDisplayed(latest._id);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar notificações pendentes:", error);
+    }
+  }
+
+  async markAsDisplayed(notificationId) {
+    try {
+      await fetch(
+        `${this.apiBaseUrl}/api/notifications/${notificationId}/displayed`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${Auth.getToken()}`,
+          },
+        }
+      );
+      console.log("✅ Notificação marcada como exibida");
+    } catch (error) {
+      console.error("Erro ao marcar notificação:", error);
+    }
+  }
+
+  async markNotificationDisplayedByDonationId(donationId) {
+    try {
+      const response = await fetch(
+        `${this.apiBaseUrl}/api/notifications/pending`,
+        {
+          headers: {
+            Authorization: `Bearer ${Auth.getToken()}`,
+          },
+        }
+      );
+
+      if (!response.ok) return;
+
+      const result = await response.json();
+      const notifications = result.data || [];
+      const notification = notifications.find(
+        (n) => n.data?.donationId?.toString() === donationId.toString()
+      );
+
+      if (notification) {
+        await this.markAsDisplayed(notification._id);
+      }
+    } catch (error) {
+      console.error("Erro ao marcar notificação por donationId:", error);
+    }
+  }
+
+  handleDonationReceived(donationData) {
+    // Atualizar saldo local
     if (donationData.newBalance !== undefined) {
       try {
-        // Atualizar no userData
         const userData = Auth.getUserData();
         if (userData) {
           userData.coins = donationData.newBalance;
 
-          // Salvar de volta
           const storage = localStorage.getItem("userData")
             ? localStorage
             : sessionStorage;
@@ -182,77 +264,6 @@ class GlobalWebSocketClient {
         UserSystem.loadUserStats();
       }
     }, 1000);
-  }
-
-  addPendingNotification(donationData) {
-    const notification = {
-      id: donationData.donationId || Date.now(),
-      ...donationData,
-      timestamp: new Date().toISOString(),
-      viewed: false,
-    };
-
-    this.pendingNotifications.push(notification);
-    this.savePendingNotifications();
-
-    console.log("📥 Notificação salva como pendente");
-  }
-
-  checkPendingNotifications() {
-    const unviewedNotifications = this.pendingNotifications.filter(
-      (n) => !n.viewed
-    );
-
-    if (unviewedNotifications.length > 0) {
-      console.log(
-        `📬 ${unviewedNotifications.length} notificações pendentes encontradas`
-      );
-
-      // Mostrar a mais recente
-      const latest = unviewedNotifications[unviewedNotifications.length - 1];
-      this.showDonationReceivedPopup(latest);
-
-      // Marcar como visualizada
-      this.markNotificationAsViewed(latest.id);
-    }
-  }
-
-  markNotificationAsViewed(notificationId) {
-    const notification = this.pendingNotifications.find(
-      (n) => n.id === notificationId
-    );
-    if (notification) {
-      notification.viewed = true;
-      this.savePendingNotifications();
-    }
-  }
-
-  loadPendingNotifications() {
-    try {
-      const stored = localStorage.getItem("pendingDonationNotifications");
-      if (stored) {
-        this.pendingNotifications = JSON.parse(stored);
-        // Remover notificações antigas (mais de 24h)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        this.pendingNotifications = this.pendingNotifications.filter(
-          (n) => new Date(n.timestamp) > oneDayAgo
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao carregar notificações pendentes:", error);
-      this.pendingNotifications = [];
-    }
-  }
-
-  savePendingNotifications() {
-    try {
-      localStorage.setItem(
-        "pendingDonationNotifications",
-        JSON.stringify(this.pendingNotifications)
-      );
-    } catch (error) {
-      console.error("Erro ao salvar notificações pendentes:", error);
-    }
   }
 
   showDonationReceivedPopup(data) {
@@ -310,9 +321,9 @@ class GlobalWebSocketClient {
 
     document.body.insertAdjacentHTML("beforeend", popupHTML);
 
-    // Marcar como visualizada
-    if (data.donationId || data.id) {
-      this.markNotificationAsViewed(data.donationId || data.id);
+    // Marcar como exibida quando o popup aparecer
+    if (data.donationId) {
+      this.markNotificationDisplayedByDonationId(data.donationId);
     }
 
     // Auto-fechar após 10 segundos
@@ -480,8 +491,6 @@ class GlobalWebSocketClient {
       connected: this.ws && this.ws.readyState === WebSocket.OPEN,
       authenticated: this.isAuthenticated,
       reconnectAttempts: this.reconnectAttempts,
-      pendingNotifications: this.pendingNotifications.filter((n) => !n.viewed)
-        .length,
     };
   }
 }
@@ -491,7 +500,6 @@ const GlobalWS = new GlobalWebSocketClient();
 
 // Auto-inicializar quando usuário está logado
 if (Auth && Auth.checkSession()) {
-  // Esperar DOM carregar
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => GlobalWS.connect(), 1000);
