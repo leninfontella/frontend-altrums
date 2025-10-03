@@ -276,48 +276,56 @@ class GlobalWebSocketClient {
     const { amount, message, donor, newBalance } = data;
 
     const popupHTML = `
-      <div id="donation-received-popup" class="donation-received-popup">
-        <div class="donation-received-backdrop" onclick="GlobalWS.closePopup()"></div>
-        <div class="donation-received-content">
-          <div class="donation-confetti">
-            ${Array(9)
-              .fill(0)
-              .map(() => '<div class="confetti-piece"></div>')
-              .join("")}
-          </div>
-          
-          <div class="donation-received-icon">
-            <i class="fas fa-gift"></i>
-          </div>
-          
-          <h2 class="donation-received-title">Você Recebeu uma Doação!</h2>
-          
-          <p class="donation-received-message">
-            ${message || "Alguém acreditou em você e fez uma doação!"}
-          </p>
-          
-          <div class="donation-received-details">
-            <div class="donation-received-amount">
-              <span class="coin-emoji">🪙</span>
-              ${amount.toLocaleString()} moedas
-            </div>
-            
-            <div class="donation-received-new-balance">
-              Seu saldo atual é: <strong>${newBalance.toLocaleString()} moedas</strong>
-            </div>
-            
-            <div class="donation-received-donor">
-              Doação de <strong>${donor.name}</strong>
-              ${donor.username ? ` (@${donor.username})` : ""}
-            </div>
-          </div>
-          
-          <button class="donation-received-close" onclick="GlobalWS.closePopup()">
-            Continuar
-          </button>
+    <div id="donation-received-popup" class="donation-received-popup">
+      <div class="donation-received-backdrop" onclick="GlobalWS.closePopup()"></div>
+      <div class="donation-received-content">
+        <div class="donation-confetti">
+          ${Array(9)
+            .fill(0)
+            .map(() => '<div class="confetti-piece"></div>')
+            .join("")}
         </div>
+        
+        <div class="donation-received-icon">
+          <i class="fas fa-gift"></i>
+        </div>
+        
+        <h2 class="donation-received-title">Você Recebeu uma Doação!</h2>
+        
+        <div class="donation-received-donor">
+          Doação de <strong>${donor.name}</strong>
+          ${donor.username ? ` (@${donor.username})` : ""}
+        </div>
+        
+        <div class="donation-received-details">
+          <div class="donation-received-amount">
+            <span class="coin-emoji">🪙</span>
+            ${amount.toLocaleString()} moedas
+          </div>
+          
+          <div class="donation-received-new-balance">
+            Seu saldo atual é: <strong>${newBalance.toLocaleString()} moedas</strong>
+          </div>
+        </div>
+        
+        <div class="donation-divider"></div>
+        
+        ${
+          message
+            ? `
+          <p class="donation-received-message">
+            <strong>Mensagem:</strong> ${message}
+          </p>
+        `
+            : ""
+        }
+        
+        <button class="donation-received-close" onclick="GlobalWS.closePopup()">
+          Continuar
+        </button>
       </div>
-    `;
+    </div>
+  `;
 
     document.body.insertAdjacentHTML("beforeend", popupHTML);
 

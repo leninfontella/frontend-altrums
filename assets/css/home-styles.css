@@ -2368,3 +2368,15 @@ body {
     font-size: 15px;
   }
 }
+
+.donation-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  margin: 20px 0;
+}
