@@ -292,7 +292,7 @@ class GlobalWebSocketClient {
         
         <h2 class="donation-received-title">Você Recebeu uma Doação!</h2>
         
-        <div class="donation-received-donor">
+        <div class="donation-received-donor" style="margin-bottom: 20px;">
           Doação de <strong>${donor.name}</strong>
           ${donor.username ? ` (@${donor.username})` : ""}
         </div>
@@ -313,7 +313,7 @@ class GlobalWebSocketClient {
         ${
           message
             ? `
-          <p class="donation-received-message">
+          <p class="donation-received-message" style="font-style: italic;">
             <strong>Mensagem:</strong> ${message}
           </p>
         `
