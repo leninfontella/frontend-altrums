@@ -310,15 +310,16 @@ class GlobalWebSocketClient {
         
         <div class="donation-divider"></div>
         
-        ${
-          message
-            ? `
-          <p class="donation-received-message" style="font-style: italic;">
-            <strong>Mensagem:</strong> ${message}
-          </p>
-        `
-            : ""
-        }
+       ${
+         message
+           ? `
+    <p class="donation-received-message">
+      <strong>Mensagem:</strong> <span style="font-style: italic;">${message}</span>
+    </p>
+  `
+           : ""
+       }
+
         
         <button class="donation-received-close" onclick="GlobalWS.closePopup()">
           Continuar
