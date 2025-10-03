@@ -1,17 +1,217 @@
-// ========== SISTEMA DE USUÁRIOS - ADICIONADO ==========
-// Função para extrair o primeiro nome
+// ========== SISTEMA DE USUÁRIOS ==========
 function getFirstName(fullName) {
   return fullName.trim().split(" ")[0];
 }
 
-// Função para salvar dados do usuário no localStorage
 function saveUserData(userData) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  users.push(userData);
+  localStorage.setItem("users", JSON.stringify(users));
   localStorage.setItem("currentUser", JSON.stringify(userData));
 }
 
-// ========== CÓDIGO ORIGINAL MODIFICADO ==========
+// ========== CONTROLE DE STEPS ==========
+let currentStep = 1;
+const totalSteps = 6;
+const formData = {
+  name: "",
+  email: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  terms: false,
+};
 
-// Função para alternar visibilidade da senha
+// ========== FUNÇÕES DE NAVEGAÇÃO ==========
+function updateProgress() {
+  const progressFill = document.getElementById("progressFill");
+  const currentStepEl = document.getElementById("currentStep");
+  const percentage = (currentStep / totalSteps) * 100;
+
+  progressFill.style.width = `${percentage}%`;
+  currentStepEl.textContent = currentStep;
+}
+
+function showStep(stepNumber) {
+  const allSteps = document.querySelectorAll(".step-container");
+  const activeStep = document.querySelector(
+    `.step-container[data-step="${stepNumber}"]`
+  );
+  const backBtn = document.getElementById("backBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
+
+  // Animar saída do step atual
+  allSteps.forEach((step) => {
+    if (step.classList.contains("active")) {
+      step.classList.add("exiting");
+      setTimeout(() => {
+        step.classList.remove("active", "exiting");
+      }, 400);
+    }
+  });
+
+  // Mostrar novo step após animação
+  setTimeout(() => {
+    if (activeStep) {
+      activeStep.classList.add("active");
+
+      // Focar no input do step atual
+      const input = activeStep.querySelector(".input-field");
+      if (input) {
+        input.focus();
+      }
+    }
+
+    // Controlar visibilidade dos botões
+    backBtn.style.display = stepNumber > 1 ? "flex" : "none";
+
+    if (stepNumber < totalSteps) {
+      nextBtn.style.display = "flex";
+      submitBtn.style.display = "none";
+    } else {
+      nextBtn.style.display = "none";
+      submitBtn.style.display = "flex";
+    }
+
+    updateProgress();
+    validateCurrentStep();
+  }, 400);
+}
+
+function nextStep() {
+  if (currentStep < totalSteps) {
+    // Salvar dados do step atual
+    saveStepData();
+
+    currentStep++;
+    showStep(currentStep);
+
+    // Atualizar resumo no último step
+    if (currentStep === totalSteps) {
+      updateSummary();
+    }
+  }
+}
+
+function previousStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    showStep(currentStep);
+  }
+}
+
+function saveStepData() {
+  switch (currentStep) {
+    case 1:
+      formData.name = document.getElementById("name").value.trim();
+      break;
+    case 2:
+      formData.email = document.getElementById("email").value.trim();
+      break;
+    case 3:
+      formData.phone = document.getElementById("phone").value.trim();
+      break;
+    case 4:
+      formData.password = document.getElementById("password").value;
+      break;
+    case 5:
+      formData.confirmPassword =
+        document.getElementById("confirmPassword").value;
+      break;
+    case 6:
+      formData.terms = document.getElementById("terms").checked;
+      break;
+  }
+}
+
+function updateSummary() {
+  document.getElementById("summaryName").textContent = formData.name;
+  document.getElementById("summaryEmail").textContent = formData.email;
+  document.getElementById("summaryPhone").textContent = formData.phone;
+}
+
+// ========== VALIDAÇÕES ==========
+function validateStep1() {
+  const nameInput = document.getElementById("name");
+  return nameInput.value.trim().length >= 2;
+}
+
+function validateStep2() {
+  const emailInput = document.getElementById("email");
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(emailInput.value.trim());
+}
+
+function validateStep3() {
+  const phoneInput = document.getElementById("phone");
+  return phoneInput.value.replace(/\D/g, "").length >= 10;
+}
+
+function validateStep4() {
+  const passwordInput = document.getElementById("password");
+  return passwordInput.value.length >= 6;
+}
+
+function validateStep5() {
+  const passwordInput = document.getElementById("password");
+  const confirmPasswordInput = document.getElementById("confirmPassword");
+
+  clearPasswordError();
+
+  if (!confirmPasswordInput.value) {
+    return false;
+  }
+
+  if (passwordInput.value !== confirmPasswordInput.value) {
+    showPasswordError("As senhas não coincidem!");
+    return false;
+  }
+
+  return true;
+}
+
+function validateStep6() {
+  const termsCheckbox = document.getElementById("terms");
+  return termsCheckbox.checked;
+}
+
+function validateCurrentStep() {
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  let isValid = false;
+
+  switch (currentStep) {
+    case 1:
+      isValid = validateStep1();
+      break;
+    case 2:
+      isValid = validateStep2();
+      break;
+    case 3:
+      isValid = validateStep3();
+      break;
+    case 4:
+      isValid = validateStep4();
+      break;
+    case 5:
+      isValid = validateStep5();
+      break;
+    case 6:
+      isValid = validateStep6();
+      break;
+  }
+
+  if (currentStep < totalSteps) {
+    nextBtn.disabled = !isValid;
+  } else {
+    submitBtn.disabled = !isValid;
+  }
+
+  return isValid;
+}
+
+// ========== FUNÇÕES AUXILIARES ==========
 function togglePassword(fieldId) {
   const passwordField = document.getElementById(fieldId);
   const toggleIcon =
@@ -28,23 +228,19 @@ function togglePassword(fieldId) {
   }
 }
 
-// Função para verificar força da senha
 function checkPasswordStrength(password) {
   let strength = 0;
   let feedback = "";
 
-  // Critérios de validação
   if (password.length >= 8) strength++;
   if (password.match(/[a-z]/)) strength++;
   if (password.match(/[A-Z]/)) strength++;
   if (password.match(/[0-9]/)) strength++;
   if (password.match(/[^a-zA-Z0-9]/)) strength++;
 
-  // Resetar todas as barras
   const bars = document.querySelectorAll(".strength-bar");
   bars.forEach((bar) => (bar.className = "strength-bar"));
 
-  // Aplicar estilo baseado na força
   switch (strength) {
     case 0:
     case 1:
@@ -72,34 +268,53 @@ function checkPasswordStrength(password) {
   return { strength, feedback };
 }
 
-// Função para validar se as senhas coincidem
-function validatePasswords() {
-  const passwordInput = document.getElementById("password");
-  const confirmPasswordInput = document.getElementById("confirmPassword");
+function showPasswordError(message) {
+  const confirmPasswordWrapper =
+    document.getElementById("confirmPassword").parentElement;
 
-  // Limpar mensagens anteriores
   clearPasswordError();
 
-  if (
-    confirmPasswordInput.value &&
-    passwordInput.value !== confirmPasswordInput.value
-  ) {
-    showPasswordError("As senhas não coincidem!");
-    return false;
-  }
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "password-error";
+  errorDiv.textContent = message;
+  errorDiv.style.cssText = `
+    color: #ff4757;
+    font-size: 12px;
+    margin-top: 8px;
+    animation: fadeIn 0.3s ease;
+  `;
 
-  return true;
+  confirmPasswordWrapper.parentElement.appendChild(errorDiv);
+  confirmPasswordWrapper.style.borderColor = "#ff4757";
 }
 
-// Função para criar notificação estilizada
+function clearPasswordError() {
+  const existingError = document.querySelector(".password-error");
+  if (existingError) {
+    existingError.remove();
+  }
+
+  const confirmPasswordWrapper =
+    document.getElementById("confirmPassword").parentElement;
+  if (confirmPasswordWrapper) {
+    confirmPasswordWrapper.style.borderColor = "";
+  }
+}
+
+function phoneMask(value) {
+  return value
+    .replace(/\D/g, "")
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2")
+    .replace(/(-\d{4})\d+?$/, "$1");
+}
+
 function showNotification(message, type = "error") {
-  // Remove notificação anterior se existir
   const existingNotification = document.querySelector(".notification");
   if (existingNotification) {
     existingNotification.remove();
   }
 
-  // Cria elemento de notificação
   const notification = document.createElement("div");
   notification.className = `notification notification-${type}`;
 
@@ -113,10 +328,8 @@ function showNotification(message, type = "error") {
     </div>
   `;
 
-  // Adiciona ao body
   document.body.appendChild(notification);
 
-  // Remove após 4 segundos
   setTimeout(() => {
     if (notification.parentElement) {
       notification.classList.add("notification-exit");
@@ -125,84 +338,6 @@ function showNotification(message, type = "error") {
   }, 4000);
 }
 
-// Função para mostrar erro de senha
-function showPasswordError(message) {
-  const confirmPasswordWrapper =
-    document.getElementById("confirmPassword").parentElement;
-
-  // Remove erro anterior se existir
-  clearPasswordError();
-
-  // Cria elemento de erro
-  const errorDiv = document.createElement("div");
-  errorDiv.className = "password-error";
-  errorDiv.textContent = message;
-  errorDiv.style.cssText = `
-    color: #ff4757;
-    font-size: 12px;
-    margin-top: 4px;
-    animation: fadeIn 0.3s ease;
-  `;
-
-  // Adiciona após o wrapper do input
-  confirmPasswordWrapper.parentElement.appendChild(errorDiv);
-
-  // Adiciona borda vermelha ao input
-  confirmPasswordWrapper.style.borderColor = "#ff4757";
-}
-
-// Função para limpar erro de senha
-function clearPasswordError() {
-  const existingError = document.querySelector(".password-error");
-  if (existingError) {
-    existingError.remove();
-  }
-
-  // Remove borda vermelha
-  const confirmPasswordWrapper =
-    document.getElementById("confirmPassword").parentElement;
-  confirmPasswordWrapper.style.borderColor = "";
-}
-
-// Função para aplicar máscara no telefone
-function phoneMask(value) {
-  return value
-    .replace(/\D/g, "") // Remove tudo que não é dígito
-    .replace(/(\d{2})(\d)/, "($1) $2") // Aplica máscara: (XX)
-    .replace(/(\d{5})(\d)/, "$1-$2") // Aplica máscara: XXXXX-XXXX
-    .replace(/(-\d{4})\d+?$/, "$1"); // Limita a 4 dígitos finais
-}
-
-// Função para validar todo o formulário
-function validateForm() {
-  const nameInput = document.getElementById("name");
-  const emailInput = document.getElementById("email");
-  const phoneInput = document.getElementById("phone");
-  const passwordInput = document.getElementById("password");
-  const confirmPasswordInput = document.getElementById("confirmPassword");
-  const termsCheckbox = document.getElementById("terms");
-  const signupBtn = document.getElementById("signupBtn");
-
-  // Validar senhas primeiro
-  const passwordsMatch = validatePasswords();
-
-  // Verificar se todos os campos estão preenchidos corretamente
-  const isValid =
-    nameInput.value.trim().length >= 2 &&
-    emailInput.value.includes("@") &&
-    phoneInput.value.length >= 14 &&
-    passwordInput.value.length >= 6 &&
-    passwordsMatch &&
-    confirmPasswordInput.value.length > 0 &&
-    termsCheckbox.checked;
-
-  // Habilitar/desabilitar botão baseado na validação
-  signupBtn.disabled = !isValid;
-
-  return isValid;
-}
-
-// Função para criar efeito ripple no botão
 function createRippleEffect(event, element) {
   if (element.disabled) return;
 
@@ -213,16 +348,16 @@ function createRippleEffect(event, element) {
   const y = event.clientY - rect.top - size / 2;
 
   ripple.style.cssText = `
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.3);
-        transform: scale(0);
-        animation: ripple 0.6s linear;
-        left: ${x}px;
-        top: ${y}px;
-        width: ${size}px;
-        height: ${size}px;
-    `;
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    left: ${x}px;
+    top: ${y}px;
+    width: ${size}px;
+    height: ${size}px;
+  `;
 
   element.appendChild(ripple);
 
@@ -231,20 +366,87 @@ function createRippleEffect(event, element) {
   }, 600);
 }
 
-// Event listeners e inicialização
+// ========== SUBMIT DO FORMULÁRIO ==========
+async function submitForm(e) {
+  e.preventDefault();
+
+  if (!validateCurrentStep()) {
+    return;
+  }
+
+  createRippleEffect(e, document.getElementById("submitBtn"));
+
+  // Salvar dados do último step
+  saveStepData();
+
+  const userData = {
+    name: formData.name,
+    email: formData.email,
+    phone: formData.phone,
+    registeredAt: new Date().toISOString(),
+  };
+
+  saveUserData(userData);
+
+  try {
+    const res = await fetch(
+      "https://api-backend-coins.onrender.com/api/auth/register",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showNotification("Registro realizado com sucesso!", "success");
+      localStorage.setItem("token", data.data.accessToken);
+
+      if (data.data.user) {
+        const completeUserData = {
+          ...userData,
+          id: data.data.user.id,
+          token: data.data.accessToken,
+        };
+        saveUserData(completeUserData);
+      }
+
+      setTimeout(() => {
+        window.location.href = "/index.html";
+      }, 1500);
+    } else {
+      const errorMessage = data.errors
+        ? data.errors.map((e) => e.msg).join(", ")
+        : data.message;
+      showNotification(errorMessage, "error");
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification("Erro de conexão com o servidor", "error");
+  }
+}
+
+// ========== INICIALIZAÇÃO ==========
 document.addEventListener("DOMContentLoaded", function () {
-  // Obter elementos do DOM
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
   const phoneInput = document.getElementById("phone");
   const passwordInput = document.getElementById("password");
   const confirmPasswordInput = document.getElementById("confirmPassword");
   const termsCheckbox = document.getElementById("terms");
-  const signupBtn = document.getElementById("signupBtn");
+  const backBtn = document.getElementById("backBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
   const passwordStrength = document.getElementById("passwordStrength");
   const strengthText = document.getElementById("strengthText");
 
-  // Verificar se os elementos existem antes de adicionar event listeners
   if (
     !nameInput ||
     !emailInput ||
@@ -252,19 +454,27 @@ document.addEventListener("DOMContentLoaded", function () {
     !passwordInput ||
     !confirmPasswordInput ||
     !termsCheckbox ||
-    !signupBtn
+    !backBtn ||
+    !nextBtn ||
+    !submitBtn
   ) {
     console.error("Elementos essenciais do formulário não encontrados");
     return;
   }
 
-  // Aplicar máscara no campo de telefone
+  // Inicializar primeiro step
+  showStep(1);
+
+  // Event listeners dos inputs
+  nameInput.addEventListener("input", validateCurrentStep);
+
+  emailInput.addEventListener("input", validateCurrentStep);
+
   phoneInput.addEventListener("input", function (e) {
     e.target.value = phoneMask(e.target.value);
-    validateForm();
+    validateCurrentStep();
   });
 
-  // Verificar força da senha em tempo real
   passwordInput.addEventListener("input", function (e) {
     const password = e.target.value;
 
@@ -278,27 +488,39 @@ document.addEventListener("DOMContentLoaded", function () {
       passwordStrength.style.display = "none";
     }
 
-    validateForm();
+    validateCurrentStep();
   });
 
-  // Validação específica para confirmação de senha
-  confirmPasswordInput.addEventListener("input", function (e) {
-    validateForm();
+  confirmPasswordInput.addEventListener("input", validateCurrentStep);
+
+  confirmPasswordInput.addEventListener("focus", clearPasswordError);
+
+  termsCheckbox.addEventListener("change", validateCurrentStep);
+
+  // Event listeners dos botões de navegação
+  backBtn.addEventListener("click", previousStep);
+
+  nextBtn.addEventListener("click", function (e) {
+    createRippleEffect(e, this);
+    nextStep();
   });
 
-  // Limpar erro quando usuário começar a digitar
-  confirmPasswordInput.addEventListener("focus", function () {
-    clearPasswordError();
-  });
+  submitBtn.addEventListener("click", submitForm);
 
-  // Adicionar event listeners para validação em todos os campos
-  [nameInput, emailInput, phoneInput, termsCheckbox].forEach((field) => {
-    field.addEventListener("input", validateForm);
-    field.addEventListener("change", validateForm);
-  });
-
-  // Adicionar efeitos visuais de foco nos inputs
+  // Permitir navegar com Enter
   document.querySelectorAll(".input-field").forEach((input) => {
+    input.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (currentStep < totalSteps && !nextBtn.disabled) {
+          nextBtn.click();
+        } else if (currentStep === totalSteps && !submitBtn.disabled) {
+          submitBtn.click();
+        }
+      }
+    });
+
+    // Efeitos visuais de foco
     input.addEventListener("focus", function () {
       this.parentElement.classList.add("focused");
     });
@@ -308,96 +530,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // ========== MODIFICAÇÃO PRINCIPAL - BOTÃO DE CADASTRO ==========
-  // Adicionar efeito ripple no botão de cadastro
-  signupBtn.addEventListener("click", async function (e) {
-    e.preventDefault(); // Prevenir envio do formulário se inválido
-
-    // Validar formulário antes de prosseguir
-    if (!validateForm()) {
-      return;
-    }
-
-    createRippleEffect(e, this);
-
-    // Coletar dados do formulário
-    const formData = {
-      name: nameInput.value.trim(),
-      email: emailInput.value.trim(),
-      phone: phoneInput.value.trim(),
-      password: passwordInput.value,
-      confirmPassword: confirmPasswordInput.value,
-      terms: termsCheckbox.checked,
-    };
-
-    // ========== SALVAR DADOS LOCALMENTE TAMBÉM ==========
-    // Salvar dados do usuário no localStorage para usar na home
-    const userData = {
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      registeredAt: new Date().toISOString(),
-    };
-    saveUserData(userData);
-
-    // Enviar dados para o backend
-    try {
-      const res = await fetch(
-        "https://api-backend-coins.onrender.com/api/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            confirmPassword: formData.confirmPassword,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        showNotification("Registro realizado com sucesso!", "success");
-        localStorage.setItem("token", data.data.accessToken);
-
-        // ========== SALVAR DADOS COMPLETOS DO USUÁRIO ==========
-        // Salvar dados retornados pelo backend também
-        if (data.data.user) {
-          const completeUserData = {
-            ...userData,
-            id: data.data.user.id,
-            token: data.data.accessToken,
-          };
-          saveUserData(completeUserData);
-        }
-
-        setTimeout(() => {
-          window.location.href = "/index.html";
-        }, 1500);
-      } else {
-        const errorMessage = data.errors
-          ? data.errors.map((e) => e.msg).join(", ")
-          : data.message;
-        showNotification(errorMessage, "error");
-      }
-    } catch (err) {
-      console.error(err);
-      showNotification("Erro de conexão com o servidor", "error");
-    }
-  });
-
-  // Validação inicial
-  validateForm();
+  // Atualizar total de steps
+  document.getElementById("totalSteps").textContent = totalSteps;
 });
 
-// Adicionar CSS para animação de erro e notificações
+// ========== ESTILOS DAS NOTIFICAÇÕES ==========
 const style = document.createElement("style");
 style.textContent = `
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
   }
   
   .password-error {

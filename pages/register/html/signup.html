@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register - 1lênin1dev</title>
+    <title>Register - Altrum Coins</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
@@ -25,109 +25,215 @@
       </div>
 
       <div class="signup-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-text">
+            <span id="currentStep">1</span> de <span id="totalSteps">6</span>
+          </div>
+        </div>
+
         <div class="header-section">
           <div class="logo-container">
             <i class="fas fa-coins logo-icon"></i>
           </div>
-          <h1 class="app-title">Altrum Coins</h1>
-          <p class="app-subtitle">
+          <h1 class="app-title">Altrum</h1>
+          <p class="app-subtitle" id="stepSubtitle">
             Conecte-se ao futuro da generosidade digital.
           </p>
         </div>
 
         <form class="signup-form">
-          <div class="input-group">
-            <div class="input-wrapper">
-              <input
-                type="text"
-                class="input-field"
-                placeholder="Nome completo"
-                id="name"
-              />
-              <i class="fas fa-user input-icon"></i>
+          <!-- Step 1: Nome -->
+          <div class="step-container active" data-step="1">
+            <div class="step-content">
+              <h2 class="step-title">Qual é o seu nome?</h2>
+              <p class="step-description">
+                Digite seu nome completo para começarmos
+              </p>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  class="input-field"
+                  placeholder="Nome completo"
+                  id="name"
+                  autofocus
+                />
+                <i class="fas fa-user input-icon"></i>
+              </div>
             </div>
-            <div class="input-wrapper spaced-input">
-              <input
-                type="email"
-                class="input-field"
-                placeholder="Seu melhor e-mail"
-                id="email"
-              />
-              <i class="fas fa-envelope input-icon"></i>
-            </div>
-            <div class="input-wrapper spaced-input">
-              <input
-                type="tel"
-                class="input-field"
-                placeholder="Seu telefone"
-                id="phone"
-              />
-              <i class="fas fa-phone input-icon"></i>
-            </div>
-            <div class="input-wrapper spaced-input">
-              <input
-                type="password"
-                class="input-field"
-                placeholder="Crie uma senha"
-                id="password"
-              />
-              <i class="fas fa-lock input-icon"></i>
-              <i
-                class="fas fa-eye password-toggle"
-                onclick="togglePassword('password')"
-              ></i>
-            </div>
+          </div>
 
-            <!-- Indicador de força da senha -->
-            <div
-              class="password-strength"
-              id="passwordStrength"
+          <!-- Step 2: Email -->
+          <div class="step-container" data-step="2">
+            <div class="step-content">
+              <h2 class="step-title">Qual é o seu e-mail?</h2>
+              <p class="step-description">
+                Usaremos para manter você informado
+              </p>
+              <div class="input-wrapper">
+                <input
+                  type="email"
+                  class="input-field"
+                  placeholder="seu.email@exemplo.com"
+                  id="email"
+                />
+                <i class="fas fa-envelope input-icon"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Telefone -->
+          <div class="step-container" data-step="3">
+            <div class="step-content">
+              <h2 class="step-title">Qual é o seu telefone?</h2>
+              <p class="step-description">Para maior segurança da sua conta</p>
+              <div class="input-wrapper">
+                <input
+                  type="tel"
+                  class="input-field"
+                  placeholder="(00) 00000-0000"
+                  id="phone"
+                />
+                <i class="fas fa-phone input-icon"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Senha -->
+          <div class="step-container" data-step="4">
+            <div class="step-content">
+              <h2 class="step-title">Crie uma senha segura</h2>
+              <p class="step-description">
+                Mínimo de 6 caracteres, use números e símbolos
+              </p>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  class="input-field"
+                  placeholder="Sua senha"
+                  id="password"
+                />
+                <i class="fas fa-lock input-icon"></i>
+                <i
+                  class="fas fa-eye password-toggle"
+                  onclick="togglePassword('password')"
+                ></i>
+              </div>
+
+              <!-- Indicador de força da senha -->
+              <div
+                class="password-strength"
+                id="passwordStrength"
+                style="display: none"
+              >
+                <div class="strength-indicator">
+                  <div class="strength-bar"></div>
+                  <div class="strength-bar"></div>
+                  <div class="strength-bar"></div>
+                  <div class="strength-bar"></div>
+                </div>
+                <div class="strength-text" id="strengthText"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 5: Confirmar Senha -->
+          <div class="step-container" data-step="5">
+            <div class="step-content">
+              <h2 class="step-title">Confirme sua senha</h2>
+              <p class="step-description">Digite a senha novamente</p>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  class="input-field"
+                  placeholder="Confirme sua senha"
+                  id="confirmPassword"
+                />
+                <i class="fas fa-lock input-icon"></i>
+                <i
+                  class="fas fa-eye password-toggle"
+                  onclick="togglePassword('confirmPassword')"
+                ></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 6: Termos -->
+          <div class="step-container" data-step="6">
+            <div class="step-content">
+              <h2 class="step-title">Quase lá!</h2>
+              <p class="step-description">Aceite os termos para continuar</p>
+
+              <div class="terms-box">
+                <div class="terms-section">
+                  <div class="checkbox-wrapper">
+                    <input type="checkbox" class="checkbox" id="terms" />
+                  </div>
+                  <div class="terms-text">
+                    Concordo com os
+                    <a href="/pages/term-and-policies/html/index.html"
+                      >Termos de Uso</a
+                    >
+                    e
+                    <a href="/pages/term-and-policies/html/index.html"
+                      >Política de Privacidade</a
+                    >
+                    do Altrum
+                  </div>
+                </div>
+              </div>
+
+              <div class="summary-info">
+                <div class="summary-item">
+                  <i class="fas fa-user"></i>
+                  <span id="summaryName"></span>
+                </div>
+                <div class="summary-item">
+                  <i class="fas fa-envelope"></i>
+                  <span id="summaryEmail"></span>
+                </div>
+                <div class="summary-item">
+                  <i class="fas fa-phone"></i>
+                  <span id="summaryPhone"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="navigation-buttons">
+            <button
+              type="button"
+              class="nav-button back-button"
+              id="backBtn"
               style="display: none"
             >
-              <div class="strength-indicator">
-                <div class="strength-bar"></div>
-                <div class="strength-bar"></div>
-                <div class="strength-bar"></div>
-                <div class="strength-bar"></div>
-              </div>
-              <div class="strength-text" id="strengthText"></div>
-            </div>
-
-            <div class="input-wrapper spaced-input">
-              <input
-                type="password"
-                class="input-field"
-                placeholder="Confirme sua senha"
-                id="confirmPassword"
-              />
-              <i class="fas fa-lock input-icon"></i>
-              <i
-                class="fas fa-eye password-toggle"
-                onclick="togglePassword('confirmPassword')"
-              ></i>
-            </div>
+              <i class="fas fa-arrow-left"></i>
+              Voltar
+            </button>
+            <button
+              type="button"
+              class="nav-button next-button"
+              id="nextBtn"
+              disabled
+            >
+              Continuar
+              <i class="fas fa-arrow-right"></i>
+            </button>
+            <button
+              type="button"
+              class="nav-button submit-button"
+              id="submitBtn"
+              style="display: none"
+              disabled
+            >
+              Criar Minha Conta
+              <i class="fas fa-check"></i>
+            </button>
           </div>
-
-          <div class="terms-section">
-            <div class="checkbox-wrapper">
-              <input type="checkbox" class="checkbox" id="terms" />
-            </div>
-            <div class="terms-text">
-              Concordo com os
-              <a href="/pages/term-and-policies/html/index.html"
-                >Termos de Uso</a
-              >
-              e
-              <a href="/pages/term-and-policies/html/index.html"
-                >Política de Privacidade</a
-              >
-              do CoinFuture
-            </div>
-          </div>
-
-          <button class="signup-button" id="signupBtn" disabled>
-            Criar Minha Conta
-          </button>
         </form>
 
         <div class="login-section">
