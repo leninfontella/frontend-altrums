@@ -735,6 +735,7 @@ function createDonationModal(user) {
             <div class="amount-input-wrapper">
               <input 
                 type="number" 
+                inputmode="numeric" 
                 id="donation-amount" 
                 min="1" 
                 max="${currentBalance}" 
