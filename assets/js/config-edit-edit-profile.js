@@ -431,7 +431,7 @@ async function saveProfile() {
       btn.disabled = false;
       btn.innerHTML = btn.classList.contains("save-button")
         ? '<i class="fas fa-check"></i>'
-        : "Salvar Informacoes";
+        : "Salvar Informações";
     });
   }
 }
