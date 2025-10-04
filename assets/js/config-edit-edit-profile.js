@@ -353,7 +353,10 @@ async function saveProfile() {
       formData.append("profilePhoto", file);
 
       // Usar apiConfig diretamente para FormData
-      const response = await window.apiConfig.put("/api/profile", formData);
+      const response = await window.apiConfig.post(
+        "/api/profile/upload-photo",
+        formData
+      );
       const result = await response.json();
 
       if (response.ok && result.success) {
