@@ -417,10 +417,14 @@ async function handleSuccessfulUpdate(updatedUserData) {
     JSON.parse(localStorage.getItem("userData") || "{}").profilePhotoUrl !==
       updatedUserData.profilePhotoUrl;
 
-  updateProfilePhotoDisplayFixed(
-    updatedUserData.profilePhotoUrl || updatedUserData.avatar,
-    true // Só força refresh se realmente mudou
-  );
+  const previousData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const oldPhoto = previousData.profilePhotoUrl || previousData.avatar;
+  const newPhoto = updatedUserData.profilePhotoUrl || updatedUserData.avatar;
+
+  // Forçar refresh APENAS se mudou
+  const forceRefresh = oldPhoto !== newPhoto;
+
+  updateProfilePhotoDisplayFixed(newPhoto, forceRefresh);
 
   // Resto da função permanece igual...
   // Sincronização: Usar Auth para atualizar dados globalmente

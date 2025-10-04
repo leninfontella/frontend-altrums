@@ -92,7 +92,10 @@ class GlobalUserService {
 
     profileImages.forEach((img) => {
       if (img.tagName === "IMG") {
-        img.src = imageUrl;
+        const bust = `?t=${Date.now()}`;
+        img.src = `${imageUrl}${
+          imageUrl.includes("?") ? "&" : "?"
+        }t=${Date.now()}`;
 
         // Efeito visual de atualização
         img.style.transition = "opacity 0.3s ease";
