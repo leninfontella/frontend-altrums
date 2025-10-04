@@ -371,8 +371,18 @@ async function saveProfile() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        await handleSuccessfulUpdate(result.user);
+        // CORREÇÃO: Limpar o input ANTES de chamar handleSuccessfulUpdate
         photoInput.value = "";
+
+        await handleSuccessfulUpdate(result.user);
+
+        // CORREÇÃO: Atualizar originalFormData com hasNewPhoto = false
+        setOriginalFormData({
+          name: name,
+          email: email,
+          phone: phone,
+          hasNewPhoto: false,
+        });
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
@@ -381,6 +391,14 @@ async function saveProfile() {
 
       if (result.success) {
         await handleSuccessfulUpdate(result.data);
+
+        // CORREÇÃO: Atualizar originalFormData após sucesso
+        setOriginalFormData({
+          name: name,
+          email: email,
+          phone: phone,
+          hasNewPhoto: false,
+        });
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
@@ -496,7 +514,7 @@ async function handleSuccessfulUpdate(updatedUserData) {
       forceRefreshAllProfileImages(newPhotoUrl);
     }, 500);
 
-    setOriginalFormData(getCurrentFormData());
+    // CORREÇÃO: NÃO atualizar originalFormData aqui, pois será feito em saveProfile()
     showMessage("Perfil salvo com sucesso!", "success");
 
     console.log("Atualizacao completa finalizada");
