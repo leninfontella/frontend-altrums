@@ -353,10 +353,7 @@ async function saveProfile() {
       formData.append("profilePhoto", file);
 
       // Usar apiConfig diretamente para FormData
-      const response = await window.apiConfig.post(
-        "/api/profile/upload-photo",
-        formData
-      );
+      const response = await window.apiConfig.put("/api/profile", formData);
       const result = await response.json();
 
       if (response.ok && result.success) {
@@ -420,14 +417,10 @@ async function handleSuccessfulUpdate(updatedUserData) {
     JSON.parse(localStorage.getItem("userData") || "{}").profilePhotoUrl !==
       updatedUserData.profilePhotoUrl;
 
-  const previousData = JSON.parse(localStorage.getItem("userData") || "{}");
-  const oldPhoto = previousData.profilePhotoUrl || previousData.avatar;
-  const newPhoto = updatedUserData.profilePhotoUrl || updatedUserData.avatar;
-
-  // Forçar refresh APENAS se mudou
-  const forceRefresh = oldPhoto !== newPhoto;
-
-  updateProfilePhotoDisplayFixed(newPhoto, forceRefresh);
+  updateProfilePhotoDisplayFixed(
+    updatedUserData.profilePhotoUrl || updatedUserData.avatar,
+    true // Só força refresh se realmente mudou
+  );
 
   // Resto da função permanece igual...
   // Sincronização: Usar Auth para atualizar dados globalmente

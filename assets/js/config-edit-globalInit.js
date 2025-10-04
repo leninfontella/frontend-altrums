@@ -164,11 +164,7 @@
         console.log(
           `🔄 Atualizando imagem: ${currentSrcBase} -> ${newSrcBase}`
         );
-        const bust = `?t=${Date.now()}`;
-        img.src = `${finalUrl}${
-          finalUrl.includes("?") ? "&" : "?"
-        }t=${Date.now()}`;
-
+        img.src = finalUrl;
         img.onerror = function () {
           console.error("❌ Erro ao carregar imagem:", finalUrl);
           this.src = getInitialsPlaceholderUrl(
