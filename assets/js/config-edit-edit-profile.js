@@ -1,3 +1,5 @@
+// edit-profile.js - VERSÃO CORRIGIDA PARA MOBILE
+
 // Função para mostrar mensagens
 function showMessage(message, type = "success") {
   const messageBox = document.getElementById("message-box");
@@ -7,29 +9,85 @@ function showMessage(message, type = "success") {
   }
 
   messageBox.textContent = message;
-
-  // Remover classes anteriores e adicionar a nova
   messageBox.className = `success-message ${
     type === "error" ? "error" : ""
   } show`;
 
-  // Ocultar a mensagem após 3 segundos
   setTimeout(() => {
     messageBox.classList.remove("show");
   }, 3000);
 }
 
-// ✨ FUNÇÃO CORRIGIDA: Gerar a URL do placeholder com as iniciais do usuário
+// Função para gerar URL do placeholder com iniciais
 function getInitialsPlaceholderUrl(userName) {
-  // Se o nome não for uma string válida, use uma string vazia para as iniciais.
-  // A API ui-avatars.com irá gerar um círculo sem texto.
   const nameToPass = userName && typeof userName === "string" ? userName : "";
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
     nameToPass
   )}&background=00d4ff&color=fff&size=120`;
 }
 
-// Função para atualizar a exibição da foto de perfil
+// NOVA FUNÇÃO: Forçar refresh de TODAS as imagens (Mobile-friendly)
+function forceRefreshAllProfileImages(photoUrl) {
+  console.log("Forcando refresh TOTAL de imagens de perfil");
+
+  if (!photoUrl) {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    photoUrl = userData?.profilePhotoUrl || userData?.avatar;
+  }
+
+  if (!photoUrl) return;
+
+  let fullUrl = photoUrl;
+  if (
+    !photoUrl.startsWith("http") &&
+    window.apiConfig &&
+    window.apiConfig.baseURL
+  ) {
+    fullUrl = window.apiConfig.baseURL + photoUrl;
+  }
+
+  const timestamp = Date.now();
+  const cacheBustedUrl = `${fullUrl}${
+    fullUrl.includes("?") ? "&" : "?"
+  }t=${timestamp}&mobile=1&v=${Math.random()}`;
+
+  console.log("URL com cache busting:", cacheBustedUrl);
+
+  const selectors = [
+    "[data-user-photo]",
+    ".profile-image",
+    ".user-avatar",
+    ".profile-avatar",
+    "#profile-image",
+    ".user-profile-image",
+    "img[alt*='perfil']",
+    "img[alt*='profile']",
+    "img[alt*='avatar']",
+    "img[src*='profile']",
+    "img[src*='avatar']",
+  ];
+
+  let updatedCount = 0;
+
+  selectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((element) => {
+      if (element.tagName === "IMG") {
+        element.src = cacheBustedUrl;
+        element.style.opacity = "0.7";
+        setTimeout(() => {
+          element.style.opacity = "1";
+        }, 150);
+        updatedCount++;
+      } else if (element.style) {
+        element.style.backgroundImage = `url(${cacheBustedUrl})`;
+        updatedCount++;
+      }
+    });
+  });
+
+  console.log(`${updatedCount} elementos de imagem atualizados`);
+}
+
 function updateProfilePhotoDisplay(photoUrl) {
   const profileImage = document.getElementById("profile-image");
   if (!profileImage) return;
@@ -37,7 +95,6 @@ function updateProfilePhotoDisplay(photoUrl) {
   if (photoUrl) {
     let imageUrl = photoUrl;
 
-    // Se a URL não começar com http/https, adicionar baseURL
     if (
       !photoUrl.startsWith("http") &&
       window.apiConfig &&
@@ -47,23 +104,19 @@ function updateProfilePhotoDisplay(photoUrl) {
     }
 
     profileImage.src = imageUrl;
-
-    // Efeito visual de atualização
     profileImage.style.opacity = "0.7";
     setTimeout(() => {
       profileImage.style.opacity = "1";
     }, 300);
 
-    // Fallback em caso de erro
     profileImage.onerror = function () {
       console.log("Erro ao carregar imagem:", imageUrl);
       this.src = getInitialsPlaceholderUrl("");
     };
   } else {
-    // Se não há foto, usar placeholder
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
     profileImage.src = getInitialsPlaceholderUrl(
-      JSON.parse(localStorage.getItem("userData"))?.name ||
-        JSON.parse(localStorage.getItem("userData"))?.fullName
+      userData.name || userData.fullName
     );
   }
 }
@@ -75,7 +128,6 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
   if (photoUrl) {
     let imageUrl = photoUrl;
 
-    // Construir URL completa se necessário
     if (
       !photoUrl.startsWith("http") &&
       window.apiConfig &&
@@ -84,51 +136,42 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
       imageUrl = window.apiConfig.baseURL + photoUrl;
     }
 
-    // ✅ APENAS adicionar timestamp quando REALMENTE necessário
     if (forceRefresh) {
       const separator = imageUrl.includes("?") ? "&" : "?";
-      imageUrl = `${imageUrl}${separator}t=${Date.now()}`;
-      console.log("🔄 Cache busting aplicado:", imageUrl);
+      imageUrl = `${imageUrl}${separator}t=${Date.now()}&mobile=1`;
+      console.log("Cache busting aplicado:", imageUrl);
     }
 
     profileImage.src = imageUrl;
-
-    // Animação suave
     profileImage.style.opacity = "0.7";
     setTimeout(() => {
       profileImage.style.opacity = "1";
     }, 300);
 
-    // ✅ CORREÇÃO: Fallback melhorado
     profileImage.onerror = function () {
       console.warn("Erro ao carregar:", imageUrl);
 
-      // Se falhou com cache bust, tentar sem
       if (forceRefresh && imageUrl.includes("?t=")) {
         const cleanUrl = imageUrl.split("?t=")[0];
-        console.log("🔄 Tentando sem cache bust:", cleanUrl);
+        console.log("Tentando sem cache bust:", cleanUrl);
         this.src = cleanUrl;
         return;
       }
 
-      // Fallback final usando a nova função com as iniciais
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const userName = userData.name || userData.fullName || "";
       this.src = getInitialsPlaceholderUrl(userName);
     };
   } else {
-    // Usar a nova função
     const userData = JSON.parse(localStorage.getItem("userData")) || {};
     const userName = userData.name || userData.fullName || "";
     profileImage.src = getInitialsPlaceholderUrl(userName);
   }
 }
 
-// 🔧 FUNÇÃO CORRIGIDA: Limpar dados do usuário anterior
 function clearUserData() {
-  console.log("🧹 Limpando dados do usuário anterior...");
+  console.log("Limpando dados do usuario anterior...");
 
-  // Limpar formulário
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
   const phoneInput = document.getElementById("phone");
@@ -137,46 +180,35 @@ function clearUserData() {
   if (nameInput) nameInput.value = "";
   if (emailInput) emailInput.value = "";
   if (phoneInput) phoneInput.value = "";
-
-  // Usar um placeholder genérico, pois não temos o nome do usuário nesta função
   if (profileImage) {
     profileImage.src = getInitialsPlaceholderUrl("");
   }
 
-  // Limpar dados originais
   originalFormData = {};
 }
 
-// 🔧 FUNÇÃO MELHORADA: Carregar dados da API com limpeza prévia
 async function loadUserDataFromAPI() {
   try {
-    console.log("📄 PRIORIDADE: Carregando dados da API...");
+    console.log("PRIORIDADE: Carregando dados da API...");
 
-    // Verificar se Auth está disponível
     if (typeof Auth === "undefined" || !Auth.getToken()) {
-      console.error(
-        "⚠️ Sistema de autenticação não disponível ou token ausente"
-      );
-      showMessage("Sessão expirada. Redirecionando...", "error");
+      console.error("Sistema de autenticacao nao disponivel ou token ausente");
+      showMessage("Sessao expirada. Redirecionando...", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
       return;
     }
 
-    // Sempre limpar dados anteriores ANTES de carregar novos
     clearUserData();
 
-    // Usar Auth para buscar dados atualizados do usuário atual
     const userData = await Auth.getProfile();
 
     if (userData) {
-      console.log("✅ Dados atualizados recebidos da API:", userData);
+      console.log("Dados atualizados recebidos da API:", userData);
 
-      // Preencher formulário com dados do usuário correto
       populateFormWithData(userData);
 
-      // Definir dados originais para comparação
       setOriginalFormData({
         name: userData.name || userData.fullName || "",
         email: userData.email || "",
@@ -184,35 +216,32 @@ async function loadUserDataFromAPI() {
         hasNewPhoto: false,
       });
 
-      // ✅ CRÍTICO: Atualizar localStorage apenas com dados do usuário atual
       localStorage.setItem("userData", JSON.stringify(userData));
     } else {
-      throw new Error("Dados não recebidos da API");
+      throw new Error("Dados nao recebidos da API");
     }
   } catch (error) {
-    console.error("⚠️ Erro ao carregar dados da API:", error);
+    console.error("Erro ao carregar dados da API:", error);
 
     if (error.message.includes("401") || error.message.includes("Token")) {
-      showMessage("Sessão expirada. Redirecionando...", "error");
+      showMessage("Sessao expirada. Redirecionando...", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
       return;
     }
 
-    // Fallback: usar dados locais apenas se API falhar
-    console.log("⚠️ Usando dados locais como fallback...");
+    console.log("Usando dados locais como fallback...");
     loadUserProfileFromLocalStorage();
     showMessage(
-      "Carregado do cache local. Algumas informações podem estar desatualizadas.",
+      "Carregado do cache local. Algumas informacoes podem estar desatualizadas.",
       "error"
     );
   }
 }
 
-// Função para preencher formulário com dados específicos
 function populateFormWithData(userData) {
-  console.log("📝 Preenchendo formulário com dados:", userData);
+  console.log("Preenchendo formulario com dados:", userData);
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
@@ -223,7 +252,6 @@ function populateFormWithData(userData) {
   if (emailInput) emailInput.value = userData.email || "";
   if (phoneInput) phoneInput.value = userData.phone || "";
 
-  // 🐛 CORREÇÃO CRÍTICA: Lógica para exibir a foto ou o placeholder
   if (profileImage) {
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
     if (photoUrl) {
@@ -236,12 +264,11 @@ function populateFormWithData(userData) {
   }
 }
 
-// Função renomeada: Carregar do localStorage apenas como fallback
 function loadUserProfileFromLocalStorage() {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (userData) {
-    console.log("📁 Carregando dados locais como fallback:", userData);
+    console.log("Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
     setOriginalFormData({
       name: userData.name || userData.fullName || "",
@@ -250,37 +277,32 @@ function loadUserProfileFromLocalStorage() {
       hasNewPhoto: false,
     });
   } else {
-    console.log("⚠ Nenhum dado local encontrado");
-    showMessage("Nenhum dado encontrado. Faça login novamente.", "error");
+    console.log("Nenhum dado local encontrado");
+    showMessage("Nenhum dado encontrado. Faca login novamente.", "error");
     setTimeout(() => {
       window.location.href = "/index.html";
     }, 2000);
   }
 }
 
-// Função depreciada: Manter apenas para compatibilidade
 function loadUserProfile() {
-  console.warn("⚠️ loadUserProfile() é deprecated. Use loadUserDataFromAPI()");
+  console.warn("loadUserProfile() e deprecated. Use loadUserDataFromAPI()");
   loadUserProfileFromLocalStorage();
 }
 
-// 🔧 FUNÇÃO CRÍTICA CORRIGIDA: Salvar perfil apenas com dados do usuário atual
 async function saveProfile() {
   try {
-    // Verificar autenticação
     if (typeof Auth === "undefined" || !Auth.getToken()) {
-      showMessage("Sessão expirada. Faça login novamente.", "error");
+      showMessage("Sessao expirada. Faca login novamente.", "error");
       return;
     }
 
-    // 🔧 VALIDAÇÃO: Verificar se os dados pertencem ao usuário atual
     const currentUserData = Auth.getUserData();
     if (!currentUserData || !currentUserData.id) {
-      showMessage("Dados de usuário inválidos. Faça login novamente.", "error");
+      showMessage("Dados de usuario invalidos. Faca login novamente.", "error");
       return;
     }
 
-    // Mostrar loading
     const saveButtons = document.querySelectorAll(
       ".save-button, .save-content-btn"
     );
@@ -291,46 +313,40 @@ async function saveProfile() {
         : "Salvando...";
     });
 
-    // Obter dados do formulário
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
-    // 🔧 VALIDAÇÃO CRÍTICA: Verificar se o email pertence ao usuário atual
     if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
       showMessage(
-        "Não é possível alterar o email para outro usuário.",
+        "Nao e possivel alterar o email para outro usuario.",
         "error"
       );
       return;
     }
 
-    // Validações básicas
     if (!name) {
-      showMessage("Nome é obrigatório", "error");
+      showMessage("Nome e obrigatorio", "error");
       return;
     }
 
     if (!email) {
-      showMessage("Email é obrigatório", "error");
+      showMessage("Email e obrigatorio", "error");
       return;
     }
 
-    // Validar formato do email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      showMessage("Email inválido", "error");
+      showMessage("Email invalido", "error");
       return;
     }
 
-    // Preparar dados para atualização
     const profileData = {
       name,
       email,
       phone,
     };
 
-    // Verificar se há nova foto
     const photoInput = document.getElementById("photo-input");
     if (photoInput && photoInput.files && photoInput.files[0]) {
       const file = photoInput.files[0];
@@ -345,14 +361,12 @@ async function saveProfile() {
         return;
       }
 
-      // 🔧 CORREÇÃO: Usar FormData quando há arquivo
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
       formData.append("phone", phone);
       formData.append("profilePhoto", file);
 
-      // Usar apiConfig diretamente para FormData
       const response = await window.apiConfig.put("/api/profile", formData);
       const result = await response.json();
 
@@ -363,7 +377,6 @@ async function saveProfile() {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
     } else {
-      // 🔧 CORREÇÃO: Usar Auth.updateProfile para dados sem foto
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
@@ -376,16 +389,16 @@ async function saveProfile() {
     console.error("Erro ao salvar perfil:", error);
 
     if (error.message.includes("401") || error.message.includes("Token")) {
-      showMessage("Sessão expirada. Faça login novamente.", "error");
+      showMessage("Sessao expirada. Faca login novamente.", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
     } else if (error.message.includes("413")) {
-      showMessage("Arquivo muito grande. Máximo 5MB.", "error");
+      showMessage("Arquivo muito grande. Maximo 5MB.", "error");
     } else if (error.message.includes("400")) {
-      showMessage("Dados inválidos. Verifique as informações.", "error");
+      showMessage("Dados invalidos. Verifique as informacoes.", "error");
     } else if (error.name === "TypeError" && error.message.includes("fetch")) {
-      showMessage("Erro de conexão. Verifique sua internet.", "error");
+      showMessage("Erro de conexao. Verifique sua internet.", "error");
     } else {
       showMessage(
         error.message || "Erro inesperado. Tente novamente.",
@@ -393,7 +406,6 @@ async function saveProfile() {
       );
     }
   } finally {
-    // Restaurar botões
     const saveButtons = document.querySelectorAll(
       ".save-button, .save-content-btn"
     );
@@ -401,57 +413,99 @@ async function saveProfile() {
       btn.disabled = false;
       btn.innerHTML = btn.classList.contains("save-button")
         ? '<i class="fas fa-check"></i>'
-        : "Salvar Informações";
+        : "Salvar Informacoes";
     });
   }
 }
 
-// Função para tratar atualização bem-sucedida
 async function handleSuccessfulUpdate(updatedUserData) {
-  // Atualizar localStorage com dados corretos
-  localStorage.setItem("userData", JSON.stringify(updatedUserData));
+  try {
+    console.log("Iniciando atualizacao bem-sucedida do perfil");
+    console.log("Dados recebidos:", updatedUserData);
 
-  // ✅ CORRIGIR: Usar forceRefresh=true APENAS quando há nova foto
-  const hasNewPhoto =
-    updatedUserData.profilePhotoUrl &&
-    JSON.parse(localStorage.getItem("userData") || "{}").profilePhotoUrl !==
-      updatedUserData.profilePhotoUrl;
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-  updateProfilePhotoDisplayFixed(
-    updatedUserData.profilePhotoUrl || updatedUserData.avatar,
-    true // Só força refresh se realmente mudou
-  );
+    const newPhotoUrl =
+      updatedUserData.profilePhotoUrl || updatedUserData.avatar;
+    console.log("Nova foto URL:", newPhotoUrl);
 
-  // Resto da função permanece igual...
-  // Sincronização: Usar Auth para atualizar dados globalmente
-  if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
-    const photoUrl = updatedUserData.profilePhotoUrl || updatedUserData.avatar;
-    if (photoUrl) {
-      Auth.updateProfilePhoto(photoUrl);
+    if (newPhotoUrl) {
+      updateProfilePhotoDisplayFixed(newPhotoUrl, true);
+
+      setTimeout(() => {
+        forceRefreshAllProfileImages(newPhotoUrl);
+      }, 100);
     }
-  }
 
-  // Disparar eventos para sincronização
-  window.dispatchEvent(
-    new CustomEvent("userDataUpdated", {
-      detail: { userData: updatedUserData },
-    })
-  );
+    if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+      Auth.updateProfilePhoto(newPhotoUrl);
+    }
 
-  if (updatedUserData.profilePhotoUrl) {
+    if (window.userService) {
+      window.userService.updateProfilePhoto(newPhotoUrl);
+    }
+
     window.dispatchEvent(
-      new CustomEvent("profilePhotoUpdated", {
-        detail: { photoUrl: updatedUserData.profilePhotoUrl },
+      new CustomEvent("userDataUpdated", {
+        detail: {
+          userData: updatedUserData,
+          timestamp: Date.now(),
+          source: "edit-profile",
+        },
       })
     );
+
+    if (newPhotoUrl) {
+      window.dispatchEvent(
+        new CustomEvent("profilePhotoUpdated", {
+          detail: {
+            photoUrl: newPhotoUrl,
+            forceRefresh: true,
+            timestamp: Date.now(),
+            source: "edit-profile",
+          },
+        })
+      );
+    }
+
+    if (typeof BroadcastChannel !== "undefined") {
+      try {
+        const channel = new BroadcastChannel("profile_updates");
+        channel.postMessage({
+          type: "PHOTO_UPDATED",
+          photoUrl: newPhotoUrl,
+          userData: updatedUserData,
+          timestamp: Date.now(),
+        });
+        channel.close();
+        console.log("Broadcast enviado para outras abas");
+      } catch (e) {
+        console.log("BroadcastChannel nao disponivel");
+      }
+    }
+
+    try {
+      localStorage.setItem("lastPhotoUpdate", Date.now().toString());
+      localStorage.setItem("currentPhotoUrl", newPhotoUrl || "");
+    } catch (e) {
+      console.error("Erro ao atualizar lastPhotoUpdate", e);
+    }
+
+    setTimeout(() => {
+      console.log("Refresh final de seguranca");
+      forceRefreshAllProfileImages(newPhotoUrl);
+    }, 500);
+
+    setOriginalFormData(getCurrentFormData());
+    showMessage("Perfil salvo com sucesso!", "success");
+
+    console.log("Atualizacao completa finalizada");
+  } catch (error) {
+    console.error("Erro em handleSuccessfulUpdate:", error);
+    showMessage("Perfil salvo, mas houve erro na atualizacao visual", "error");
   }
-
-  // Atualizar dados originais
-  setOriginalFormData(getCurrentFormData());
-
-  showMessage("Perfil salvo com sucesso!", "success");
 }
-// 🔧 NOVA FUNÇÃO: Upload APENAS da foto (separado dos dados pessoais)
+
 async function uploadPhotoOnly() {
   const photoInput = document.getElementById("photo-input");
 
@@ -461,7 +515,6 @@ async function uploadPhotoOnly() {
   }
 
   try {
-    // Validar arquivo
     const file = photoInput.files[0];
 
     if (!file.type.startsWith("image/")) {
@@ -474,7 +527,6 @@ async function uploadPhotoOnly() {
       return;
     }
 
-    // Mostrar loading
     const uploadBtn = document.querySelector(".upload-photo-btn");
     if (uploadBtn) {
       uploadBtn.disabled = true;
@@ -482,7 +534,6 @@ async function uploadPhotoOnly() {
         '<i class="fas fa-spinner fa-spin"></i> Enviando...';
     }
 
-    // 🔧 CRÍTICO: Usar endpoint específico apenas para foto
     const formData = new FormData();
     formData.append("profilePhoto", file);
 
@@ -490,18 +541,15 @@ async function uploadPhotoOnly() {
       "/api/profile/upload-photo",
       formData
     );
-
     const result = await response.json();
 
     if (response.ok && result.success) {
       showMessage("Foto atualizada com sucesso!", "success");
 
-      // Atualizar foto na página atual
       if (result.profilePhoto && result.profilePhoto.url) {
         updateProfilePhotoDisplay(result.profilePhoto.url);
       }
 
-      // Usar Auth para sincronizar globalmente
       if (result.user && result.user.profilePhotoUrl) {
         localStorage.setItem("userData", JSON.stringify(result.user));
 
@@ -510,23 +558,20 @@ async function uploadPhotoOnly() {
         }
       }
 
-      // Disparar evento customizado
       window.dispatchEvent(
         new CustomEvent("profilePhotoUpdated", {
           detail: { photoUrl: result.profilePhoto.url },
         })
       );
 
-      // Limpar input
       photoInput.value = "";
     } else {
       showMessage(result.message || "Erro ao atualizar foto", "error");
     }
   } catch (error) {
     console.error("Erro ao fazer upload da foto:", error);
-    showMessage("Erro de conexão", "error");
+    showMessage("Erro de conexao", "error");
   } finally {
-    // Restaurar botão
     const uploadBtn = document.querySelector(".upload-photo-btn");
     if (uploadBtn) {
       uploadBtn.disabled = false;
@@ -535,27 +580,52 @@ async function uploadPhotoOnly() {
   }
 }
 
-// 🔧 CORREÇÃO CRÍTICA: Inicialização da página com limpeza
-document.addEventListener("DOMContentLoaded", async function () {
-  console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
+if (typeof BroadcastChannel !== "undefined") {
+  try {
+    const profileChannel = new BroadcastChannel("profile_updates");
+    profileChannel.onmessage = (event) => {
+      if (event.data.type === "PHOTO_UPDATED") {
+        console.log("Recebida atualizacao de foto de outra aba/pagina");
+        const photoUrl = event.data.photoUrl;
+        if (photoUrl) {
+          updateProfilePhotoDisplayFixed(photoUrl, true);
+          forceRefreshAllProfileImages(photoUrl);
+        }
+      }
+    };
+  } catch (e) {
+    console.log("BroadcastChannel nao disponivel neste navegador");
+  }
+}
 
-  // 🔧 CRÍTICO: Sempre limpar dados anteriores ao carregar página
+window.addEventListener("storage", function (e) {
+  if (e.key === "lastPhotoUpdate" || e.key === "currentPhotoUrl") {
+    console.log("Detectada mudanca no localStorage de outra aba");
+    setTimeout(() => {
+      const photoUrl = localStorage.getItem("currentPhotoUrl");
+      if (photoUrl) {
+        forceRefreshAllProfileImages(photoUrl);
+      }
+    }, 100);
+  }
+});
+
+document.addEventListener("DOMContentLoaded", async function () {
+  console.log("DOM carregado, iniciando carregamento do perfil...");
+
   clearUserData();
 
-  // PRIORIDADE: Sempre carregar da API primeiro
   try {
     await loadUserDataFromAPI();
   } catch (error) {
-    console.error("⚠ Falha crítica no carregamento:", error);
+    console.error("Falha critica no carregamento:", error);
   }
 
-  // Configurar funcionalidades da página
   setupChangeDetection();
   setupKeyboardShortcuts();
   setupPhotoPreview();
 });
 
-// Voltar para configurações
 const goBack = document.getElementById("go-back");
 if (goBack) {
   goBack.addEventListener("click", (e) => {
@@ -570,7 +640,6 @@ if (goBack) {
 }
 
 function navigateBack() {
-  // Tentar voltar na história ou ir para configurações
   if (window.history.length > 1) {
     window.history.back();
   } else {
@@ -578,11 +647,9 @@ function navigateBack() {
   }
 }
 
-// Verificar mudanças não salvas
 function hasUnsavedChanges() {
   const currentData = getCurrentFormData();
   const originalData = getOriginalFormData();
-
   return JSON.stringify(currentData) !== JSON.stringify(originalData);
 }
 
@@ -605,7 +672,6 @@ function setOriginalFormData(data) {
   originalFormData = { ...data };
 }
 
-// Configurar pré-visualização da imagem
 function setupPhotoPreview() {
   const photoInput = document.getElementById("photo-input");
   const profileImage = document.getElementById("profile-image");
@@ -615,25 +681,20 @@ function setupPhotoPreview() {
   photoInput.addEventListener("change", function (event) {
     const file = event.target.files[0];
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
-    // Validar tipo de arquivo
     if (!file.type.startsWith("image/")) {
       showMessage("Por favor, selecione apenas imagens", "error");
       photoInput.value = "";
       return;
     }
 
-    // Validar tamanho (5MB)
     if (file.size > 5 * 1024 * 1024) {
       showMessage("A imagem deve ter menos de 5MB", "error");
       photoInput.value = "";
       return;
     }
 
-    // Validar dimensões mínimas
     const img = new Image();
     img.onload = function () {
       if (this.width < 50 || this.height < 50) {
@@ -642,7 +703,6 @@ function setupPhotoPreview() {
         return;
       }
 
-      // Mostrar preview se tudo estiver ok
       const reader = new FileReader();
       reader.onload = function (e) {
         profileImage.src = e.target.result;
@@ -663,27 +723,22 @@ function setupPhotoPreview() {
   });
 }
 
-// Configurar detecção de mudanças
 function setupChangeDetection() {
   const inputs = document.querySelectorAll("#name, #email, #phone");
   inputs.forEach((input) => {
     input.addEventListener("input", () => {
-      // Adicionar indicador visual de mudança não salva (opcional)
       input.classList.add("changed");
     });
   });
 }
 
-// Configurar atalhos de teclado
 function setupKeyboardShortcuts() {
   document.addEventListener("keydown", (e) => {
-    // Ctrl/Cmd + S para salvar
     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
       e.preventDefault();
       saveProfile();
     }
 
-    // Escape para voltar
     if (e.key === "Escape") {
       const goBackButton = document.getElementById("go-back");
       if (goBackButton) {
@@ -693,16 +748,12 @@ function setupKeyboardShortcuts() {
   });
 }
 
-// Função para remover foto de perfil
 function showRemovePhotoModal() {
   const modal = document.getElementById("remove-photo-modal");
   if (modal) {
     modal.classList.add("show");
-
-    // Adicionar evento para fechar com ESC
     document.addEventListener("keydown", handleModalEscape);
 
-    // Focar no botão cancelar para melhor acessibilidade
     setTimeout(() => {
       const cancelBtn = modal.querySelector(".modal-btn-cancel");
       if (cancelBtn) {
@@ -712,34 +763,25 @@ function showRemovePhotoModal() {
   }
 }
 
-// Fechar modal de confirmação
 function closeRemovePhotoModal() {
   const modal = document.getElementById("remove-photo-modal");
   if (modal) {
     modal.classList.remove("show");
-
-    // Remover listener do ESC
     document.removeEventListener("keydown", handleModalEscape);
   }
 }
 
-// Confirmar remoção da foto
 async function confirmRemovePhoto() {
-  // Fechar modal primeiro
   closeRemovePhotoModal();
-
-  // Executar a remoção
   await removeProfilePhotoWithoutConfirm();
 }
 
-// Função para lidar com tecla ESC na modal
 function handleModalEscape(event) {
   if (event.key === "Escape") {
     closeRemovePhotoModal();
   }
 }
 
-// Fechar modal clicando fora dela
 document.addEventListener("click", function (event) {
   const modal = document.getElementById("remove-photo-modal");
   if (modal && event.target === modal) {
@@ -747,13 +789,11 @@ document.addEventListener("click", function (event) {
   }
 });
 
-// ===== Modal "Alterações não salvas" =====
 function showUnsavedChangesModal() {
   const modal = document.getElementById("unsaved-modal");
   if (modal) {
     modal.classList.add("show");
     document.addEventListener("keydown", handleUnsavedModalEscape);
-    // Acessibilidade: focar o botão cancelar
     setTimeout(() => {
       modal.querySelector(".modal-btn-cancel")?.focus();
     }, 100);
@@ -779,7 +819,6 @@ function handleUnsavedModalEscape(event) {
   }
 }
 
-// Fechar a modal clicando fora
 document.addEventListener("click", function (event) {
   const modal = document.getElementById("unsaved-modal");
   if (modal && event.target === modal) {
@@ -787,10 +826,8 @@ document.addEventListener("click", function (event) {
   }
 });
 
-// Versão da função removeProfilePhoto sem o confirm (para usar na modal)
 async function removeProfilePhotoWithoutConfirm() {
   try {
-    // Mostrar loading no botão de remoção
     const removeBtn = document.querySelector(".remove-photo-btn");
     if (removeBtn) {
       removeBtn.disabled = true;
@@ -804,47 +841,39 @@ async function removeProfilePhotoWithoutConfirm() {
     if (response.ok && result.success) {
       showMessage("Foto removida com sucesso!", "success");
 
-      // Atualizar imagem para placeholder
       const profileImage = document.getElementById("profile-image");
       if (profileImage) {
-        // Usar a nova função para gerar o placeholder com as iniciais
         const userData = JSON.parse(localStorage.getItem("userData")) || {};
         const userName = userData.name || userData.fullName || "";
         profileImage.src = getInitialsPlaceholderUrl(userName);
 
-        // Efeito visual de remoção
         profileImage.style.opacity = "0.5";
         setTimeout(() => {
           profileImage.style.opacity = "1";
         }, 300);
       }
 
-      // Atualizar localStorage
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       userData.profilePhotoUrl = null;
       localStorage.setItem("userData", JSON.stringify(userData));
 
-      // Usar Auth para sincronizar
       if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
         Auth.updateProfilePhoto(null);
       }
 
-      // Limpar input de arquivo
       const photoInput = document.getElementById("photo-input");
       if (photoInput) {
         photoInput.value = "";
       }
 
-      // Disparar evento customizado
       window.dispatchEvent(new CustomEvent("profilePhotoRemoved"));
     } else {
       showMessage(result.message || "Erro ao remover foto", "error");
     }
   } catch (error) {
     console.error("Erro ao remover foto:", error);
-    showMessage("Erro de conexão", "error");
+    showMessage("Erro de conexao", "error");
   } finally {
-    // Restaurar botão
     const removeBtn = document.querySelector(".remove-photo-btn");
     if (removeBtn) {
       removeBtn.disabled = false;
@@ -853,7 +882,6 @@ async function removeProfilePhotoWithoutConfirm() {
   }
 }
 
-// Função para validar campos antes de salvar
 function validateForm() {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -866,79 +894,69 @@ function validateForm() {
   }
 
   if (!email) {
-    errors.push("Email é obrigatório");
+    errors.push("Email e obrigatorio");
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.push("Email inválido");
+    errors.push("Email invalido");
   }
 
   if (phone && phone.length > 0) {
-    // Validação básica para telefone brasileiro
     const phoneRegex =
       /^(\+55\s?)?(\(?[1-9]{2}\)?\s?)?9?[0-9]{4}[-\s]?[0-9]{4}$/;
     if (!phoneRegex.test(phone)) {
-      errors.push("Formato de telefone inválido");
+      errors.push("Formato de telefone invalido");
     }
   }
 
   return errors;
 }
 
-// 🔧 NOVA FUNÇÃO: Sincronizar dados periodicamente apenas se não houver mudanças
 async function syncUserDataSafe() {
   try {
-    // Só sincronizar se não há mudanças não salvas
     if (
       !hasUnsavedChanges() &&
       typeof Auth !== "undefined" &&
       navigator.onLine
     ) {
-      console.log("🔄 Sincronização automática segura...");
+      console.log("Sincronizacao automatica segura...");
       await loadUserDataFromAPI();
     }
   } catch (error) {
-    console.log("⚠️ Erro na sincronização automática:", error);
+    console.log("Erro na sincronizacao automatica:", error);
   }
 }
 
-// Configurar sincronização automática a cada 5 minutos (mais segura)
 setInterval(syncUserDataSafe, 5 * 60 * 1000);
 
-// Eventos de conectividade
 window.addEventListener("online", () => {
-  console.log("🌐 Reconectado à internet");
-  // Sincronizar apenas se não há mudanças pendentes
+  console.log("Reconectado a internet");
   if (!hasUnsavedChanges()) {
     syncUserDataSafe();
   }
 });
 
 window.addEventListener("offline", () => {
-  console.log("📵 Desconectado da internet");
+  console.log("Desconectado da internet");
   showMessage(
     "Modo offline. Algumas funcionalidades podem estar limitadas.",
     "error"
   );
 });
 
-// 🔧 NOVA FUNÇÃO: Forçar recarregamento completo dos dados
 async function forceReloadUserData() {
-  console.log("🔄 Recarregamento forçado dos dados...");
+  console.log("Recarregamento forcado dos dados...");
   clearUserData();
   await loadUserDataFromAPI();
 }
 
-// 🔧 LISTENER GLOBAL: Detectar mudanças de usuário
 window.addEventListener("storage", function (e) {
-  // Se o token mudou, significa que houve login/logout
   if (e.key === "authToken" || e.key === "userData") {
-    console.log("👤 Mudança de usuário detectada, recarregando dados...");
+    console.log("Mudanca de usuario detectada, recarregando dados...");
     setTimeout(() => {
       forceReloadUserData();
     }, 100);
   }
 });
 
-// Exportar funções para uso global se necessário
 window.editProfileFunctions = {
   saveProfile,
   uploadPhotoOnly,
@@ -949,4 +967,5 @@ window.editProfileFunctions = {
   validateForm,
   syncUserDataSafe,
   clearUserData,
+  forceRefreshAllProfileImages,
 };

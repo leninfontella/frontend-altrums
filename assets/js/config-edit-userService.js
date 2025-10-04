@@ -1,4 +1,5 @@
-// userService.js - Sistema global para gerenciar dados do usuário
+// userService.js - Sistema global para gerenciar dados do usuário - VERSÃO CORRIGIDA
+
 class GlobalUserService {
   constructor() {
     this.userData = null;
@@ -6,13 +7,11 @@ class GlobalUserService {
     this.init();
   }
 
-  // Inicializar o serviço
   init() {
     this.loadUserData();
     this.setupEventListeners();
   }
 
-  // Carregar dados do usuário
   loadUserData() {
     try {
       const stored = localStorage.getItem("userData");
@@ -25,9 +24,7 @@ class GlobalUserService {
     }
   }
 
-  // Configurar event listeners
   setupEventListeners() {
-    // Escutar eventos customizados
     window.addEventListener("userDataUpdated", (event) => {
       if (event.detail && event.detail.userData) {
         this.updateUserData(event.detail.userData);
@@ -36,7 +33,10 @@ class GlobalUserService {
 
     window.addEventListener("profilePhotoUpdated", (event) => {
       if (event.detail && event.detail.photoUrl) {
-        this.updateProfilePhoto(event.detail.photoUrl);
+        this.updateProfilePhoto(
+          event.detail.photoUrl,
+          event.detail.forceRefresh
+        );
       }
     });
 
@@ -44,7 +44,6 @@ class GlobalUserService {
       this.updateProfilePhoto(null);
     });
 
-    // Escutar mudanças no localStorage de outras abas
     window.addEventListener("storage", (event) => {
       if (event.key === "userData") {
         this.loadUserData();
@@ -52,29 +51,27 @@ class GlobalUserService {
     });
   }
 
-  // Atualizar dados do usuário
   updateUserData(newUserData) {
     this.userData = { ...this.userData, ...newUserData };
     localStorage.setItem("userData", JSON.stringify(this.userData));
     this.notifyListeners();
   }
 
-  // Atualizar apenas a foto de perfil
-  updateProfilePhoto(photoUrl) {
+  // FUNÇÃO CRÍTICA CORRIGIDA: Com cache busting agressivo para mobile
+  updateProfilePhoto(photoUrl, forceRefresh = false) {
     if (this.userData) {
       this.userData.profilePhotoUrl = photoUrl;
       if (photoUrl) {
-        this.userData.avatar = photoUrl; // Para compatibilidade
+        this.userData.avatar = photoUrl;
       }
       localStorage.setItem("userData", JSON.stringify(this.userData));
       this.notifyListeners();
 
-      // Atualizar todas as imagens de perfil na página atual
-      this.updateProfilePhotoEverywhere(photoUrl);
+      // Atualizar TODAS as imagens com cache busting se forceRefresh = true
+      this.updateProfilePhotoEverywhere(photoUrl, forceRefresh);
     }
   }
 
-  // ✨ FUNÇÃO ADICIONADA: Gerar a URL do placeholder com as iniciais do usuário
   getInitialsPlaceholderUrl(userName) {
     const nameToPass = userName && typeof userName === "string" ? userName : "";
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -82,39 +79,51 @@ class GlobalUserService {
     )}&background=00d4ff&color=fff&size=120`;
   }
 
-  // Atualizar todas as imagens de perfil na página atual
-  updateProfilePhotoEverywhere(photoUrl) {
+  // FUNÇÃO CRÍTICA TOTALMENTE REESCRITA: Mobile-friendly
+  updateProfilePhotoEverywhere(photoUrl, forceRefresh = false) {
+    console.log("Atualizando fotos de perfil em todos os elementos");
+    console.log("URL da foto:", photoUrl);
+    console.log("Force refresh:", forceRefresh);
+
     const profileImages = document.querySelectorAll(
       "[data-user-photo], .profile-image, .user-avatar, .profile-avatar, #profile-image, .user-profile-image"
     );
 
-    const imageUrl = this.getImageUrl(photoUrl);
+    let imageUrl = this.getImageUrl(photoUrl);
+
+    // CACHE BUSTING AGRESSIVO para mobile quando forceRefresh = true
+    if (forceRefresh && imageUrl && !imageUrl.includes("ui-avatars.com")) {
+      const separator = imageUrl.includes("?") ? "&" : "?";
+      imageUrl = `${imageUrl}${separator}t=${Date.now()}&mobile=1&v=${Math.random()}`;
+      console.log("URL com cache busting:", imageUrl);
+    }
+
+    let updatedCount = 0;
 
     profileImages.forEach((img) => {
       if (img.tagName === "IMG") {
         img.src = imageUrl;
 
-        // Efeito visual de atualização
         img.style.transition = "opacity 0.3s ease";
         img.style.opacity = "0.7";
         setTimeout(() => {
           img.style.opacity = "1";
         }, 150);
 
-        // Fallback para erro
         img.onerror = () => {
-          // Usar a nova função para gerar o placeholder correto
-          this.src = this.getInitialsPlaceholderUrl(
-            this.getUserData()?.name || this.getUserData()?.fullName || ""
-          );
+          const userName =
+            this.getUserData()?.name || this.getUserData()?.fullName || "";
+          img.src = this.getInitialsPlaceholderUrl(userName);
         };
+
+        updatedCount++;
       } else if (img.style) {
-        // Para elementos com backgroundImage
         img.style.backgroundImage = `url(${imageUrl})`;
+        updatedCount++;
       }
     });
 
-    // Atualizar elementos específicos por ID (se existirem)
+    // Atualizar elementos específicos por ID
     const specificElements = [
       "profile-photo",
       "user-photo",
@@ -128,14 +137,17 @@ class GlobalUserService {
       if (element) {
         if (element.tagName === "IMG") {
           element.src = imageUrl;
+          updatedCount++;
         } else {
           element.style.backgroundImage = `url(${imageUrl})`;
+          updatedCount++;
         }
       }
     });
+
+    console.log(`Total de ${updatedCount} elementos atualizados`);
   }
 
-  // Obter URL completa da imagem
   getImageUrl(photoUrl) {
     if (!photoUrl) {
       const userData = this.getUserData();
@@ -144,27 +156,22 @@ class GlobalUserService {
       );
     }
     if (photoUrl.startsWith("http")) {
-      // A URL já é completa, retorne-a como está.
       return photoUrl;
     }
     if (window.apiConfig && window.apiConfig.baseURL) {
-      // Combine a base URL com o caminho da imagem.
       return `${window.apiConfig.baseURL}${photoUrl}`;
     }
-    return photoUrl; // Retornar URL como está por padrão
+    return photoUrl;
   }
 
-  // Adicionar listener para mudanças
   addListener(callback) {
     this.listeners.add(callback);
   }
 
-  // Remover listener
   removeListener(callback) {
     this.listeners.delete(callback);
   }
 
-  // Notificar todos os listeners
   notifyListeners() {
     this.listeners.forEach((callback) => {
       try {
@@ -175,17 +182,14 @@ class GlobalUserService {
     });
   }
 
-  // Obter dados do usuário
   getUserData() {
     return this.userData;
   }
 
-  // Obter foto do usuário
   getUserPhoto() {
     return this.userData?.profilePhotoUrl || this.userData?.avatar || null;
   }
 
-  // Atualizar informações específicas
   updateField(field, value) {
     if (this.userData) {
       this.userData[field] = value;
@@ -194,16 +198,16 @@ class GlobalUserService {
     }
   }
 
-  // Limpar dados do usuário (logout)
   clearUserData() {
     this.userData = null;
     localStorage.removeItem("userData");
-    localStorage.removeItem("userProfilePhoto"); // ✅ CORREÇÃO: Remover a foto de perfil
-    localStorage.removeItem("currentUser"); // ✅ CORREÇÃO: Remover também o currentUser para total limpeza
+    localStorage.removeItem("userProfilePhoto");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("lastPhotoUpdate");
+    localStorage.removeItem("currentPhotoUrl");
     this.notifyListeners();
   }
 
-  // Sincronizar com a API
   async syncWithAPI() {
     try {
       if (!window.apiConfig) return;
@@ -224,10 +228,8 @@ class GlobalUserService {
   }
 }
 
-// Criar instância global
 window.userService = new GlobalUserService();
 
-// Função helper para inicializar em qualquer página
 function initUserService() {
   if (!window.userService) {
     window.userService = new GlobalUserService();
@@ -235,19 +237,16 @@ function initUserService() {
   return window.userService;
 }
 
-// Função helper para atualizar foto de perfil
-function updateUserProfilePhoto(photoUrl) {
+function updateUserProfilePhoto(photoUrl, forceRefresh = false) {
   if (window.userService) {
-    window.userService.updateProfilePhoto(photoUrl);
+    window.userService.updateProfilePhoto(photoUrl, forceRefresh);
   }
 }
 
-// Função helper para obter dados do usuário
 function getUserData() {
   return window.userService ? window.userService.getUserData() : null;
 }
 
-// Exportar para uso em módulos (se necessário)
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     GlobalUserService,
