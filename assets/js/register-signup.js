@@ -397,6 +397,7 @@ async function submitForm(e) {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
+          phone: formData.phone,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
         }),
