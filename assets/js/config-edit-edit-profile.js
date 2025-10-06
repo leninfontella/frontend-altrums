@@ -982,9 +982,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const phoneInput = document.getElementById("phone");
 
   if (phoneInput) {
-    // ============================
-    // MÁSCARA DINÂMICA DE TELEFONE
-    // ============================
     phoneInput.addEventListener("input", (e) => {
       let value = e.target.value.replace(/\D/g, ""); // remove tudo que não for número
 
@@ -1010,23 +1007,6 @@ document.addEventListener("DOMContentLoaded", () => {
     phoneInput.addEventListener("keypress", (e) => {
       if (!/[0-9]/.test(e.key)) e.preventDefault();
     });
-
-    // ============================
-    // GARANTIR QUE O VALOR FORMATADO SEJA SALVO
-    // ============================
-    // Intercepta o envio do perfil e força a limpeza de espaços extras,
-    // mantendo o formato (XX) XXXXX-XXXX intacto.
-    const saveButton = document.querySelector("#saveProfileButton");
-    if (saveButton) {
-      saveButton.addEventListener("click", () => {
-        const phone = phoneInput.value.trim(); // mantém o formato (51) 99999-9999
-
-        // Garante que o campo usado no envio tenha o valor formatado
-        phoneInput.value = phone;
-
-        console.log("Telefone formatado antes de salvar:", phone);
-      });
-    }
   }
 });
 
