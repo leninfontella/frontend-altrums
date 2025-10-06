@@ -753,21 +753,25 @@ const Auth = {
 
       const data = await response.json();
 
-      if (data.success && data.data) {
-        // Se está atualizando a foto, salvar separadamente também
-        if (profileData.profilePhotoUrl) {
-          this.updateProfilePhoto(profileData.profilePhotoUrl);
+      // Aceitar tanto { user } quanto { data: { user } }
+      const updatedUser = data.user || data.data?.user || data.data;
+
+      if (data.success && updatedUser) {
+        // Atualizar foto separadamente, se necessário
+        if (updatedUser.profilePhotoUrl) {
+          this.updateProfilePhoto(updatedUser.profilePhotoUrl);
         }
 
-        // Atualizar dados salvos
+        // Atualizar e persistir os dados
         this.saveUserData({
           success: true,
           data: {
-            user: data.data,
+            user: updatedUser,
             accessToken: this.getToken(),
           },
         });
-        return { success: true, data: data.data };
+
+        return { success: true, user: updatedUser };
       } else {
         throw new Error(data.message || "Erro ao atualizar perfil");
       }
