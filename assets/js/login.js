@@ -511,6 +511,92 @@ function showSuccessFeedback(balance) {
   }
 }
 
+// Função auxiliar para identificar tipo de erro de autenticação
+function identifyAuthError(error) {
+  const errorMsg = error.message || error.toString();
+  const errorMsgLower = errorMsg.toLowerCase();
+
+  // Lista expandida de padrões de erro
+  const errorPatterns = {
+    incorrectPassword: [
+      "senha incorreta",
+      "senha inválida",
+      "password incorrect",
+      "invalid password",
+      "wrong password",
+      "incorrect credentials",
+      "senha não confere",
+      "password mismatch",
+      "authentication failed",
+      "credenciais inválidas",
+      "401",
+      "unauthorized",
+    ],
+    userNotFound: [
+      "usuário não encontrado",
+      "user not found",
+      "email não encontrado",
+      "email not found",
+      "não cadastrado",
+      "not registered",
+      "account not found",
+      "invalid user",
+    ],
+    networkError: [
+      "network error",
+      "erro de conexão",
+      "failed to fetch",
+      "network request failed",
+      "timeout",
+      "connection refused",
+      "erro de rede",
+      "sem conexão",
+    ],
+  };
+
+  // Verificar senha incorreta
+  if (
+    errorPatterns.incorrectPassword.some((pattern) =>
+      errorMsgLower.includes(pattern)
+    )
+  ) {
+    return {
+      field: "password",
+      message: "Senha incorreta",
+    };
+  }
+
+  // Verificar usuário não encontrado
+  if (
+    errorPatterns.userNotFound.some((pattern) =>
+      errorMsgLower.includes(pattern)
+    )
+  ) {
+    return {
+      field: "email",
+      message: "E-mail não encontrado ou não cadastrado",
+    };
+  }
+
+  // Verificar erro de rede
+  if (
+    errorPatterns.networkError.some((pattern) =>
+      errorMsgLower.includes(pattern)
+    )
+  ) {
+    return {
+      field: "password",
+      message: "Erro de conexão. Verifique sua internet.",
+    };
+  }
+
+  // Erro genérico
+  return {
+    field: "password",
+    message: errorMsg || "Erro ao fazer login. Tente novamente.",
+  };
+}
+
 // Função principal de login otimizada para mobile
 async function handleLogin(e) {
   e.preventDefault();
@@ -681,56 +767,30 @@ async function handleLogin(e) {
         window.location.href = dashboardPage;
       }, redirectDelay);
     } else {
-      throw new Error("Erro inesperado no login");
+      throw new Error(result.message || "Erro inesperado no login");
     }
   } catch (err) {
     console.error("❌ Erro no login mobile:", err);
 
-    // Tratamento de erros específicos
-    const errorMessage = err.message.toLowerCase();
+    // Identificar tipo de erro usando função auxiliar
+    const errorInfo = identifyAuthError(err);
 
-    if (
-      errorMessage.includes("email") ||
-      errorMessage.includes("usuário") ||
-      errorMessage.includes("não encontrado")
-    ) {
-      showError("email", "E-mail não encontrado ou inválido");
-    } else if (
-      errorMessage.includes("password") ||
-      errorMessage.includes("senha") ||
-      errorMessage.includes("credenciais")
-    ) {
-      showError("password", "Senha incorreta");
-    } else if (
-      errorMessage.includes("conexão") ||
-      errorMessage.includes("network") ||
-      errorMessage.includes("fetch")
-    ) {
-      showError("password", "Erro de conexão. Verifique sua internet.");
-    } else {
-      showError("password", err.message || "Erro interno. Tente novamente.");
-    }
+    console.log(
+      `📋 Erro identificado - Campo: ${errorInfo.field}, Mensagem: ${errorInfo.message}`
+    );
+
+    // Mostrar erro no campo apropriado
+    showError(errorInfo.field, errorInfo.message);
 
     // Resetar botão
+    loginButton.innerHTML = originalText;
+    loginButton.disabled = false;
     loginButton.style.background =
       "linear-gradient(135deg, #6c5ce7 0%, #00d4ff 100%)";
     loginButton.style.opacity = "1";
   } finally {
     // Esconder loading
     showLoading(false);
-
-    // Usar delay do CONFIG se disponível
-    let redirectDelay = 2000;
-    if (typeof CONFIG !== "undefined" && CONFIG.UI && CONFIG.UI.redirectDelay) {
-      redirectDelay = CONFIG.UI.redirectDelay;
-    }
-
-    // Sempre restaurar o botão após delay
-    setTimeout(() => {
-      loginButton.innerHTML = originalText;
-      loginButton.disabled = false;
-      loginButton.style.opacity = "1";
-    }, redirectDelay);
   }
 }
 
@@ -786,10 +846,10 @@ window.addEventListener("load", () => {
       initialLoader.style.opacity = "0";
       initialLoader.style.transition = "opacity 0.5s ease";
       setTimeout(() => initialLoader.remove(), 500);
-    }, 400); // delay menor para mobile
+    }, 400);
   }
 });
 
 console.log(
-  "✅ Login mobile.js carregado - versão otimizada para dispositivos móveis"
+  "✅ Login mobile.js carregado - versão otimizada com tratamento de erro aprimorado"
 );
