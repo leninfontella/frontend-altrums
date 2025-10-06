@@ -390,7 +390,7 @@ async function saveProfile() {
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
-        await handleSuccessfulUpdate(result.data);
+        await handleSuccessfulUpdate(result.user || result.data);
 
         // CORREÇÃO: Atualizar originalFormData após sucesso
         setOriginalFormData({
@@ -972,6 +972,41 @@ window.addEventListener("storage", function (e) {
     setTimeout(() => {
       forceReloadUserData();
     }, 100);
+  }
+});
+
+// ============================
+// Máscara dinâmica de telefone
+// ============================
+document.addEventListener("DOMContentLoaded", () => {
+  const phoneInput = document.getElementById("phone");
+
+  if (phoneInput) {
+    phoneInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/\D/g, ""); // remove tudo que não for número
+
+      if (value.length > 11) value = value.slice(0, 11); // limita a 11 dígitos
+
+      // Formata conforme o tamanho
+      if (value.length > 10) {
+        // Celular: (99) 99999-9999
+        value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+      } else if (value.length > 6) {
+        // Telefone fixo: (99) 9999-9999
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+      } else if (value.length > 2) {
+        value = value.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
+      } else {
+        value = value.replace(/^(\d*)/, "($1");
+      }
+
+      e.target.value = value;
+    });
+
+    // Evita caracteres não numéricos no input
+    phoneInput.addEventListener("keypress", (e) => {
+      if (!/[0-9]/.test(e.key)) e.preventDefault();
+    });
   }
 });
 
