@@ -390,7 +390,7 @@ async function saveProfile() {
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
-        await handleSuccessfulUpdate(result.data);
+        await handleSuccessfulUpdate(result.user || result.data);
 
         // CORREÇÃO: Atualizar originalFormData após sucesso
         setOriginalFormData({
