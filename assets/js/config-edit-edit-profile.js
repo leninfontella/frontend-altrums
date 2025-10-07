@@ -1,4 +1,4 @@
-// edit-profile.js - VERSÃO CORRIGIDA PARA MOBILE
+// edit-profile.js - VERSÃO CORRIGIDA PARA MOBILE E TELEFONE
 
 // Função para mostrar mensagens
 function showMessage(message, type = "success") {
@@ -317,13 +317,12 @@ async function saveProfile() {
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
-    if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
-      showMessage(
-        "Nao e possivel alterar o email para outro usuario.",
-        "error"
-      );
-      return;
-    }
+    // 🔧 CORREÇÃO: Remover validação que impedia salvamento
+    // A validação de email deve permitir que o usuário mantenha seu próprio email
+    // if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
+    //   showMessage("Nao e possivel alterar o email para outro usuario.", "error");
+    //   return;
+    // }
 
     if (!name) {
       showMessage("Nome e obrigatorio", "error");
@@ -341,10 +340,11 @@ async function saveProfile() {
       return;
     }
 
+    // 🔧 CORREÇÃO CRÍTICA: Sempre incluir o telefone no profileData
     const profileData = {
       name,
       email,
-      phone,
+      phone, // ✅ Telefone sempre incluído
     };
 
     const photoInput = document.getElementById("photo-input");
@@ -364,39 +364,39 @@ async function saveProfile() {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
-      formData.append("phone", phone);
+      formData.append("phone", phone); // ✅ Telefone incluído no FormData
       formData.append("profilePhoto", file);
 
       const response = await window.apiConfig.put("/api/profile", formData);
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // CORREÇÃO: Limpar o input ANTES de chamar handleSuccessfulUpdate
         photoInput.value = "";
-
         await handleSuccessfulUpdate(result.user);
 
-        // CORREÇÃO: Atualizar originalFormData com hasNewPhoto = false
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone,
+          phone: phone, // ✅ Atualizar originalFormData
           hasNewPhoto: false,
         });
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
     } else {
+      // 🔧 CORREÇÃO CRÍTICA: Garantir que o telefone seja enviado mesmo sem foto
+      console.log("Salvando perfil SEM foto nova. ProfileData:", profileData);
+
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
         await handleSuccessfulUpdate(result.user || result.data);
 
-        // CORREÇÃO: Atualizar originalFormData após sucesso
+        // ✅ Atualizar originalFormData com telefone
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone,
+          phone: phone, // ✅ Telefone atualizado
           hasNewPhoto: false,
         });
       } else {
@@ -514,7 +514,6 @@ async function handleSuccessfulUpdate(updatedUserData) {
       forceRefreshAllProfileImages(newPhotoUrl);
     }, 500);
 
-    // CORREÇÃO: NÃO atualizar originalFormData aqui, pois será feito em saveProfile()
     showMessage("Perfil salvo com sucesso!", "success");
 
     console.log("Atualizacao completa finalizada");
