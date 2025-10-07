@@ -411,14 +411,16 @@ function handleRegisterClick(e) {
   }, 200);
 }
 
-// Mostrar/ocultar mensagens de erro
+// Mostrar/ocultar mensagens de erro - CORRIGIDO
 function showError(fieldId, message) {
   const errorElement = document.getElementById(`${fieldId}-error`);
   const inputElement = document.getElementById(fieldId);
 
+  console.log(`🔴 Mostrando erro para ${fieldId}:`, message);
+
   if (errorElement && inputElement) {
     errorElement.textContent = message;
-    errorElement.style.display = "block";
+    errorElement.classList.add("show");
     inputElement.classList.add("error-border");
     inputElement.classList.remove("success-border");
 
@@ -434,6 +436,8 @@ function showError(fieldId, message) {
         navigator.vibrate([100, 50, 100]);
       }
     }
+  } else {
+    console.error(`❌ Elementos não encontrados para ${fieldId}`);
   }
 }
 
@@ -442,7 +446,7 @@ function clearError(fieldId) {
   const inputElement = document.getElementById(fieldId);
 
   if (errorElement && inputElement) {
-    errorElement.style.display = "none";
+    errorElement.classList.remove("show");
     inputElement.classList.remove("error-border");
   }
 }
@@ -786,7 +790,7 @@ async function handleLogin(e) {
     loginButton.innerHTML = originalText;
     loginButton.disabled = false;
     loginButton.style.background =
-      "linear-gradient(135deg, #6c5ce7 0%, #00d4ff 100%)";
+      "linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)";
     loginButton.style.opacity = "1";
   } finally {
     // Esconder loading
