@@ -26,6 +26,12 @@ function getInitialsPlaceholderUrl(userName) {
   )}&background=00d4ff&color=fff&size=120`;
 }
 
+// NOVO: Função para limpar a máscara do telefone
+function cleanPhone(phone) {
+  // Remove todos os caracteres não-numéricos
+  return phone.replace(/\D/g, "");
+}
+
 // NOVA FUNÇÃO: Forçar refresh de TODAS as imagens (Mobile-friendly)
 function forceRefreshAllProfileImages(photoUrl) {
   console.log("Forcando refresh TOTAL de imagens de perfil");
@@ -315,7 +321,9 @@ async function saveProfile() {
 
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
-    const phone = document.getElementById("phone").value.trim();
+
+    // 💥 CORREÇÃO PRINCIPAL: Limpar a máscara do telefone
+    const phone = cleanPhone(document.getElementById("phone").value.trim());
 
     if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
       showMessage(
@@ -344,7 +352,7 @@ async function saveProfile() {
     const profileData = {
       name,
       email,
-      phone,
+      phone, // Este 'phone' agora está limpo (apenas números)
     };
 
     const photoInput = document.getElementById("photo-input");
@@ -364,7 +372,7 @@ async function saveProfile() {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
-      formData.append("phone", phone);
+      formData.append("phone", phone); // Enviando telefone limpo no FormData
       formData.append("profilePhoto", file);
 
       const response = await window.apiConfig.put("/api/profile", formData);
@@ -380,13 +388,14 @@ async function saveProfile() {
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone,
+          phone: phone, // Armazenando telefone limpo
           hasNewPhoto: false,
         });
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
     } else {
+      // Caminho sem foto, usando profileData (com telefone limpo)
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
@@ -396,7 +405,7 @@ async function saveProfile() {
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone,
+          phone: phone, // Armazenando telefone limpo
           hasNewPhoto: false,
         });
       } else {
