@@ -1,4 +1,4 @@
-// edit-profile.js - VERSÃO CORRIGIDA PARA MOBILE E TELEFONE
+// edit-profile.js - VERSÃO CORRIGIDA PARA TELEFONE COM MÁSCARA
 
 // Função para mostrar mensagens
 function showMessage(message, type = "success") {
@@ -16,6 +16,34 @@ function showMessage(message, type = "success") {
   setTimeout(() => {
     messageBox.classList.remove("show");
   }, 3000);
+}
+
+// 🔧 NOVA FUNÇÃO: Limpar máscara do telefone
+function cleanPhoneNumber(phone) {
+  if (!phone) return "";
+  // Remove tudo exceto números
+  return phone.replace(/\D/g, "");
+}
+
+// 🔧 NOVA FUNÇÃO: Aplicar máscara ao telefone
+function applyPhoneMask(phone) {
+  if (!phone) return "";
+
+  const cleaned = cleanPhoneNumber(phone);
+
+  if (cleaned.length > 10) {
+    // Celular: (99) 99999-9999
+    return cleaned.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+  } else if (cleaned.length > 6) {
+    // Telefone fixo: (99) 9999-9999
+    return cleaned.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  } else if (cleaned.length > 2) {
+    return cleaned.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
+  } else if (cleaned.length > 0) {
+    return cleaned.replace(/^(\d*)/, "($1");
+  }
+
+  return "";
 }
 
 // Função para gerar URL do placeholder com iniciais
@@ -209,10 +237,11 @@ async function loadUserDataFromAPI() {
 
       populateFormWithData(userData);
 
+      // 🔧 CORREÇÃO: Salvar telefone LIMPO no originalFormData
       setOriginalFormData({
         name: userData.name || userData.fullName || "",
         email: userData.email || "",
-        phone: userData.phone || "",
+        phone: cleanPhoneNumber(userData.phone || ""), // ✅ Limpar máscara
         hasNewPhoto: false,
       });
 
@@ -250,7 +279,12 @@ function populateFormWithData(userData) {
 
   if (nameInput) nameInput.value = userData.name || userData.fullName || "";
   if (emailInput) emailInput.value = userData.email || "";
-  if (phoneInput) phoneInput.value = userData.phone || "";
+
+  // 🔧 CORREÇÃO: Aplicar máscara ao preencher
+  if (phoneInput) {
+    const cleanPhone = cleanPhoneNumber(userData.phone || "");
+    phoneInput.value = applyPhoneMask(cleanPhone);
+  }
 
   if (profileImage) {
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
@@ -270,10 +304,12 @@ function loadUserProfileFromLocalStorage() {
   if (userData) {
     console.log("Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
+
+    // 🔧 CORREÇÃO: Salvar telefone LIMPO
     setOriginalFormData({
       name: userData.name || userData.fullName || "",
       email: userData.email || "",
-      phone: userData.phone || "",
+      phone: cleanPhoneNumber(userData.phone || ""), // ✅ Limpar máscara
       hasNewPhoto: false,
     });
   } else {
@@ -315,14 +351,15 @@ async function saveProfile() {
 
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
-    const phone = document.getElementById("phone").value.trim();
+    const phoneRaw = document.getElementById("phone").value.trim();
 
-    // 🔧 CORREÇÃO: Remover validação que impedia salvamento
-    // A validação de email deve permitir que o usuário mantenha seu próprio email
-    // if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
-    //   showMessage("Nao e possivel alterar o email para outro usuario.", "error");
-    //   return;
-    // }
+    // 🔧 CORREÇÃO CRÍTICA: Limpar máscara antes de enviar
+    const phone = cleanPhoneNumber(phoneRaw);
+
+    console.log("📞 Telefone capturado:", {
+      raw: phoneRaw,
+      cleaned: phone,
+    });
 
     if (!name) {
       showMessage("Nome e obrigatorio", "error");
@@ -340,12 +377,20 @@ async function saveProfile() {
       return;
     }
 
-    // 🔧 CORREÇÃO CRÍTICA: Sempre incluir o telefone no profileData
+    // 🔧 CORREÇÃO: Validar telefone apenas se preenchido
+    if (phone && phone.length > 0 && (phone.length < 10 || phone.length > 11)) {
+      showMessage("Telefone deve ter 10 ou 11 dígitos", "error");
+      return;
+    }
+
+    // 🔧 CORREÇÃO CRÍTICA: Enviar telefone LIMPO (sem máscara)
     const profileData = {
       name,
       email,
-      phone, // ✅ Telefone sempre incluído
+      phone, // ✅ Telefone limpo
     };
+
+    console.log("💾 Dados a serem salvos:", profileData);
 
     const photoInput = document.getElementById("photo-input");
     if (photoInput && photoInput.files && photoInput.files[0]) {
@@ -364,7 +409,7 @@ async function saveProfile() {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
-      formData.append("phone", phone); // ✅ Telefone incluído no FormData
+      formData.append("phone", phone); // ✅ Telefone limpo
       formData.append("profilePhoto", file);
 
       const response = await window.apiConfig.put("/api/profile", formData);
@@ -374,17 +419,18 @@ async function saveProfile() {
         photoInput.value = "";
         await handleSuccessfulUpdate(result.user);
 
+        // 🔧 CORREÇÃO: Atualizar com telefone LIMPO
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone, // ✅ Atualizar originalFormData
+          phone: phone, // ✅ Telefone limpo
           hasNewPhoto: false,
         });
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
     } else {
-      // 🔧 CORREÇÃO CRÍTICA: Garantir que o telefone seja enviado mesmo sem foto
+      // 🔧 CORREÇÃO CRÍTICA: Garantir que o telefone limpo seja enviado
       console.log("Salvando perfil SEM foto nova. ProfileData:", profileData);
 
       const result = await Auth.updateProfile(profileData);
@@ -392,13 +438,15 @@ async function saveProfile() {
       if (result.success) {
         await handleSuccessfulUpdate(result.user || result.data);
 
-        // ✅ Atualizar originalFormData com telefone
+        // 🔧 CORREÇÃO: Atualizar com telefone LIMPO
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone, // ✅ Telefone atualizado
+          phone: phone, // ✅ Telefone limpo
           hasNewPhoto: false,
         });
+
+        console.log("✅ Perfil salvo com sucesso! Telefone:", phone);
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
@@ -664,17 +712,37 @@ function navigateBack() {
   }
 }
 
+// 🔧 CORREÇÃO CRÍTICA: Comparar telefones SEM máscara
 function hasUnsavedChanges() {
   const currentData = getCurrentFormData();
   const originalData = getOriginalFormData();
-  return JSON.stringify(currentData) !== JSON.stringify(originalData);
+
+  console.log("🔍 Verificando mudanças:", {
+    current: currentData,
+    original: originalData,
+  });
+
+  // Comparar telefones sem máscara
+  const hasChanges =
+    currentData.name !== originalData.name ||
+    currentData.email !== originalData.email ||
+    cleanPhoneNumber(currentData.phone) !==
+      cleanPhoneNumber(originalData.phone) ||
+    currentData.hasNewPhoto !== originalData.hasNewPhoto;
+
+  console.log("📊 Tem mudanças?", hasChanges);
+
+  return hasChanges;
 }
 
+// 🔧 CORREÇÃO: Retornar telefone LIMPO
 function getCurrentFormData() {
   return {
     name: document.getElementById("name")?.value.trim() || "",
     email: document.getElementById("email")?.value.trim() || "",
-    phone: document.getElementById("phone")?.value.trim() || "",
+    phone: cleanPhoneNumber(
+      document.getElementById("phone")?.value.trim() || ""
+    ), // ✅ Limpar máscara
     hasNewPhoto: document.getElementById("photo-input")?.files.length > 0,
   };
 }
@@ -687,6 +755,7 @@ function getOriginalFormData() {
 
 function setOriginalFormData(data) {
   originalFormData = { ...data };
+  console.log("📝 OriginalFormData atualizado:", originalFormData);
 }
 
 function setupPhotoPreview() {
@@ -902,7 +971,8 @@ async function removeProfilePhotoWithoutConfirm() {
 function validateForm() {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
+  const phoneRaw = document.getElementById("phone").value.trim();
+  const phone = cleanPhoneNumber(phoneRaw);
 
   const errors = [];
 
@@ -916,11 +986,10 @@ function validateForm() {
     errors.push("Email invalido");
   }
 
+  // 🔧 CORREÇÃO: Validar telefone limpo
   if (phone && phone.length > 0) {
-    const phoneRegex =
-      /^(\+55\s?)?(\(?[1-9]{2}\)?\s?)?9?[0-9]{4}[-\s]?[0-9]{4}$/;
-    if (!phoneRegex.test(phone)) {
-      errors.push("Formato de telefone invalido");
+    if (phone.length < 10 || phone.length > 11) {
+      errors.push("Telefone deve ter 10 ou 11 dígitos");
     }
   }
 
@@ -1020,4 +1089,6 @@ window.editProfileFunctions = {
   syncUserDataSafe,
   clearUserData,
   forceRefreshAllProfileImages,
+  cleanPhoneNumber,
+  applyPhoneMask,
 };
