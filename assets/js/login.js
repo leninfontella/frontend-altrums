@@ -601,6 +601,59 @@ function identifyAuthError(error) {
   };
 }
 
+// login.js
+
+/**
+ * Analisa a mensagem de erro do backend para identificar o campo afetado (e-mail ou senha).
+ * @param {Error} error - O objeto Error lançado pelo módulo Auth.
+ * @returns {{field: 'email'|'password', message: string}} Objeto com o campo e a mensagem de erro.
+ */
+function identifyAuthError(error) {
+  const defaultMessage = "Verifique se seu e-mail e senha estão corretos.";
+  const errorMessage = error.message || defaultMessage;
+  const errorLower = errorMessage.toLowerCase();
+
+  // Lista de palavras-chave que indicam um erro no campo E-MAIL
+  const emailKeywords = [
+    "e-mail",
+    "email",
+    "usuário",
+    "user not found",
+    "não cadastrado",
+    "não encontrado",
+    "não existe",
+    "inválido",
+  ];
+
+  // Verifica se a mensagem de erro contém alguma palavra-chave de e-mail
+  const isEmailError = emailKeywords.some((keyword) =>
+    errorLower.includes(keyword)
+  );
+
+  // Se a mensagem da API for muito genérica, usamos a mensagem padrão para credenciais
+  if (
+    errorMessage.includes("Erro de conexão") ||
+    errorMessage.includes("Erro HTTP")
+  ) {
+    return { field: "password", message: errorMessage };
+  }
+
+  if (isEmailError) {
+    // Se a mensagem for muito específica, a usamos. Caso contrário, usamos uma genérica de e-mail.
+    const specificEmailMessage = errorLower.includes("e-mail não encontrado")
+      ? "E-mail não encontrado ou não cadastrado."
+      : errorMessage;
+    return { field: "email", message: specificEmailMessage };
+  }
+
+  // Se não for um erro de rede ou de e-mail, assumimos que o problema está na SENHA ou nas credenciais combinadas.
+  // Usamos a mensagem padrão ou a mensagem que veio da API.
+  return {
+    field: "password",
+    message: defaultMessage,
+  };
+}
+
 // Função principal de login otimizada para mobile
 async function handleLogin(e) {
   e.preventDefault();

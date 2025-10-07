@@ -34,6 +34,7 @@ const Auth = {
   _isNewUserRegistration: false,
 
   // ========== REQUISIÇÕES AUTENTICADAS - CORRIGIDO ==========
+  // auth.js
   async makeRequest(endpoint, options = {}) {
     const token = this.getToken();
     const url = endpoint.startsWith("http")
@@ -57,45 +58,48 @@ const Auth = {
         headers,
       });
 
-      // Se o token estiver expirado ou for inválido
-      if (response.status === 401) {
-        console.warn("Token expirado ou inválido");
-        this.logout();
-        this.redirectToLogin();
-        throw new Error(
-          "Token de autenticação expirado. Por favor, faça login novamente."
-        );
-      }
-
-      // 🔧 CORREÇÃO: Tratar erros HTTP de forma mais específica
+      // 1. LANÇAMENTO DE ERRO PARA STATUS NÃO-OK (4xx, 5xx)
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Erro desconhecido" }));
-
-        const errorMessage =
-          errorData.message || `Erro HTTP ${response.status}`;
-        console.error(`Erro ${response.status}:`, errorMessage);
-
-        // Para erros de login (400, 401, 403), preservar mensagem original
-        if (response.status >= 400 && response.status < 500) {
-          throw new Error(errorMessage);
+        let errorData = {};
+        try {
+          // Tenta ler o corpo da resposta para obter a mensagem de erro específica da API
+          errorData = await response.json();
+        } catch (e) {
+          // Se falhar ao ler JSON, usa uma mensagem genérica de erro
+          console.error(
+            "Falha ao ler corpo da resposta de erro (JSON inválido):",
+            e
+          );
         }
 
-        // Para erros de servidor (500+), mensagem genérica
-        if (response.status >= 500) {
-          throw new Error("Erro no servidor. Tente novamente mais tarde.");
+        // Determina a mensagem de erro a ser exibida/propagada
+        let errorMessage = errorData.message || `Erro HTTP ${response.status}`;
+
+        // Tratamento especial para 401 com token (requisições autenticadas)
+        // Se for um 401, o fluxo de logout/redirecionamento deve ocorrer.
+        if (response.status === 401 && endpoint !== this.ENDPOINTS.login) {
+          console.warn("Token expirado ou inválido. Realizando logout.");
+          this.logout();
+          this.redirectToLogin();
+          errorMessage =
+            "Token de autenticação expirado. Por favor, faça login novamente.";
+        }
+        // Tratamento para 5xx (erros internos do servidor)
+        else if (response.status >= 500) {
+          errorMessage = "Erro no servidor. Tente novamente mais tarde.";
         }
 
+        // LANÇA o erro para que a função chamadora (Auth.login) o intercepte.
         throw new Error(errorMessage);
       }
 
       console.log(`Requisição bem-sucedida para: ${endpoint}`);
+      // Se a requisição foi OK (2xx), retorna o objeto 'Response' para ser lido no chamador
       return response;
     } catch (error) {
       console.error(`Erro na requisição para ${endpoint}:`, error);
 
-      // 🔧 CORREÇÃO: Identificar erros de rede de forma mais precisa
+      // 2. TRATAMENTO DE ERROS DE REDE (Failed to fetch, NetworkError)
       if (
         error.message.includes("fetch") ||
         error.name === "TypeError" ||
@@ -107,7 +111,7 @@ const Auth = {
         );
       }
 
-      // Propaga o erro para que a função chamadora possa tratá-lo
+      // Propaga outros erros (como o Error lançado no bloco 'if (!response.ok)')
       throw error;
     }
   },
@@ -516,7 +520,7 @@ const Auth = {
           errorLower.includes("incorrect") ||
           errorLower.includes("wrong")
         ) {
-          throw new Error("Senha incorreta");
+          throw new Error("Senha incorreta!");
         } else if (
           errorLower.includes("usuário") ||
           errorLower.includes("user") ||
