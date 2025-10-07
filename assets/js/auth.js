@@ -33,7 +33,7 @@ const Auth = {
   _currentUserId: null,
   _isNewUserRegistration: false,
 
-  // ========== REQUISIÇÕES AUTENTICADAS ==========
+  // ========== REQUISIÇÕES AUTENTICADAS - CORRIGIDO ==========
   async makeRequest(endpoint, options = {}) {
     const token = this.getToken();
     const url = endpoint.startsWith("http")
@@ -57,7 +57,7 @@ const Auth = {
         headers,
       });
 
-      // Se o token estiver expirado ou for inválido, lance um erro.
+      // Se o token estiver expirado ou for inválido
       if (response.status === 401) {
         console.warn("Token expirado ou inválido");
         this.logout();
@@ -67,13 +67,27 @@ const Auth = {
         );
       }
 
-      // Se a resposta não for bem-sucedida (status 400, 500, etc.), lance um erro.
+      // 🔧 CORREÇÃO: Tratar erros HTTP de forma mais específica
       if (!response.ok) {
         const errorData = await response
           .json()
           .catch(() => ({ message: "Erro desconhecido" }));
-        console.error(`Erro ${response.status}:`, errorData.message);
-        throw new Error(errorData.message || `Erro HTTP ${response.status}`);
+
+        const errorMessage =
+          errorData.message || `Erro HTTP ${response.status}`;
+        console.error(`Erro ${response.status}:`, errorMessage);
+
+        // Para erros de login (400, 401, 403), preservar mensagem original
+        if (response.status >= 400 && response.status < 500) {
+          throw new Error(errorMessage);
+        }
+
+        // Para erros de servidor (500+), mensagem genérica
+        if (response.status >= 500) {
+          throw new Error("Erro no servidor. Tente novamente mais tarde.");
+        }
+
+        throw new Error(errorMessage);
       }
 
       console.log(`Requisição bem-sucedida para: ${endpoint}`);
@@ -81,14 +95,19 @@ const Auth = {
     } catch (error) {
       console.error(`Erro na requisição para ${endpoint}:`, error);
 
-      // Verifique se é um erro de rede (incluindo falha de fetch)
-      if (error.message.includes("fetch") || error.name === "TypeError") {
+      // 🔧 CORREÇÃO: Identificar erros de rede de forma mais precisa
+      if (
+        error.message.includes("fetch") ||
+        error.name === "TypeError" ||
+        error.message.includes("NetworkError") ||
+        error.message.includes("Failed to fetch")
+      ) {
         throw new Error(
           "Erro de conexão. Verifique sua internet e se o servidor está rodando."
         );
       }
 
-      // Propaga o erro para que a função chamadora possa tratá-lo.
+      // Propaga o erro para que a função chamadora possa tratá-lo
       throw error;
     }
   },
@@ -467,7 +486,6 @@ const Auth = {
     try {
       console.log(`Tentativa de login para: ${email}`);
 
-      // CRÍTICO: Limpar dados do usuário anterior ANTES do login
       this.clearUserSpecificData();
 
       const response = await this.makeRequest(this.ENDPOINTS.login, {
@@ -488,10 +506,39 @@ const Auth = {
         console.log("Login realizado com sucesso");
         return { success: true, data: data };
       } else {
-        throw new Error(data.message || "Credenciais inválidas");
+        // 🔧 CORREÇÃO: Lançar erros específicos
+        const errorMessage = data.message || "Credenciais inválidas";
+        const errorLower = errorMessage.toLowerCase();
+
+        if (
+          errorLower.includes("senha") ||
+          errorLower.includes("password") ||
+          errorLower.includes("incorrect") ||
+          errorLower.includes("wrong")
+        ) {
+          throw new Error("Senha incorreta");
+        } else if (
+          errorLower.includes("usuário") ||
+          errorLower.includes("user") ||
+          errorLower.includes("email") ||
+          errorLower.includes("not found") ||
+          errorLower.includes("não encontrado")
+        ) {
+          throw new Error("E-mail não encontrado ou não cadastrado");
+        } else {
+          throw new Error(errorMessage);
+        }
       }
     } catch (error) {
       console.error("Erro no login:", error);
+
+      if (
+        error.message.includes("Failed to fetch") ||
+        error.message.includes("NetworkError")
+      ) {
+        throw new Error("Erro de conexão. Verifique sua internet.");
+      }
+
       throw error;
     }
   },
