@@ -119,7 +119,7 @@ const Auth = {
   // ========== GERENCIAMENTO DE DADOS DO USUÁRIO ==========
   saveUserData(responseData) {
     try {
-      console.log("📥 saveUserData chamado com:", responseData);
+      console.log("Salvando dados do usuário:", responseData);
 
       // Extrair dados baseado em diferentes estruturas possíveis
       let token, user;
@@ -177,17 +177,6 @@ const Auth = {
           profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
         }
 
-        // 🔧 CORREÇÃO CRÍTICA: Preservar telefone local se não vier da API
-        const existingUserData = this.getUserData();
-        const phoneToSave =
-          user.phone !== undefined ? user.phone : existingUserData?.phone || "";
-
-        console.log("📞 Telefone processado:", {
-          daAPI: user.phone,
-          local: existingUserData?.phone,
-          final: phoneToSave,
-        });
-
         const userInfo = {
           id: user.id || user._id,
           name: user.name || user.fullName,
@@ -201,15 +190,8 @@ const Auth = {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           profilePhotoUrl: profilePhotoUrl,
-          phone: phoneToSave, // 🔧 Usar telefone processado
+          phone: user.phone || "",
         };
-
-        console.log("💾 Dados a serem salvos:", {
-          name: userInfo.name,
-          email: userInfo.email,
-          phone: userInfo.phone,
-          profilePhotoUrl: userInfo.profilePhotoUrl,
-        });
 
         // Salvar foto separadamente apenas se existir
         if (userInfo.profilePhotoUrl) {
@@ -250,7 +232,13 @@ const Auth = {
         localStorage.setItem("currentUser", JSON.stringify(userInfo));
         sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
 
-        console.log("✅ Dados salvos com sucesso!");
+        console.log("Dados salvos:", {
+          name: userInfo.name,
+          email: userInfo.email,
+          balance: userInfo.balance,
+          level: userInfo.level,
+          profilePhotoUrl: userInfo.profilePhotoUrl,
+        });
       }
 
       // Marcar como logado
@@ -660,25 +648,15 @@ const Auth = {
   // ========== PERFIL E SALDO ==========
   async getProfile() {
     try {
-      console.log("🔄 Buscando perfil da API...");
-
       const response = await this.makeRequest(this.ENDPOINTS.profile);
 
       if (!response) return null;
 
       const data = await response.json();
 
-      console.log("📥 Resposta da API (getProfile):", data);
-
-      if (data.success && data.user) {
-        // 🔧 CORREÇÃO: Estrutura correta { success: true, user: {...} }
-        const userData = data.user;
-
-        console.log("👤 Dados do usuário recebidos:", {
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-        });
+      if (data.success && data.data) {
+        // Estrutura correta do backend
+        const userData = data.data.user || data.data;
 
         // CRÍTICO: Sempre preservar foto local se não vier da API
         const existingPhoto = this.getProfilePhoto();
@@ -687,7 +665,7 @@ const Auth = {
           console.log("Foto local preservada no getProfile:", existingPhoto);
         }
 
-        // 🔧 CORREÇÃO: Não sobrescrever dados, apenas atualizar o que veio da API
+        // Salvar dados atualizados
         this.saveUserData({
           success: true,
           data: {
@@ -696,14 +674,12 @@ const Auth = {
           },
         });
 
-        console.log("✅ Perfil atualizado no storage");
-
         return userData;
       } else {
         throw new Error(data.message || "Erro ao buscar perfil");
       }
     } catch (error) {
-      console.error("❌ Erro ao buscar perfil:", error);
+      console.error("Erro ao buscar perfil:", error);
       throw error;
     }
   },
@@ -768,8 +744,6 @@ const Auth = {
 
   async updateProfile(profileData) {
     try {
-      console.log("📤 Enviando atualização de perfil:", profileData);
-
       const response = await this.makeRequest(this.ENDPOINTS.updateProfile, {
         method: "PUT",
         body: JSON.stringify(profileData),
@@ -779,18 +753,10 @@ const Auth = {
 
       const data = await response.json();
 
-      console.log("📥 Resposta do updateProfile:", data);
-
       // Aceitar tanto { user } quanto { data: { user } }
       const updatedUser = data.user || data.data?.user || data.data;
 
       if (data.success && updatedUser) {
-        console.log("✅ Perfil atualizado com sucesso:", {
-          name: updatedUser.name,
-          email: updatedUser.email,
-          phone: updatedUser.phone,
-        });
-
         // Atualizar foto separadamente, se necessário
         if (updatedUser.profilePhotoUrl) {
           this.updateProfilePhoto(updatedUser.profilePhotoUrl);
@@ -810,7 +776,7 @@ const Auth = {
         throw new Error(data.message || "Erro ao atualizar perfil");
       }
     } catch (error) {
-      console.error("❌ Erro ao atualizar perfil:", error);
+      console.error("Erro ao atualizar perfil:", error);
       throw error;
     }
   },
@@ -918,7 +884,6 @@ const Auth = {
         userData?.level || parseInt(sessionStorage.getItem("userLevel")) || 1,
       avatar: userData?.avatar || null,
       profilePhotoUrl: this.getProfilePhoto(), // Usar função específica
-      phone: userData?.phone || "", // ✅ Incluir phone
     };
   },
 };
@@ -996,7 +961,7 @@ if (typeof module !== "undefined" && module.exports) {
 }
 
 console.log(
-  "Módulo Auth unificado carregado com correção de persistência de telefone!"
+  "Módulo Auth unificado carregado com correção de múltiplos usuários!"
 );
 
 // ========== COMPATIBILIDADE COM CONFIG ==========
