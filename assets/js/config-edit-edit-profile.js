@@ -26,12 +26,6 @@ function getInitialsPlaceholderUrl(userName) {
   )}&background=00d4ff&color=fff&size=120`;
 }
 
-// NOVO: Função para limpar a máscara do telefone
-function cleanPhone(phone) {
-  // Remove todos os caracteres não-numéricos
-  return phone.replace(/\D/g, "");
-}
-
 // NOVA FUNÇÃO: Forçar refresh de TODAS as imagens (Mobile-friendly)
 function forceRefreshAllProfileImages(photoUrl) {
   console.log("Forcando refresh TOTAL de imagens de perfil");
@@ -321,30 +315,40 @@ async function saveProfile() {
 
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
-
-    // 💥 CORREÇÃO 1: Limpar a máscara do telefone
-    const phone = cleanPhone(document.getElementById("phone").value.trim());
+    const phone = document.getElementById("phone").value.trim();
 
     if (email && email.toLowerCase() !== currentUserData.email.toLowerCase()) {
       showMessage(
         "Nao e possivel alterar o email para outro usuario.",
         "error"
       );
-      // ... (Outras validações)
       return;
     }
 
-    // ... (Validações de nome, email, regex)
+    if (!name) {
+      showMessage("Nome e obrigatorio", "error");
+      return;
+    }
+
+    if (!email) {
+      showMessage("Email e obrigatorio", "error");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showMessage("Email invalido", "error");
+      return;
+    }
 
     const profileData = {
       name,
       email,
-      phone, // Este 'phone' agora está limpo (apenas números)
+      phone,
     };
 
     const photoInput = document.getElementById("photo-input");
     if (photoInput && photoInput.files && photoInput.files[0]) {
-      // ... (Lógica para upload de foto - Este caminho já funciona)
       const file = photoInput.files[0];
 
       if (!file.type.startsWith("image/")) {
@@ -360,17 +364,19 @@ async function saveProfile() {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
-      formData.append("phone", phone); // Usa o telefone limpo
+      formData.append("phone", phone);
       formData.append("profilePhoto", file);
 
       const response = await window.apiConfig.put("/api/profile", formData);
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // CORREÇÃO: Limpar o input ANTES de chamar handleSuccessfulUpdate
         photoInput.value = "";
+
         await handleSuccessfulUpdate(result.user);
 
-        // Armazena o novo telefone limpo
+        // CORREÇÃO: Atualizar originalFormData com hasNewPhoto = false
         setOriginalFormData({
           name: name,
           email: email,
@@ -381,40 +387,12 @@ async function saveProfile() {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
     } else {
-      // ========== CAMINHO 2: SOMENTE TEXTO (Aqui inserimos a checagem) ==========
-
-      // 💥 CORREÇÃO 2: Checagem explícita de mudança
-      // Assume-se que 'originalFormData' é um objeto acessível com os dados originais
-      const originalName = originalFormData.name;
-      const originalEmail = originalFormData.email;
-      // Limpa o telefone original para comparação
-      const originalPhoneClean = cleanPhone(originalFormData.phone || "");
-
-      // Compara os valores atuais (limpos) com os originais (limpos)
-      if (
-        name === originalName &&
-        email === originalEmail &&
-        phone === originalPhoneClean
-      ) {
-        showMessage("Nenhuma alteracao detectada para salvar.", "warning");
-
-        // Reabilita os botões e retorna, impedindo a chamada à API desnecessária
-        saveButtons.forEach((btn) => {
-          btn.disabled = false;
-          btn.innerHTML = btn.classList.contains("save-button")
-            ? '<i class="fas fa-check"></i>'
-            : "Salvar Informações";
-        });
-        return;
-      }
-
-      // Se houver mudança, chama a API
       const result = await Auth.updateProfile(profileData);
 
       if (result.success) {
         await handleSuccessfulUpdate(result.user || result.data);
 
-        // Armazena o novo telefone limpo
+        // CORREÇÃO: Atualizar originalFormData após sucesso
         setOriginalFormData({
           name: name,
           email: email,
@@ -426,7 +404,6 @@ async function saveProfile() {
       }
     }
   } catch (error) {
-    // ... (Seu bloco catch original)
     console.error("Erro ao salvar perfil:", error);
 
     if (error.message.includes("401") || error.message.includes("Token")) {
