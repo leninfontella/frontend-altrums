@@ -383,19 +383,24 @@ async function saveProfile() {
       return;
     }
 
-    // 🔧 CORREÇÃO CRÍTICA: Enviar telefone LIMPO (sem máscara)
+    // 🔧 Prepara os dados de texto (JSON) para o PUT /api/profile
     const profileData = {
       name,
       email,
       phone, // ✅ Telefone limpo
     };
 
-    console.log("💾 Dados a serem salvos:", profileData);
+    console.log("💾 Dados de texto a serem salvos:", profileData);
 
     const photoInput = document.getElementById("photo-input");
+
+    // ====================================================================
+    // 🚨 CORREÇÃO ESTRUTURAL: SEPARAÇÃO DE REQUISIÇÃO DE FOTO E DADOS DE TEXTO
+    // ====================================================================
     if (photoInput && photoInput.files && photoInput.files[0]) {
       const file = photoInput.files[0];
 
+      // Validações de arquivo
       if (!file.type.startsWith("image/")) {
         showMessage("Por favor, selecione apenas arquivos de imagem", "error");
         return;
@@ -406,31 +411,55 @@ async function saveProfile() {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("email", email);
-      formData.append("phone", phone); // ✅ Telefone limpo
-      formData.append("profilePhoto", file);
+      // PASSO 1: FAZER O UPLOAD DA FOTO (POST /api/profile/upload-photo)
+      const photoFormData = new FormData();
+      // O backend só precisa do arquivo para a rota de upload
+      photoFormData.append("profilePhoto", file);
 
-      const response = await window.apiConfig.put("/api/profile", formData);
-      const result = await response.json();
+      console.log("📤 Iniciando upload da nova foto...");
 
-      if (response.ok && result.success) {
-        photoInput.value = "";
-        await handleSuccessfulUpdate(result.user);
+      const uploadResponse = await window.apiConfig.post(
+        "/api/profile/upload-photo", // Endpoint CORRETO para foto
+        photoFormData
+      );
+      const uploadResult = await uploadResponse.json();
 
-        // 🔧 CORREÇÃO: Atualizar com telefone LIMPO
+      if (!uploadResponse.ok || !uploadResult.success) {
+        // Lança um erro se o upload da foto falhar (o erro 400 anterior será resolvido, mas este pode ser um erro 500)
+        throw new Error(
+          uploadResult.message ||
+            "Erro ao fazer upload para o servidor de armazenamento"
+        );
+      }
+
+      console.log(
+        "✅ Upload de foto concluído. Resultado:",
+        uploadResult.message
+      );
+
+      // PASSO 2: ATUALIZAR DADOS DO PERFIL (PUT /api/profile)
+      // Fazemos o PUT dos dados de texto que não foram incluídos no FormData de upload.
+      const updateResult = await Auth.updateProfile(profileData);
+
+      if (updateResult.success) {
+        photoInput.value = ""; // Limpa a entrada de arquivo
+        await handleSuccessfulUpdate(updateResult.user || updateResult.data);
+
+        // Atualizar o estado local (OriginalFormData)
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone, // ✅ Telefone limpo
+          phone: phone,
           hasNewPhoto: false,
         });
       } else {
-        throw new Error(result.message || "Erro ao salvar perfil");
+        // Lança um erro se a atualização dos dados de texto (PUT) falhar
+        throw new Error(
+          updateResult.message || "Erro ao salvar dados do perfil"
+        );
       }
     } else {
-      // 🔧 CORREÇÃO CRÍTICA: Garantir que o telefone limpo seja enviado
+      // Bloco ELSE original: Salvar APENAS dados de texto (SEM foto nova)
       console.log("Salvando perfil SEM foto nova. ProfileData:", profileData);
 
       const result = await Auth.updateProfile(profileData);
@@ -438,7 +467,7 @@ async function saveProfile() {
       if (result.success) {
         await handleSuccessfulUpdate(result.user || result.data);
 
-        // 🔧 CORREÇÃO: Atualizar com telefone LIMPO
+        // Atualizar o estado local (OriginalFormData)
         setOriginalFormData({
           name: name,
           email: email,
@@ -454,7 +483,16 @@ async function saveProfile() {
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
 
-    if (error.message.includes("401") || error.message.includes("Token")) {
+    // Tratamento de erros
+    if (error.message.includes("upload para o servidor de armazenamento")) {
+      showMessage(
+        "Erro ao fazer upload para o servidor de armazenamento. Verifique os logs do Backend.",
+        "error"
+      );
+    } else if (
+      error.message.includes("401") ||
+      error.message.includes("Token")
+    ) {
       showMessage("Sessao expirada. Faca login novamente.", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
