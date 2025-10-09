@@ -153,6 +153,16 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
   const profileImage = document.getElementById("profile-image");
   if (!profileImage) return;
 
+  // 🚨 CORREÇÃO CRÍTICA: Previne o loop e o erro ao detectar URL inválida.
+  // Se photoUrl tiver o caractere de emoji inválido (ou não for string),
+  // trate-o como se fosse nulo/vazio para forçar o placeholder.
+  if (photoUrl && (typeof photoUrl !== "string" || photoUrl.includes("👤"))) {
+    photoUrl = null;
+    console.warn(
+      "⚠️ URL de foto de perfil inválida detectada e resetada para null. Usando placeholder."
+    );
+  }
+
   if (photoUrl) {
     let imageUrl = photoUrl;
 
@@ -182,15 +192,18 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
       if (forceRefresh && imageUrl.includes("?t=")) {
         const cleanUrl = imageUrl.split("?t=")[0];
         console.log("Tentando sem cache bust:", cleanUrl);
+        // Tenta novamente sem cache-buster, o que deve levar ao fallback final na segunda falha
         this.src = cleanUrl;
         return;
       }
 
+      // Fallback final para o placeholder de iniciais
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const userName = userData.name || userData.fullName || "";
       this.src = getInitialsPlaceholderUrl(userName);
     };
   } else {
+    // Bloco original para carregar o placeholder quando photoUrl é null ou ""
     const userData = JSON.parse(localStorage.getItem("userData")) || {};
     const userName = userData.name || userData.fullName || "";
     profileImage.src = getInitialsPlaceholderUrl(userName);
