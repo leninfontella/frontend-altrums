@@ -17,13 +17,25 @@ class GlobalUserService {
       const stored = localStorage.getItem("userData");
       if (stored) {
         this.userData = JSON.parse(stored);
+
+        // 🚨 CORREÇÃO CRÍTICA: Limpa a URL inválida '👤' no carregamento
+        if (
+          this.userData.profilePhotoUrl &&
+          typeof this.userData.profilePhotoUrl === "string" &&
+          this.userData.profilePhotoUrl.includes("👤")
+        ) {
+          this.userData.profilePhotoUrl = null;
+          console.warn(
+            "⚠️ [UserService] profilePhotoUrl inválida ('👤') limpa no carregamento."
+          );
+        }
+
         this.notifyListeners();
       }
     } catch (error) {
       console.error("Erro ao carregar dados do usuário:", error);
     }
   }
-
   setupEventListeners() {
     window.addEventListener("userDataUpdated", (event) => {
       if (event.detail && event.detail.userData) {

@@ -191,13 +191,26 @@ const Auth = {
         // Processar foto de perfil
         let profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
 
+        if (
+          profilePhotoUrl &&
+          typeof profilePhotoUrl === "string" &&
+          profilePhotoUrl.includes("👤")
+        ) {
+          profilePhotoUrl = null;
+          console.warn(
+            "⚠️ [Auth] Caractere inválido '👤' detectado na foto e resetado para null."
+          );
+        }
+
         if (this._isNewUserRegistration) {
           // Para novos usuários, usar apenas a foto que veio da API (geralmente null)
           console.log("Novo usuário: usando apenas foto da API");
-          profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
+          // A linha abaixo é redundante, pois profilePhotoUrl já foi definido e limpo acima
+          // profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
         } else {
           // Para usuários existentes, usar a foto da API se disponível
-          profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
+          // A linha abaixo é redundante, pois profilePhotoUrl já foi definido e limpo acima
+          // profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
         }
 
         const userInfo = {
