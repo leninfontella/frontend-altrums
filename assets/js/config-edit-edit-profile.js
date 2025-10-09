@@ -56,30 +56,31 @@ function getInitialsPlaceholderUrl(userName) {
 
 // NOVA FUNÇÃO: Forçar refresh de TODAS as imagens (Mobile-friendly)
 function forceRefreshAllProfileImages(photoUrl) {
-  console.log("Forcando refresh TOTAL de imagens de perfil");
+  console.log("🔄 Forçando refresh de imagens de perfil");
 
-  if (!photoUrl) {
-    const userData = JSON.parse(localStorage.getItem("userData"));
-    photoUrl = userData?.profilePhotoUrl || userData?.avatar;
+  // 🔧 VALIDAÇÃO RIGOROSA
+  if (!photoUrl || typeof photoUrl !== "string" || photoUrl.includes("👤")) {
+    console.warn("⚠️ URL inválida, não atualizando imagens");
+    return;
   }
 
-  if (!photoUrl) return;
-
+  // 🔧 GARANTIR QUE É UMA URL COMPLETA
   let fullUrl = photoUrl;
-  if (
-    !photoUrl.startsWith("http") &&
-    window.apiConfig &&
-    window.apiConfig.baseURL
-  ) {
-    fullUrl = window.apiConfig.baseURL + photoUrl;
+  if (!photoUrl.startsWith("http")) {
+    if (window.apiConfig && window.apiConfig.baseURL) {
+      fullUrl = window.apiConfig.baseURL + photoUrl;
+    } else {
+      console.error("❌ Não é possível construir URL completa");
+      return;
+    }
   }
 
   const timestamp = Date.now();
   const cacheBustedUrl = `${fullUrl}${
     fullUrl.includes("?") ? "&" : "?"
-  }t=${timestamp}&mobile=1&v=${Math.random()}`;
+  }t=${timestamp}&v=${Math.random()}`;
 
-  console.log("URL com cache busting:", cacheBustedUrl);
+  console.log("🌐 URL com cache busting:", cacheBustedUrl);
 
   const selectors = [
     "[data-user-photo]",
@@ -90,9 +91,6 @@ function forceRefreshAllProfileImages(photoUrl) {
     ".user-profile-image",
     "img[alt*='perfil']",
     "img[alt*='profile']",
-    "img[alt*='avatar']",
-    "img[src*='profile']",
-    "img[src*='avatar']",
   ];
 
   let updatedCount = 0;
@@ -113,7 +111,7 @@ function forceRefreshAllProfileImages(photoUrl) {
     });
   });
 
-  console.log(`${updatedCount} elementos de imagem atualizados`);
+  console.log(`✅ ${updatedCount} elementos de imagem atualizados`);
 }
 
 function updateProfilePhotoDisplay(photoUrl) {
@@ -149,65 +147,80 @@ function updateProfilePhotoDisplay(photoUrl) {
   }
 }
 
+// 🔧 FUNÇÃO CORRIGIDA: updateProfilePhotoDisplayFixed
 function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
   const profileImage = document.getElementById("profile-image");
   if (!profileImage) return;
 
-  // 🚨 CORREÇÃO CRÍTICA: Previne o loop e o erro ao detectar URL inválida.
-  // Se photoUrl tiver o caractere de emoji inválido (ou não for string),
-  // trate-o como se fosse nulo/vazio para forçar o placeholder.
-  if (photoUrl && (typeof photoUrl !== "string" || photoUrl.includes("👤"))) {
-    photoUrl = null;
-    console.warn(
-      "⚠️ URL de foto de perfil inválida detectada e resetada para null. Usando placeholder."
-    );
-  }
+  console.log("🖼️ Atualizando foto de perfil:", photoUrl);
 
-  if (photoUrl) {
-    let imageUrl = photoUrl;
+  // 🔧 VALIDAÇÃO RIGOROSA: Detectar URLs inválidas
+  const isInvalidUrl =
+    !photoUrl ||
+    typeof photoUrl !== "string" ||
+    photoUrl.includes("👤") ||
+    photoUrl.includes("�") || // Caracteres inválidos
+    photoUrl === "null" ||
+    photoUrl === "undefined" ||
+    photoUrl.trim() === "";
 
-    if (
-      !photoUrl.startsWith("http") &&
-      window.apiConfig &&
-      window.apiConfig.baseURL
-    ) {
-      imageUrl = window.apiConfig.baseURL + photoUrl;
-    }
-
-    if (forceRefresh) {
-      const separator = imageUrl.includes("?") ? "&" : "?";
-      imageUrl = `${imageUrl}${separator}t=${Date.now()}&mobile=1`;
-      console.log("Cache busting aplicado:", imageUrl);
-    }
-
-    profileImage.src = imageUrl;
-    profileImage.style.opacity = "0.7";
-    setTimeout(() => {
-      profileImage.style.opacity = "1";
-    }, 300);
-
-    profileImage.onerror = function () {
-      console.warn("Erro ao carregar:", imageUrl);
-
-      if (forceRefresh && imageUrl.includes("?t=")) {
-        const cleanUrl = imageUrl.split("?t=")[0];
-        console.log("Tentando sem cache bust:", cleanUrl);
-        // Tenta novamente sem cache-buster, o que deve levar ao fallback final na segunda falha
-        this.src = cleanUrl;
-        return;
-      }
-
-      // Fallback final para o placeholder de iniciais
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const userName = userData.name || userData.fullName || "";
-      this.src = getInitialsPlaceholderUrl(userName);
-    };
-  } else {
-    // Bloco original para carregar o placeholder quando photoUrl é null ou ""
+  if (isInvalidUrl) {
+    console.warn("⚠️ URL inválida detectada, usando placeholder");
     const userData = JSON.parse(localStorage.getItem("userData")) || {};
     const userName = userData.name || userData.fullName || "";
     profileImage.src = getInitialsPlaceholderUrl(userName);
+    return;
   }
+
+  // 🔧 VALIDAÇÃO: URL deve começar com http:// ou https://
+  if (!photoUrl.startsWith("http://") && !photoUrl.startsWith("https://")) {
+    console.warn("⚠️ URL sem protocolo detectada:", photoUrl);
+
+    // Se for path relativo, construir URL completa
+    if (window.apiConfig && window.apiConfig.baseURL) {
+      photoUrl = window.apiConfig.baseURL + photoUrl;
+      console.log("🔧 URL construída:", photoUrl);
+    } else {
+      console.error("❌ apiConfig não disponível, usando placeholder");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const userName = userData.name || userData.fullName || "";
+      profileImage.src = getInitialsPlaceholderUrl(userName);
+      return;
+    }
+  }
+
+  // 🔧 CACHE BUSTING APENAS SE FORÇADO
+  let imageUrl = photoUrl;
+  if (forceRefresh) {
+    const separator = imageUrl.includes("?") ? "&" : "?";
+    imageUrl = `${imageUrl}${separator}t=${Date.now()}&v=${Math.random()}`;
+    console.log("🔄 Cache busting aplicado:", imageUrl);
+  }
+
+  // Aplicar a imagem
+  profileImage.src = imageUrl;
+  profileImage.style.opacity = "0.7";
+  setTimeout(() => {
+    profileImage.style.opacity = "1";
+  }, 300);
+
+  // Handler de erro
+  profileImage.onerror = function () {
+    console.error("❌ Erro ao carregar imagem:", imageUrl);
+
+    // Se tinha cache bust, tentar sem
+    if (forceRefresh && imageUrl.includes("?t=")) {
+      const cleanUrl = imageUrl.split("?t=")[0];
+      console.log("🔄 Tentando sem cache bust:", cleanUrl);
+      this.src = cleanUrl;
+      return;
+    }
+
+    // Fallback: placeholder com iniciais
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+    const userName = userData.name || userData.fullName || "";
+    this.src = getInitialsPlaceholderUrl(userName);
+  };
 }
 
 function clearUserData() {
@@ -537,88 +550,80 @@ async function saveProfile() {
 
 async function handleSuccessfulUpdate(updatedUserData) {
   try {
-    console.log("Iniciando atualizacao bem-sucedida do perfil");
-    console.log("Dados recebidos:", updatedUserData);
+    console.log("✅ Processando atualização bem-sucedida");
+    console.log("📦 Dados recebidos:", updatedUserData);
 
+    // Salvar no localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-    const newPhotoUrl =
-      updatedUserData.profilePhotoUrl || updatedUserData.avatar;
-    console.log("Nova foto URL:", newPhotoUrl);
+    // 🔧 VALIDAÇÃO RIGOROSA DA URL DA FOTO
+    const newPhotoUrl = updatedUserData.profilePhotoUrl || null;
 
-    if (newPhotoUrl) {
+    console.log("🔍 Nova foto URL:", {
+      value: newPhotoUrl,
+      type: typeof newPhotoUrl,
+      isValid:
+        newPhotoUrl &&
+        typeof newPhotoUrl === "string" &&
+        newPhotoUrl.startsWith("http"),
+    });
+
+    // Atualizar apenas se for URL válida
+    if (
+      newPhotoUrl &&
+      typeof newPhotoUrl === "string" &&
+      newPhotoUrl.startsWith("http")
+    ) {
+      console.log("✅ URL válida, atualizando imagens");
       updateProfilePhotoDisplayFixed(newPhotoUrl, true);
 
       setTimeout(() => {
         forceRefreshAllProfileImages(newPhotoUrl);
       }, 100);
-    }
 
-    if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
-      Auth.updateProfilePhoto(newPhotoUrl);
-    }
+      // Atualizar Auth
+      if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
+        Auth.updateProfilePhoto(newPhotoUrl);
+      }
 
-    if (window.userService) {
-      window.userService.updateProfilePhoto(newPhotoUrl);
-    }
-
-    window.dispatchEvent(
-      new CustomEvent("userDataUpdated", {
-        detail: {
-          userData: updatedUserData,
-          timestamp: Date.now(),
-          source: "edit-profile",
-        },
-      })
-    );
-
-    if (newPhotoUrl) {
+      // Disparar eventos
       window.dispatchEvent(
         new CustomEvent("profilePhotoUpdated", {
           detail: {
             photoUrl: newPhotoUrl,
             forceRefresh: true,
             timestamp: Date.now(),
-            source: "edit-profile",
           },
         })
       );
-    }
 
-    if (typeof BroadcastChannel !== "undefined") {
-      try {
-        const channel = new BroadcastChannel("profile_updates");
-        channel.postMessage({
-          type: "PHOTO_UPDATED",
-          photoUrl: newPhotoUrl,
-          userData: updatedUserData,
-          timestamp: Date.now(),
-        });
-        channel.close();
-        console.log("Broadcast enviado para outras abas");
-      } catch (e) {
-        console.log("BroadcastChannel nao disponivel");
+      // BroadcastChannel
+      if (typeof BroadcastChannel !== "undefined") {
+        try {
+          const channel = new BroadcastChannel("profile_updates");
+          channel.postMessage({
+            type: "PHOTO_UPDATED",
+            photoUrl: newPhotoUrl,
+            timestamp: Date.now(),
+          });
+          channel.close();
+        } catch (e) {
+          console.log("BroadcastChannel não disponível");
+        }
+      }
+    } else {
+      console.log("⚠️ Sem foto válida, usando placeholder");
+      const userName = updatedUserData.name || updatedUserData.fullName || "";
+      const profileImage = document.getElementById("profile-image");
+      if (profileImage) {
+        profileImage.src = getInitialsPlaceholderUrl(userName);
       }
     }
 
-    try {
-      localStorage.setItem("lastPhotoUpdate", Date.now().toString());
-      localStorage.setItem("currentPhotoUrl", newPhotoUrl || "");
-    } catch (e) {
-      console.error("Erro ao atualizar lastPhotoUpdate", e);
-    }
-
-    setTimeout(() => {
-      console.log("Refresh final de seguranca");
-      forceRefreshAllProfileImages(newPhotoUrl);
-    }, 500);
-
     showMessage("Perfil salvo com sucesso!", "success");
-
-    console.log("Atualizacao completa finalizada");
   } catch (error) {
-    console.error("Erro em handleSuccessfulUpdate:", error);
-    showMessage("Perfil salvo, mas houve erro na atualizacao visual", "error");
+    console.error("❌ Erro em handleSuccessfulUpdate:", error);
+    showMessage("Perfil salvo, mas houve erro na atualização visual", "error");
   }
 }
 
