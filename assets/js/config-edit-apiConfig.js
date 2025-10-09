@@ -24,7 +24,7 @@ class ApiConfig {
 
     // ✨ CORREÇÃO CRÍTICA: Forçar a URL correta da API em produção
     // O endereço do servidor da API (Render) é diferente do frontend (Vercel)
-    return "https://api-backend-coins.onrender.com/"; // Substitua por sua URL real no Render
+    return "https://api-backend-coins.onrender.com"; // Substitua por sua URL real no Render
   }
 
   // ... o restante da classe permanece o mesmo

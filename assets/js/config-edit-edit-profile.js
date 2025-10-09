@@ -641,7 +641,7 @@ async function uploadPhotoOnly() {
     formData.append("profilePhoto", file);
 
     const response = await window.apiConfig.post(
-      "/api/profile/upload-photo",
+      "api/profile/upload-photo",
       formData
     );
     const result = await response.json();
