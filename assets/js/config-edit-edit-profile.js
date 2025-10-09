@@ -1,4 +1,4 @@
-// edit-profile.js - VERSÃO CORRIGIDA PARA TELEFONE COM MÁSCARA
+// edit-profile.js - VERSÃO CORRIGIDA COMPLETA
 
 // Função para mostrar mensagens
 function showMessage(message, type = "success") {
@@ -18,14 +18,14 @@ function showMessage(message, type = "success") {
   }, 3000);
 }
 
-// 🔧 NOVA FUNÇÃO: Limpar máscara do telefone
+// 🔧 FUNÇÃO: Limpar máscara do telefone
 function cleanPhoneNumber(phone) {
   if (!phone) return "";
   // Remove tudo exceto números
   return phone.replace(/\D/g, "");
 }
 
-// 🔧 NOVA FUNÇÃO: Aplicar máscara ao telefone
+// 🔧 FUNÇÃO: Aplicar máscara ao telefone
 function applyPhoneMask(phone) {
   if (!phone) return "";
 
@@ -54,13 +54,89 @@ function getInitialsPlaceholderUrl(userName) {
   )}&background=00d4ff&color=fff&size=120`;
 }
 
-// NOVA FUNÇÃO: Forçar refresh de TODAS as imagens (Mobile-friendly)
+// 🔧 FUNÇÃO CORRIGIDA: updateProfilePhotoDisplayFixed
+function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
+  const profileImage = document.getElementById("profile-image");
+  if (!profileImage) return;
+
+  console.log("🖼️  Atualizando foto de perfil:", photoUrl);
+
+  // 🔧 VALIDAÇÃO RIGOROSA: Detectar URLs inválidas
+  const isInvalidUrl =
+    !photoUrl ||
+    typeof photoUrl !== "string" ||
+    photoUrl.includes("👤") ||
+    photoUrl.includes("�") || // Caracteres inválidos
+    photoUrl === "null" ||
+    photoUrl === "undefined" ||
+    photoUrl.trim() === "";
+
+  if (isInvalidUrl) {
+    console.warn("⚠️  URL inválida detectada, usando placeholder");
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+    const userName = userData.name || userData.fullName || "";
+    profileImage.src = getInitialsPlaceholderUrl(userName);
+    return;
+  }
+
+  // 🔧 VALIDAÇÃO: URL deve começar com http:// ou https://
+  if (!photoUrl.startsWith("http://") && !photoUrl.startsWith("https://")) {
+    console.warn("⚠️  URL sem protocolo detectada:", photoUrl);
+
+    // Se for path relativo, construir URL completa
+    if (window.apiConfig && window.apiConfig.baseURL) {
+      photoUrl = window.apiConfig.baseURL + photoUrl;
+      console.log("🔧 URL construída:", photoUrl);
+    } else {
+      console.error("❌ apiConfig não disponível, usando placeholder");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const userName = userData.name || userData.fullName || "";
+      profileImage.src = getInitialsPlaceholderUrl(userName);
+      return;
+    }
+  }
+
+  // 🔧 CACHE BUSTING APENAS SE FORÇADO
+  let imageUrl = photoUrl;
+  if (forceRefresh) {
+    const separator = imageUrl.includes("?") ? "&" : "?";
+    imageUrl = `${imageUrl}${separator}t=${Date.now()}&v=${Math.random()}`;
+    console.log("🔄 Cache busting aplicado:", imageUrl);
+  }
+
+  // Aplicar a imagem
+  profileImage.src = imageUrl;
+  profileImage.style.opacity = "0.7";
+  setTimeout(() => {
+    profileImage.style.opacity = "1";
+  }, 300);
+
+  // Handler de erro
+  profileImage.onerror = function () {
+    console.error("❌ Erro ao carregar imagem:", imageUrl);
+
+    // Se tinha cache bust, tentar sem
+    if (forceRefresh && imageUrl.includes("?t=")) {
+      const cleanUrl = imageUrl.split("?t=")[0];
+      console.log("🔄 Tentando sem cache bust:", cleanUrl);
+      this.src = cleanUrl;
+      return;
+    }
+
+    // Fallback: placeholder com iniciais
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+    const userName = userData.name || userData.fullName || "";
+    this.src = getInitialsPlaceholderUrl(userName);
+  };
+}
+
+// 🔧 FUNÇÃO CORRIGIDA: forceRefreshAllProfileImages
 function forceRefreshAllProfileImages(photoUrl) {
   console.log("🔄 Forçando refresh de imagens de perfil");
 
   // 🔧 VALIDAÇÃO RIGOROSA
   if (!photoUrl || typeof photoUrl !== "string" || photoUrl.includes("👤")) {
-    console.warn("⚠️ URL inválida, não atualizando imagens");
+    console.warn("⚠️  URL inválida, não atualizando imagens");
     return;
   }
 
@@ -114,117 +190,8 @@ function forceRefreshAllProfileImages(photoUrl) {
   console.log(`✅ ${updatedCount} elementos de imagem atualizados`);
 }
 
-function updateProfilePhotoDisplay(photoUrl) {
-  const profileImage = document.getElementById("profile-image");
-  if (!profileImage) return;
-
-  if (photoUrl) {
-    let imageUrl = photoUrl;
-
-    if (
-      !photoUrl.startsWith("http") &&
-      window.apiConfig &&
-      window.apiConfig.baseURL
-    ) {
-      imageUrl = window.apiConfig.baseURL + photoUrl;
-    }
-
-    profileImage.src = imageUrl;
-    profileImage.style.opacity = "0.7";
-    setTimeout(() => {
-      profileImage.style.opacity = "1";
-    }, 300);
-
-    profileImage.onerror = function () {
-      console.log("Erro ao carregar imagem:", imageUrl);
-      this.src = getInitialsPlaceholderUrl("");
-    };
-  } else {
-    const userData = JSON.parse(localStorage.getItem("userData")) || {};
-    profileImage.src = getInitialsPlaceholderUrl(
-      userData.name || userData.fullName
-    );
-  }
-}
-
-// 🔧 FUNÇÃO CORRIGIDA: updateProfilePhotoDisplayFixed
-function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
-  const profileImage = document.getElementById("profile-image");
-  if (!profileImage) return;
-
-  console.log("🖼️ Atualizando foto de perfil:", photoUrl);
-
-  // 🔧 VALIDAÇÃO RIGOROSA: Detectar URLs inválidas
-  const isInvalidUrl =
-    !photoUrl ||
-    typeof photoUrl !== "string" ||
-    photoUrl.includes("👤") ||
-    photoUrl.includes("�") || // Caracteres inválidos
-    photoUrl === "null" ||
-    photoUrl === "undefined" ||
-    photoUrl.trim() === "";
-
-  if (isInvalidUrl) {
-    console.warn("⚠️ URL inválida detectada, usando placeholder");
-    const userData = JSON.parse(localStorage.getItem("userData")) || {};
-    const userName = userData.name || userData.fullName || "";
-    profileImage.src = getInitialsPlaceholderUrl(userName);
-    return;
-  }
-
-  // 🔧 VALIDAÇÃO: URL deve começar com http:// ou https://
-  if (!photoUrl.startsWith("http://") && !photoUrl.startsWith("https://")) {
-    console.warn("⚠️ URL sem protocolo detectada:", photoUrl);
-
-    // Se for path relativo, construir URL completa
-    if (window.apiConfig && window.apiConfig.baseURL) {
-      photoUrl = window.apiConfig.baseURL + photoUrl;
-      console.log("🔧 URL construída:", photoUrl);
-    } else {
-      console.error("❌ apiConfig não disponível, usando placeholder");
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const userName = userData.name || userData.fullName || "";
-      profileImage.src = getInitialsPlaceholderUrl(userName);
-      return;
-    }
-  }
-
-  // 🔧 CACHE BUSTING APENAS SE FORÇADO
-  let imageUrl = photoUrl;
-  if (forceRefresh) {
-    const separator = imageUrl.includes("?") ? "&" : "?";
-    imageUrl = `${imageUrl}${separator}t=${Date.now()}&v=${Math.random()}`;
-    console.log("🔄 Cache busting aplicado:", imageUrl);
-  }
-
-  // Aplicar a imagem
-  profileImage.src = imageUrl;
-  profileImage.style.opacity = "0.7";
-  setTimeout(() => {
-    profileImage.style.opacity = "1";
-  }, 300);
-
-  // Handler de erro
-  profileImage.onerror = function () {
-    console.error("❌ Erro ao carregar imagem:", imageUrl);
-
-    // Se tinha cache bust, tentar sem
-    if (forceRefresh && imageUrl.includes("?t=")) {
-      const cleanUrl = imageUrl.split("?t=")[0];
-      console.log("🔄 Tentando sem cache bust:", cleanUrl);
-      this.src = cleanUrl;
-      return;
-    }
-
-    // Fallback: placeholder com iniciais
-    const userData = JSON.parse(localStorage.getItem("userData")) || {};
-    const userName = userData.name || userData.fullName || "";
-    this.src = getInitialsPlaceholderUrl(userName);
-  };
-}
-
 function clearUserData() {
-  console.log("Limpando dados do usuario anterior...");
+  console.log("Limpando dados do usuário anterior...");
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
@@ -243,11 +210,11 @@ function clearUserData() {
 
 async function loadUserDataFromAPI() {
   try {
-    console.log("PRIORIDADE: Carregando dados da API...");
+    console.log("🔄 PRIORIDADE: Carregando dados da API...");
 
     if (typeof Auth === "undefined" || !Auth.getToken()) {
-      console.error("Sistema de autenticacao nao disponivel ou token ausente");
-      showMessage("Sessao expirada. Redirecionando...", "error");
+      console.error("Sistema de autenticação não disponível ou token ausente");
+      showMessage("Sessão expirada. Redirecionando...", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
@@ -259,7 +226,7 @@ async function loadUserDataFromAPI() {
     const userData = await Auth.getProfile();
 
     if (userData) {
-      console.log("Dados atualizados recebidos da API:", userData);
+      console.log("✅ Dados atualizados recebidos da API:", userData);
 
       populateFormWithData(userData);
 
@@ -273,30 +240,30 @@ async function loadUserDataFromAPI() {
 
       localStorage.setItem("userData", JSON.stringify(userData));
     } else {
-      throw new Error("Dados nao recebidos da API");
+      throw new Error("Dados não recebidos da API");
     }
   } catch (error) {
-    console.error("Erro ao carregar dados da API:", error);
+    console.error("❌ Erro ao carregar dados da API:", error);
 
     if (error.message.includes("401") || error.message.includes("Token")) {
-      showMessage("Sessao expirada. Redirecionando...", "error");
+      showMessage("Sessão expirada. Redirecionando...", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
       return;
     }
 
-    console.log("Usando dados locais como fallback...");
+    console.log("⚠️  Usando dados locais como fallback...");
     loadUserProfileFromLocalStorage();
     showMessage(
-      "Carregado do cache local. Algumas informacoes podem estar desatualizadas.",
+      "Carregado do cache local. Algumas informações podem estar desatualizadas.",
       "error"
     );
   }
 }
 
 function populateFormWithData(userData) {
-  console.log("Preenchendo formulario com dados:", userData);
+  console.log("📝 Preenchendo formulário com dados:", userData);
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
@@ -314,7 +281,13 @@ function populateFormWithData(userData) {
 
   if (profileImage) {
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
-    if (photoUrl) {
+
+    // 🔧 VALIDAÇÃO: Só usar se for URL válida
+    if (
+      photoUrl &&
+      typeof photoUrl === "string" &&
+      photoUrl.startsWith("http")
+    ) {
       updateProfilePhotoDisplayFixed(photoUrl, false);
     } else {
       profileImage.src = getInitialsPlaceholderUrl(
@@ -328,7 +301,7 @@ function loadUserProfileFromLocalStorage() {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (userData) {
-    console.log("Carregando dados locais como fallback:", userData);
+    console.log("📦 Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
 
     // 🔧 CORREÇÃO: Salvar telefone LIMPO
@@ -339,29 +312,24 @@ function loadUserProfileFromLocalStorage() {
       hasNewPhoto: false,
     });
   } else {
-    console.log("Nenhum dado local encontrado");
-    showMessage("Nenhum dado encontrado. Faca login novamente.", "error");
+    console.log("❌ Nenhum dado local encontrado");
+    showMessage("Nenhum dado encontrado. Faça login novamente.", "error");
     setTimeout(() => {
       window.location.href = "/index.html";
     }, 2000);
   }
 }
 
-function loadUserProfile() {
-  console.warn("loadUserProfile() e deprecated. Use loadUserDataFromAPI()");
-  loadUserProfileFromLocalStorage();
-}
-
 async function saveProfile() {
   try {
     if (typeof Auth === "undefined" || !Auth.getToken()) {
-      showMessage("Sessao expirada. Faca login novamente.", "error");
+      showMessage("Sessão expirada. Faça login novamente.", "error");
       return;
     }
 
     const currentUserData = Auth.getUserData();
     if (!currentUserData || !currentUserData.id) {
-      showMessage("Dados de usuario invalidos. Faca login novamente.", "error");
+      showMessage("Dados de usuário inválidos. Faça login novamente.", "error");
       return;
     }
 
@@ -388,18 +356,18 @@ async function saveProfile() {
     });
 
     if (!name) {
-      showMessage("Nome e obrigatorio", "error");
+      showMessage("Nome é obrigatório", "error");
       return;
     }
 
     if (!email) {
-      showMessage("Email e obrigatorio", "error");
+      showMessage("Email é obrigatório", "error");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      showMessage("Email invalido", "error");
+      showMessage("Email inválido", "error");
       return;
     }
 
@@ -409,7 +377,7 @@ async function saveProfile() {
       return;
     }
 
-    // 🔧 Prepara os dados de texto (JSON) para o PUT /api/profile
+    // 🔧 Prepara os dados de texto (JSON) para o PUT /api/users/profile
     const profileData = {
       name,
       email,
@@ -420,9 +388,7 @@ async function saveProfile() {
 
     const photoInput = document.getElementById("photo-input");
 
-    // ====================================================================
-    // 🚨 CORREÇÃO ESTRUTURAL: SEPARAÇÃO DE REQUISIÇÃO DE FOTO E DADOS DE TEXTO
-    // ====================================================================
+    // 🔧 ESTRUTURA CORRIGIDA: SEPARAÇÃO DE REQUISIÇÃO DE FOTO E DADOS
     if (photoInput && photoInput.files && photoInput.files[0]) {
       const file = photoInput.files[0];
 
@@ -439,19 +405,17 @@ async function saveProfile() {
 
       // PASSO 1: FAZER O UPLOAD DA FOTO (POST /api/profile/upload-photo)
       const photoFormData = new FormData();
-      // O backend só precisa do arquivo para a rota de upload
       photoFormData.append("profilePhoto", file);
 
       console.log("📤 Iniciando upload da nova foto...");
 
       const uploadResponse = await window.apiConfig.post(
-        "/api/profile/upload-photo", // Endpoint CORRETO para foto
+        "/api/profile/upload-photo",
         photoFormData
       );
       const uploadResult = await uploadResponse.json();
 
       if (!uploadResponse.ok || !uploadResult.success) {
-        // Lança um erro se o upload da foto falhar (o erro 400 anterior será resolvido, mas este pode ser um erro 500)
         throw new Error(
           uploadResult.message ||
             "Erro ao fazer upload para o servidor de armazenamento"
@@ -463,13 +427,14 @@ async function saveProfile() {
         uploadResult.message
       );
 
-      // PASSO 2: ATUALIZAR DADOS DO PERFIL (PUT /api/profile)
-      // Fazemos o PUT dos dados de texto que não foram incluídos no FormData de upload.
+      // PASSO 2: ATUALIZAR DADOS DO PERFIL (PUT /api/users/profile)
       const updateResult = await Auth.updateProfile(profileData);
 
       if (updateResult.success) {
         photoInput.value = ""; // Limpa a entrada de arquivo
-        await handleSuccessfulUpdate(updateResult.user || updateResult.data);
+        await handleSuccessfulUpdate(
+          uploadResult.user || updateResult.user || updateResult.data
+        );
 
         // Atualizar o estado local (OriginalFormData)
         setOriginalFormData({
@@ -479,14 +444,16 @@ async function saveProfile() {
           hasNewPhoto: false,
         });
       } else {
-        // Lança um erro se a atualização dos dados de texto (PUT) falhar
         throw new Error(
           updateResult.message || "Erro ao salvar dados do perfil"
         );
       }
     } else {
-      // Bloco ELSE original: Salvar APENAS dados de texto (SEM foto nova)
-      console.log("Salvando perfil SEM foto nova. ProfileData:", profileData);
+      // Salvar APENAS dados de texto (SEM foto nova)
+      console.log(
+        "💾 Salvando perfil SEM foto nova. ProfileData:",
+        profileData
+      );
 
       const result = await Auth.updateProfile(profileData);
 
@@ -497,7 +464,7 @@ async function saveProfile() {
         setOriginalFormData({
           name: name,
           email: email,
-          phone: phone, // ✅ Telefone limpo
+          phone: phone,
           hasNewPhoto: false,
         });
 
@@ -507,7 +474,7 @@ async function saveProfile() {
       }
     }
   } catch (error) {
-    console.error("Erro ao salvar perfil:", error);
+    console.error("❌ Erro ao salvar perfil:", error);
 
     // Tratamento de erros
     if (error.message.includes("upload para o servidor de armazenamento")) {
@@ -519,16 +486,16 @@ async function saveProfile() {
       error.message.includes("401") ||
       error.message.includes("Token")
     ) {
-      showMessage("Sessao expirada. Faca login novamente.", "error");
+      showMessage("Sessão expirada. Faça login novamente.", "error");
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
     } else if (error.message.includes("413")) {
-      showMessage("Arquivo muito grande. Maximo 5MB.", "error");
+      showMessage("Arquivo muito grande. Máximo 5MB.", "error");
     } else if (error.message.includes("400")) {
-      showMessage("Dados invalidos. Verifique as informacoes.", "error");
+      showMessage("Dados inválidos. Verifique as informações.", "error");
     } else if (error.name === "TypeError" && error.message.includes("fetch")) {
-      showMessage("Erro de conexao. Verifique sua internet.", "error");
+      showMessage("Erro de conexão. Verifique sua internet.", "error");
     } else {
       showMessage(
         error.message || "Erro inesperado. Tente novamente.",
@@ -548,6 +515,7 @@ async function saveProfile() {
   }
 }
 
+// 🔧 FUNÇÃO CORRIGIDA: handleSuccessfulUpdate
 async function handleSuccessfulUpdate(updatedUserData) {
   try {
     console.log("✅ Processando atualização bem-sucedida");
@@ -612,7 +580,7 @@ async function handleSuccessfulUpdate(updatedUserData) {
         }
       }
     } else {
-      console.log("⚠️ Sem foto válida, usando placeholder");
+      console.log("⚠️  Sem foto válida, usando placeholder");
       const userName = updatedUserData.name || updatedUserData.fullName || "";
       const profileImage = document.getElementById("profile-image");
       if (profileImage) {
@@ -668,7 +636,7 @@ async function uploadPhotoOnly() {
       showMessage("Foto atualizada com sucesso!", "success");
 
       if (result.profilePhoto && result.profilePhoto.url) {
-        updateProfilePhotoDisplay(result.profilePhoto.url);
+        updateProfilePhotoDisplayFixed(result.profilePhoto.url, true);
       }
 
       if (result.user && result.user.profilePhotoUrl) {
@@ -691,7 +659,7 @@ async function uploadPhotoOnly() {
     }
   } catch (error) {
     console.error("Erro ao fazer upload da foto:", error);
-    showMessage("Erro de conexao", "error");
+    showMessage("Erro de conexão", "error");
   } finally {
     const uploadBtn = document.querySelector(".upload-photo-btn");
     if (uploadBtn) {
@@ -706,7 +674,7 @@ if (typeof BroadcastChannel !== "undefined") {
     const profileChannel = new BroadcastChannel("profile_updates");
     profileChannel.onmessage = (event) => {
       if (event.data.type === "PHOTO_UPDATED") {
-        console.log("Recebida atualizacao de foto de outra aba/pagina");
+        console.log("📨 Recebida atualização de foto de outra aba/página");
         const photoUrl = event.data.photoUrl;
         if (photoUrl) {
           updateProfilePhotoDisplayFixed(photoUrl, true);
@@ -715,13 +683,13 @@ if (typeof BroadcastChannel !== "undefined") {
       }
     };
   } catch (e) {
-    console.log("BroadcastChannel nao disponivel neste navegador");
+    console.log("BroadcastChannel não disponível neste navegador");
   }
 }
 
 window.addEventListener("storage", function (e) {
   if (e.key === "lastPhotoUpdate" || e.key === "currentPhotoUrl") {
-    console.log("Detectada mudanca no localStorage de outra aba");
+    console.log("📨 Detectada mudança no localStorage de outra aba");
     setTimeout(() => {
       const photoUrl = localStorage.getItem("currentPhotoUrl");
       if (photoUrl) {
@@ -732,14 +700,14 @@ window.addEventListener("storage", function (e) {
 });
 
 document.addEventListener("DOMContentLoaded", async function () {
-  console.log("DOM carregado, iniciando carregamento do perfil...");
+  console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
 
   clearUserData();
 
   try {
     await loadUserDataFromAPI();
   } catch (error) {
-    console.error("Falha critica no carregamento:", error);
+    console.error("❌ Falha crítica no carregamento:", error);
   }
 
   setupChangeDetection();
@@ -1014,7 +982,7 @@ async function removeProfilePhotoWithoutConfirm() {
     }
   } catch (error) {
     console.error("Erro ao remover foto:", error);
-    showMessage("Erro de conexao", "error");
+    showMessage("Erro de conexão", "error");
   } finally {
     const removeBtn = document.querySelector(".remove-photo-btn");
     if (removeBtn) {
@@ -1037,9 +1005,9 @@ function validateForm() {
   }
 
   if (!email) {
-    errors.push("Email e obrigatorio");
+    errors.push("Email é obrigatório");
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.push("Email invalido");
+    errors.push("Email inválido");
   }
 
   // 🔧 CORREÇÃO: Validar telefone limpo
@@ -1059,25 +1027,25 @@ async function syncUserDataSafe() {
       typeof Auth !== "undefined" &&
       navigator.onLine
     ) {
-      console.log("Sincronizacao automatica segura...");
+      console.log("🔄 Sincronização automática segura...");
       await loadUserDataFromAPI();
     }
   } catch (error) {
-    console.log("Erro na sincronizacao automatica:", error);
+    console.log("⚠️  Erro na sincronização automática:", error);
   }
 }
 
 setInterval(syncUserDataSafe, 5 * 60 * 1000);
 
 window.addEventListener("online", () => {
-  console.log("Reconectado a internet");
+  console.log("🌐 Reconectado à internet");
   if (!hasUnsavedChanges()) {
     syncUserDataSafe();
   }
 });
 
 window.addEventListener("offline", () => {
-  console.log("Desconectado da internet");
+  console.log("📡 Desconectado da internet");
   showMessage(
     "Modo offline. Algumas funcionalidades podem estar limitadas.",
     "error"
@@ -1085,14 +1053,14 @@ window.addEventListener("offline", () => {
 });
 
 async function forceReloadUserData() {
-  console.log("Recarregamento forcado dos dados...");
+  console.log("🔄 Recarregamento forçado dos dados...");
   clearUserData();
   await loadUserDataFromAPI();
 }
 
 window.addEventListener("storage", function (e) {
   if (e.key === "authToken" || e.key === "userData") {
-    console.log("Mudanca de usuario detectada, recarregando dados...");
+    console.log("🔄 Mudança de usuário detectada, recarregando dados...");
     setTimeout(() => {
       forceReloadUserData();
     }, 100);
@@ -1147,4 +1115,11 @@ window.editProfileFunctions = {
   forceRefreshAllProfileImages,
   cleanPhoneNumber,
   applyPhoneMask,
+  updateProfilePhotoDisplayFixed,
+  handleSuccessfulUpdate,
+  populateFormWithData,
+  setOriginalFormData,
+  getOriginalFormData,
+  getCurrentFormData,
+  hasUnsavedChanges,
 };
