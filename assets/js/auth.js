@@ -142,25 +142,21 @@ const Auth = {
   // ========== GERENCIAMENTO DE DADOS DO USUÁRIO ==========
   saveUserData(responseData) {
     try {
-      console.log("Salvando dados do usuário:", responseData);
+      console.log("💾 Salvando dados do usuário:", responseData);
 
       // Extrair dados baseado em diferentes estruturas possíveis
       let token, user;
 
       if (responseData.success && responseData.data) {
-        // Estrutura do backend: { success: true, data: { user: {...}, accessToken: "..." } }
         token = responseData.data.accessToken || responseData.data.token;
         user = responseData.data.user;
       } else if (responseData.data && responseData.data.user) {
-        // Estrutura alternativa
         token = responseData.data.accessToken || responseData.data.token;
         user = responseData.data.user;
       } else if (responseData.user) {
-        // Estrutura: { user: {...}, token: "..." }
         token = responseData.token || responseData.accessToken;
         user = responseData.user;
       } else {
-        // Fallback: responseData já é o objeto user
         token = responseData.token || responseData.accessToken;
         user = responseData;
       }
@@ -178,7 +174,7 @@ const Auth = {
 
         // Se mudou de usuário, limpar dados antigos primeiro
         if (previousUserId && previousUserId !== currentUserId) {
-          console.log("Mudança de usuário detectada:", {
+          console.log("🔄 Mudança de usuário detectada:", {
             anterior: previousUserId,
             atual: currentUserId,
           });
@@ -188,29 +184,43 @@ const Auth = {
         // Atualizar ID do usuário atual
         this._currentUserId = currentUserId;
 
-        // Processar foto de perfil
-        let profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
+        // 🔧 CORREÇÃO CRÍTICA: Processar foto de perfil CORRETAMENTE
+        let profilePhotoUrl =
+          user.profilePhotoUrl || user.profilePhoto?.path || null;
 
-        if (
-          profilePhotoUrl &&
-          typeof profilePhotoUrl === "string" &&
-          profilePhotoUrl.includes("👤")
-        ) {
-          profilePhotoUrl = null;
-          console.warn(
-            "⚠️ [Auth] Caractere inválido '👤' detectado na foto e resetado para null."
-          );
+        console.log("🖼️ Foto recebida da API:", {
+          profilePhotoUrl: user.profilePhotoUrl,
+          profilePhotoPath: user.profilePhoto?.path,
+          profilePhotoStorage: user.profilePhoto?.storage,
+          avatar: user.avatar,
+        });
+
+        // 🔧 VALIDAÇÃO: Apenas remover se for emoji ou caractere inválido
+        if (profilePhotoUrl && typeof profilePhotoUrl === "string") {
+          // Detectar emojis e caracteres inválidos
+          const hasInvalidChars =
+            profilePhotoUrl.includes("👤") ||
+            profilePhotoUrl.includes("�") ||
+            /[\u{1F300}-\u{1F9FF}]/u.test(profilePhotoUrl);
+
+          if (hasInvalidChars) {
+            console.warn(
+              "⚠️ Caractere inválido detectado na foto, resetando para null"
+            );
+            profilePhotoUrl = null;
+          } else if (!profilePhotoUrl.startsWith("http")) {
+            // Se não começar com http, pode ser path relativo - validar
+            console.warn("⚠️ URL sem protocolo detectada:", profilePhotoUrl);
+            profilePhotoUrl = null;
+          } else {
+            console.log("✅ URL de foto válida:", profilePhotoUrl);
+          }
         }
 
+        // 🔧 NOVO: Para novos registros, NÃO limpar foto se vier da API
         if (this._isNewUserRegistration) {
-          // Para novos usuários, usar apenas a foto que veio da API (geralmente null)
-          console.log("Novo usuário: usando apenas foto da API");
-          // A linha abaixo é redundante, pois profilePhotoUrl já foi definido e limpo acima
-          // profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
-        } else {
-          // Para usuários existentes, usar a foto da API se disponível
-          // A linha abaixo é redundante, pois profilePhotoUrl já foi definido e limpo acima
-          // profilePhotoUrl = user.profilePhotoUrl || user.avatar || null;
+          console.log("📝 Novo usuário: usando foto da API (se houver)");
+          // Manter profilePhotoUrl como está (null ou URL válida)
         }
 
         const userInfo = {
@@ -220,26 +230,50 @@ const Auth = {
           balance: user.coins || user.balance || 0,
           coins: user.coins || user.balance || 0,
           level: user.level || 1,
-          avatar: user.avatar,
+          avatar: user.avatar, // Emoji para fallback
           totalDonated: user.totalDonated || 0,
           totalReceived: user.totalReceived || 0,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
-          profilePhotoUrl: profilePhotoUrl,
+          profilePhotoUrl: profilePhotoUrl, // 🔧 URL válida ou null
           phone: user.phone || "",
         };
 
-        // Salvar foto separadamente apenas se existir
+        console.log("📦 Dados processados:", {
+          name: userInfo.name,
+          email: userInfo.email,
+          profilePhotoUrl: userInfo.profilePhotoUrl,
+          hasValidPhoto: !!userInfo.profilePhotoUrl,
+        });
+
+        // 🔧 CORREÇÃO: Salvar foto separadamente APENAS se válida e diferente
+        const currentSavedPhoto = localStorage.getItem(
+          this.STORAGE_KEYS.profilePhoto
+        );
+
         if (userInfo.profilePhotoUrl) {
-          localStorage.setItem(
-            this.STORAGE_KEYS.profilePhoto,
-            userInfo.profilePhotoUrl
-          );
-          console.log("Foto de perfil salva:", userInfo.profilePhotoUrl);
+          // Salvar APENAS se mudou
+          if (currentSavedPhoto !== userInfo.profilePhotoUrl) {
+            localStorage.setItem(
+              this.STORAGE_KEYS.profilePhoto,
+              userInfo.profilePhotoUrl
+            );
+            console.log("✅ Foto de perfil salva:", userInfo.profilePhotoUrl);
+          } else {
+            console.log("ℹ️ Foto de perfil já está salva (sem mudanças)");
+          }
         } else {
-          // Remover foto antiga se não há foto nova
-          localStorage.removeItem(this.STORAGE_KEYS.profilePhoto);
-          console.log("Foto de perfil removida (usuário sem foto)");
+          // 🔧 CRÍTICO: NÃO remover foto se já existe uma salva válida
+          if (currentSavedPhoto && currentSavedPhoto.startsWith("http")) {
+            console.log(
+              "⚠️ API não retornou foto, mas existe foto salva válida - MANTENDO"
+            );
+            userInfo.profilePhotoUrl = currentSavedPhoto;
+          } else {
+            // Remover foto antiga apenas se não for válida
+            localStorage.removeItem(this.STORAGE_KEYS.profilePhoto);
+            console.log("🗑️ Foto de perfil removida (sem foto válida)");
+          }
         }
 
         // Salvar dados individuais para acesso rápido
@@ -268,13 +302,7 @@ const Auth = {
         localStorage.setItem("currentUser", JSON.stringify(userInfo));
         sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
 
-        console.log("Dados salvos:", {
-          name: userInfo.name,
-          email: userInfo.email,
-          balance: userInfo.balance,
-          level: userInfo.level,
-          profilePhotoUrl: userInfo.profilePhotoUrl,
-        });
+        console.log("✅ Dados salvos com sucesso!");
       }
 
       // Marcar como logado
@@ -289,7 +317,7 @@ const Auth = {
 
       return true;
     } catch (error) {
-      console.error("Erro ao salvar dados do usuário:", error);
+      console.error("❌ Erro ao salvar dados do usuário:", error);
       return false;
     }
   },
@@ -305,14 +333,20 @@ const Auth = {
       if (userData) {
         const parsedData = JSON.parse(userData);
 
-        // Sempre verificar se existe foto salva separadamente
+        // 🔧 SEMPRE verificar se existe foto salva separadamente
         const separatePhotoUrl = localStorage.getItem(
           this.STORAGE_KEYS.profilePhoto
         );
-        if (separatePhotoUrl && !parsedData.profilePhotoUrl) {
+
+        if (separatePhotoUrl && separatePhotoUrl.startsWith("http")) {
+          // 🔧 CORREÇÃO: Sempre priorizar foto salva se for válida
+          parsedData.profilePhotoUrl = separatePhotoUrl;
+          console.log("📸 Foto restaurada do storage:", separatePhotoUrl);
+        } else if (!parsedData.profilePhotoUrl && separatePhotoUrl) {
+          // Se não há foto no userData mas há no storage separado, usar
           parsedData.profilePhotoUrl = separatePhotoUrl;
           console.log(
-            "Foto de perfil restaurada do storage separado:",
+            "📸 Foto restaurada do storage separado:",
             separatePhotoUrl
           );
         }
@@ -322,7 +356,7 @@ const Auth = {
 
       return null;
     } catch (error) {
-      console.error("Erro ao obter dados do usuário:", error);
+      console.error("❌ Erro ao obter dados do usuário:", error);
       return null;
     }
   },
@@ -621,7 +655,7 @@ const Auth = {
 
   // NOVA FUNÇÃO: Limpar apenas dados específicos do usuário (para troca)
   clearUserSpecificData() {
-    console.log("Limpando dados específicos do usuário atual...");
+    console.log("🧹 Limpando dados específicos do usuário atual...");
 
     // Limpar dados do sessionStorage
     const sessionKeys = [
@@ -636,51 +670,48 @@ const Auth = {
 
     sessionKeys.forEach((key) => {
       sessionStorage.removeItem(key);
-      console.log(`Removido sessionStorage: ${key}`);
     });
 
-    // Limpar dados do localStorage (exceto foto se for logout normal)
+    // Limpar dados do localStorage (EXCETO foto de perfil)
     localStorage.removeItem(this.STORAGE_KEYS.userData);
     localStorage.removeItem("currentUser");
 
-    console.log("Dados específicos do usuário limpos");
+    // 🔧 CRÍTICO: NÃO limpar foto de perfil aqui
+    console.log("✅ Dados específicos limpos (foto preservada)");
   },
 
   // FUNÇÃO CORRIGIDA: Limpar todos os dados
   clearAllData() {
-    console.log("Limpando todos os dados...");
+    console.log("🧹 Limpando todos os dados...");
 
     const isNewUserRegistration = this._isNewUserRegistration || false;
 
     if (isNewUserRegistration) {
       // Para novos usuários, limpar TUDO incluindo foto de perfil
-      console.log("Novo usuário detectado - limpeza completa");
+      console.log("🆕 Novo usuário detectado - limpeza completa");
 
       Object.values(this.STORAGE_KEYS).forEach((key) => {
         sessionStorage.removeItem(key);
         localStorage.removeItem(key);
-        console.log(`Removido: ${key}`);
       });
 
-      // Reset da flag
       this._isNewUserRegistration = false;
     } else {
-      // Para logout normal, preservar foto de perfil
+      // 🔧 CRÍTICO: Para logout normal, PRESERVAR foto de perfil
       const currentPhoto = this.getProfilePhoto();
-      console.log("Foto atual antes da limpeza:", currentPhoto);
+      console.log("📸 Foto atual antes da limpeza:", currentPhoto);
 
       Object.values(this.STORAGE_KEYS).forEach((key) => {
         if (key !== this.STORAGE_KEYS.profilePhoto) {
           sessionStorage.removeItem(key);
           localStorage.removeItem(key);
-          console.log(`Removido: ${key}`);
         }
       });
 
-      // Restaurar foto de perfil após limpeza
-      if (currentPhoto) {
+      // 🔧 Restaurar foto de perfil após limpeza
+      if (currentPhoto && currentPhoto.startsWith("http")) {
         localStorage.setItem(this.STORAGE_KEYS.profilePhoto, currentPhoto);
-        console.log("Foto de perfil preservada:", currentPhoto);
+        console.log("✅ Foto de perfil preservada:", currentPhoto);
       }
     }
 
@@ -696,7 +727,6 @@ const Auth = {
 
     sessionKeys.forEach((key) => {
       sessionStorage.removeItem(key);
-      console.log(`Removido sessionStorage: ${key}`);
     });
 
     // Limpar userData do localStorage
@@ -706,7 +736,9 @@ const Auth = {
     // Reset do controle de usuário atual
     this._currentUserId = null;
 
-    console.log("Limpeza completa realizada");
+    console.log(
+      "✅ Limpeza completa realizada (foto preservada se logout normal)"
+    );
   },
 
   // ========== PERFIL E SALDO ==========
@@ -719,14 +751,29 @@ const Auth = {
       const data = await response.json();
 
       if (data.success && data.data) {
-        // Estrutura correta do backend
         const userData = data.data.user || data.data;
 
-        // CRÍTICO: Sempre preservar foto local se não vier da API
+        console.log("📥 Perfil recebido da API:", {
+          name: userData.name,
+          email: userData.email,
+          profilePhotoUrl: userData.profilePhotoUrl,
+          profilePhotoStorage: userData.profilePhoto?.storage,
+        });
+
+        // 🔧 CRÍTICO: NÃO sobrescrever foto local se API não retornar
         const existingPhoto = this.getProfilePhoto();
-        if (existingPhoto && !userData.profilePhotoUrl) {
+
+        if (
+          !userData.profilePhotoUrl &&
+          existingPhoto &&
+          existingPhoto.startsWith("http")
+        ) {
+          console.log(
+            "⚠️ API não retornou foto, mas existe foto local válida - PRESERVANDO"
+          );
           userData.profilePhotoUrl = existingPhoto;
-          console.log("Foto local preservada no getProfile:", existingPhoto);
+        } else if (userData.profilePhotoUrl) {
+          console.log("✅ Foto recebida da API:", userData.profilePhotoUrl);
         }
 
         // Salvar dados atualizados
@@ -734,7 +781,7 @@ const Auth = {
           success: true,
           data: {
             user: userData,
-            accessToken: this.getToken(), // Manter token atual
+            accessToken: this.getToken(),
           },
         });
 
@@ -743,7 +790,7 @@ const Auth = {
         throw new Error(data.message || "Erro ao buscar perfil");
       }
     } catch (error) {
-      console.error("Erro ao buscar perfil:", error);
+      console.error("❌ Erro ao buscar perfil:", error);
       throw error;
     }
   },
