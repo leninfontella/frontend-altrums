@@ -419,7 +419,7 @@ async function saveProfile() {
       console.log("📤 Iniciando upload da nova foto...");
 
       const uploadResponse = await window.apiConfig.post(
-        "/api/profile/upload-photo", // Endpoint CORRETO para foto
+        "api/profile/upload-photo", // Endpoint CORRETO para foto
         photoFormData
       );
       const uploadResult = await uploadResponse.json();
