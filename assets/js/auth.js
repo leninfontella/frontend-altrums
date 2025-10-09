@@ -675,6 +675,10 @@ const Auth = {
     // Limpar dados do localStorage (EXCETO foto de perfil)
     localStorage.removeItem(this.STORAGE_KEYS.userData);
     localStorage.removeItem("currentUser");
+    // ADICIONE ESTA LINHA PARA GARANTIR A LIMPEZA DA FOTO
+    localStorage.removeItem(this.STORAGE_KEYS.profilePhoto);
+
+    console.log("✅ Dados específicos limpos (incluindo foto local)");
 
     // 🔧 CRÍTICO: NÃO limpar foto de perfil aqui
     console.log("✅ Dados específicos limpos (foto preservada)");
