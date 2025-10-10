@@ -16,7 +16,6 @@ body {
   padding: 20px;
   color: #fff;
   overflow-y: auto;
-  min-height: 100vh;
 }
 
 /* Container principal (substitui .phone-container e .screen) */
