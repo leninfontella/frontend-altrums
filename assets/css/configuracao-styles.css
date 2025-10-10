@@ -1134,3 +1134,518 @@ body {
   );
   margin: 20px 0;
 }
+
+/* ========== MODALS DE CONFIGURAÇÃO ========== */
+
+.config-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.3s ease;
+}
+
+.config-modal.hidden {
+  display: none;
+}
+
+.config-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.config-modal-content {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    rgba(26, 26, 26, 0.98) 0%,
+    rgba(18, 18, 18, 0.98) 100%
+  );
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 212, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: modalSlideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.config-modal-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.05) 0%,
+    transparent 100%
+  );
+}
+
+.config-modal-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.config-modal-header h3 i {
+  color: #00d4ff;
+  font-size: 22px;
+}
+
+.config-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.config-modal-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  transform: scale(1.05);
+}
+
+.config-modal-body {
+  padding: 20px;
+  max-height: calc(80vh - 84px);
+  overflow-y: auto;
+}
+
+.config-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.config-modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.config-modal-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00d4ff 0%, #0099cc 100%);
+  border-radius: 3px;
+}
+
+/* ========== MODAL DE TEMA ========== */
+
+.theme-option {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-option::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.05) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-option:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+}
+
+.theme-option:hover::before {
+  opacity: 1;
+}
+
+.theme-option.selected {
+  border-color: rgba(0, 212, 255, 0.5);
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.theme-preview {
+  width: 80px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dark-preview {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+}
+
+.light-preview {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.auto-preview {
+  background: linear-gradient(135deg, #1a1a1a 0%, #f5f5f5 100%);
+}
+
+.preview-header {
+  height: 14px;
+  background: rgba(0, 212, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.preview-content {
+  padding: 8px;
+}
+
+.preview-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+.preview-bar.short {
+  width: 60%;
+}
+
+.theme-info {
+  flex: 1;
+}
+
+.theme-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.theme-description {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.3;
+}
+
+.theme-check {
+  color: transparent;
+  font-size: 24px;
+  transition: all 0.3s ease;
+}
+
+.theme-option.selected .theme-check {
+  color: #00d4ff;
+  transform: scale(1.1);
+}
+
+/* ========== MODAL DE IDIOMA ========== */
+
+.language-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.language-option {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.language-option::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.05) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.language-option:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 6px 24px rgba(0, 212, 255, 0.15);
+}
+
+.language-option:hover::before {
+  opacity: 1;
+}
+
+.language-option.selected {
+  border-color: rgba(0, 212, 255, 0.5);
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.language-flag {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.language-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.language-check {
+  color: transparent;
+  font-size: 22px;
+  transition: all 0.3s ease;
+}
+
+.language-option.selected .language-check {
+  color: #00d4ff;
+  transform: scale(1.1);
+}
+
+/* ========== MODAL DE SEGURANÇA ========== */
+
+.security-option {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.security-option::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.05) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.security-option:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+}
+
+.security-option:hover::before {
+  opacity: 1;
+}
+
+.security-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #00d4ff;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.security-option:hover .security-icon {
+  transform: scale(1.1);
+  background: rgba(0, 212, 255, 0.18);
+}
+
+.security-info {
+  flex: 1;
+}
+
+.security-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.security-description {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.3;
+}
+
+.security-option .fas.fa-chevron-right {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.security-option:hover .fas.fa-chevron-right {
+  color: #00d4ff;
+  transform: translateX(4px);
+}
+
+/* Animações */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.9);
+  }
+  60% {
+    transform: translateY(-8px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.config-modal.closing {
+  animation: modalFadeOut 0.3s ease;
+}
+
+.config-modal.closing .config-modal-content {
+  animation: modalSlideDown 0.3s ease;
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .config-modal-content {
+    width: 95%;
+    max-width: none;
+  }
+
+  .config-modal-header {
+    padding: 20px 18px 16px;
+  }
+
+  .config-modal-header h3 {
+    font-size: 18px;
+  }
+
+  .config-modal-body {
+    padding: 16px;
+  }
+
+  .theme-preview {
+    width: 70px;
+    height: 56px;
+  }
+
+  .theme-name {
+    font-size: 15px;
+  }
+
+  .theme-description {
+    font-size: 12px;
+  }
+
+  .language-flag {
+    font-size: 28px;
+  }
+
+  .language-name {
+    font-size: 15px;
+  }
+
+  .security-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .security-name {
+    font-size: 15px;
+  }
+
+  .security-description {
+    font-size: 12px;
+  }
+}

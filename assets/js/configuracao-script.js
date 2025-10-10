@@ -680,7 +680,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ">
           <i class="fas fa-sign-out-alt" style="font-size: 32px; color: #ef4444; margin-bottom: 15px;"></i>
           <h3 style="margin-bottom: 10px; font-size: 18px;">Sair da Conta</h3>
-          <p style="margin-bottom: 25px; opacity: 0.8; font-size: 14px;">Tem certeza que deseja se desconectar do CoinFuture?</p>
+          <p style="margin-bottom: 25px; opacity: 0.8; font-size: 14px;">Tem certeza que deseja se desconectar do Altrum?</p>
           <div style="display: flex; gap: 10px;">
             <button id="cancel-logout" style="
               flex: 1;
@@ -995,7 +995,7 @@ window.debugUserData = function () {
 };
 
 // Logs úteis para desenvolvimento
-console.log("🚀 CoinFuture Settings carregado com sucesso!");
+console.log("🚀 Altrum Settings carregado com sucesso!");
 console.log("💡 Dicas:", {
   "Busca rápida": "Pressione Ctrl+F (Cmd+F no Mac)",
   "Easter egg": "Clique 7 vezes no avatar do usuário",
@@ -1005,75 +1005,384 @@ console.log("💡 Dicas:", {
   Logout: "Clique em 'Sair da Conta' para testar o logout",
 });
 
-// Modal de idiomas - VERSÃO CORRIGIDA COM VERIFICAÇÕES DE NULO
-document.addEventListener("DOMContentLoaded", function () {
-  const langSetting = document.getElementById("language-setting");
-  const langModal = document.getElementById("language-modal");
-  const closeBtn = document.getElementById("close-language-modal");
-  const langSubtitle = document.getElementById("current-language");
+// ========== CONFIGURAÇÃO DE MODAIS ==========
 
-  // Adicionar verificações de nulo antes de adicionar event listeners
-  if (langSetting && langModal) {
-    langSetting.addEventListener("click", () => {
-      langModal.classList.remove("hidden");
-      const content = langModal.querySelector(".modal-content");
-      if (content) {
-        content.style.animation = "fadeInCenter 0.4s ease forwards";
-      }
-    });
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🎨 Inicializando modais de configuração...");
+
+  initializeThemeModal();
+  initializeLanguageModal();
+  initializeSecurityModal();
+});
+
+// ========== MODAL DE TEMA ==========
+
+function initializeThemeModal() {
+  const themeSetting = document.getElementById("theme-setting");
+  const themeModal = document.getElementById("theme-modal");
+  const closeBtn = document.getElementById("close-theme-modal");
+  const themeOptions = document.querySelectorAll(".theme-option");
+  const currentThemeText = document.getElementById("current-theme");
+
+  if (!themeSetting || !themeModal) {
+    console.warn("⚠️ Elementos do modal de tema não encontrados");
+    return;
   }
 
-  function closeLangModal() {
-    if (!langModal) return; // Cláusula de guarda
+  // Abrir modal
+  themeSetting.addEventListener("click", () => {
+    themeModal.classList.remove("hidden");
+    themeModal.classList.remove("closing");
+    console.log("🎨 Modal de tema aberto");
+  });
 
-    const content = langModal.querySelector(".modal-content");
-    if (content) {
-      content.style.animation = "fadeOutCenter 0.3s ease forwards";
-    }
-    setTimeout(() => langModal.classList.add("hidden"), 300);
+  // Fechar modal
+  function closeThemeModal() {
+    themeModal.classList.add("closing");
+    setTimeout(() => {
+      themeModal.classList.add("hidden");
+      themeModal.classList.remove("closing");
+    }, 300);
   }
 
   if (closeBtn) {
-    closeBtn.addEventListener("click", closeLangModal);
+    closeBtn.addEventListener("click", closeThemeModal);
   }
 
-  if (langModal) {
-    langModal.addEventListener("click", (e) => {
-      if (e.target === langModal) {
-        closeLangModal();
-      }
+  // Fechar ao clicar no backdrop
+  const backdrop = themeModal.querySelector(".config-modal-backdrop");
+  if (backdrop) {
+    backdrop.addEventListener("click", closeThemeModal);
+  }
+
+  // Fechar com ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !themeModal.classList.contains("hidden")) {
+      closeThemeModal();
+    }
+  });
+
+  // Selecionar tema
+  themeOptions.forEach((option) => {
+    option.addEventListener("click", function () {
+      const theme = this.getAttribute("data-theme");
+
+      // Remover seleção anterior
+      themeOptions.forEach((opt) => opt.classList.remove("selected"));
+
+      // Adicionar seleção atual
+      this.classList.add("selected");
+
+      // Salvar tema
+      saveTheme(theme);
+
+      // Atualizar texto
+      updateThemeText(theme, currentThemeText);
+
+      // Aplicar tema
+      applyTheme(theme);
+
+      // Fechar modal após um delay
+      setTimeout(() => {
+        closeThemeModal();
+      }, 400);
+
+      console.log("🎨 Tema selecionado:", theme);
     });
+  });
 
-    // Só adicionar listeners se langModal existir
-    langModal.querySelectorAll("li").forEach((li) => {
-      li.addEventListener("click", () => {
-        const lang = li.getAttribute("data-lang");
-        const text = li.textContent;
+  // Carregar tema salvo
+  loadSavedTheme(themeOptions, currentThemeText);
+}
 
-        // Atualizar visualmente só se langSubtitle existir
-        if (langSubtitle) {
-          langSubtitle.textContent = text;
-        }
+function updateThemeText(theme, element) {
+  const themeNames = {
+    dark: "Escuro",
+    light: "Claro",
+    auto: "Automático",
+  };
 
-        // Salvar escolha
-        localStorage.setItem("appLanguage", lang);
+  if (element) {
+    element.textContent = themeNames[theme] || "Escuro";
+  }
+}
 
-        // Fechar modal
-        langModal.classList.add("hidden");
+function saveTheme(theme) {
+  try {
+    sessionStorage.setItem("appTheme", theme);
+    console.log("💾 Tema salvo:", theme);
+  } catch (error) {
+    console.error("❌ Erro ao salvar tema:", error);
+  }
+}
 
-        console.log("🌐 Idioma selecionado:", lang);
-      });
-    });
+function applyTheme(theme) {
+  const body = document.body;
 
-    // Carregar idioma salvo
-    const savedLang = localStorage.getItem("appLanguage");
-    if (savedLang) {
-      const selected = langModal.querySelector(`li[data-lang="${savedLang}"]`);
-      if (selected && langSubtitle) {
-        langSubtitle.textContent = selected.textContent;
-      }
+  body.classList.remove("theme-dark", "theme-light", "theme-auto");
+
+  if (theme === "light") {
+    body.classList.add("theme-light");
+    body.style.background =
+      "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 50%, #d0d0d0 100%)";
+    console.log("☀️ Tema claro aplicado");
+  } else if (theme === "auto") {
+    const hour = new Date().getHours();
+    const isDay = hour >= 6 && hour < 18;
+
+    if (isDay) {
+      body.classList.add("theme-light");
+      body.style.background =
+        "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 50%, #d0d0d0 100%)";
+      console.log("🌅 Tema automático: claro (dia)");
+    } else {
+      body.classList.add("theme-dark");
+      body.style.background =
+        "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%)";
+      console.log("🌙 Tema automático: escuro (noite)");
     }
   } else {
-    console.warn("⚠️ Elementos do modal de idiomas não encontrados no DOM");
+    body.classList.add("theme-dark");
+    body.style.background =
+      "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%)";
+    console.log("🌙 Tema escuro aplicado");
   }
-});
+}
+
+function loadSavedTheme(themeOptions, currentThemeText) {
+  const savedTheme = sessionStorage.getItem("appTheme") || "dark";
+
+  themeOptions.forEach((option) => {
+    if (option.getAttribute("data-theme") === savedTheme) {
+      option.classList.add("selected");
+    }
+  });
+
+  updateThemeText(savedTheme, currentThemeText);
+  applyTheme(savedTheme);
+
+  console.log("📂 Tema carregado:", savedTheme);
+}
+
+// ========== MODAL DE IDIOMA ==========
+
+function initializeLanguageModal() {
+  const languageSetting = document.getElementById("language-setting");
+  const languageModal = document.getElementById("language-modal");
+  const closeBtn = document.getElementById("close-language-modal");
+  const languageOptions = document.querySelectorAll(".language-option");
+  const currentLanguageText = document.getElementById("current-language");
+
+  if (!languageSetting || !languageModal) {
+    console.warn("⚠️ Elementos do modal de idioma não encontrados");
+    return;
+  }
+
+  // Abrir modal
+  languageSetting.addEventListener("click", () => {
+    languageModal.classList.remove("hidden");
+    languageModal.classList.remove("closing");
+    console.log("🌐 Modal de idioma aberto");
+  });
+
+  // Fechar modal
+  function closeLanguageModal() {
+    languageModal.classList.add("closing");
+    setTimeout(() => {
+      languageModal.classList.add("hidden");
+      languageModal.classList.remove("closing");
+    }, 300);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeLanguageModal);
+  }
+
+  // Fechar ao clicar no backdrop
+  const backdrop = languageModal.querySelector(".config-modal-backdrop");
+  if (backdrop) {
+    backdrop.addEventListener("click", closeLanguageModal);
+  }
+
+  // Fechar com ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !languageModal.classList.contains("hidden")) {
+      closeLanguageModal();
+    }
+  });
+
+  // Selecionar idioma
+  languageOptions.forEach((option) => {
+    option.addEventListener("click", function () {
+      const lang = this.getAttribute("data-lang");
+      const langName = this.querySelector(".language-name").textContent;
+
+      // Remover seleção anterior
+      languageOptions.forEach((opt) => opt.classList.remove("selected"));
+
+      // Adicionar seleção atual
+      this.classList.add("selected");
+
+      // Salvar idioma
+      saveLanguage(lang);
+
+      // Atualizar texto
+      if (currentLanguageText) {
+        currentLanguageText.textContent = langName;
+      }
+
+      // Fechar modal após um delay
+      setTimeout(() => {
+        closeLanguageModal();
+      }, 400);
+
+      console.log("🌐 Idioma selecionado:", lang);
+
+      // Mostrar notificação (opcional)
+      showLanguageNotification(langName);
+    });
+  });
+
+  // Carregar idioma salvo
+  loadSavedLanguage(languageOptions, currentLanguageText);
+}
+
+function saveLanguage(lang) {
+  try {
+    sessionStorage.setItem("appLanguage", lang);
+    console.log("💾 Idioma salvo:", lang);
+  } catch (error) {
+    console.error("❌ Erro ao salvar idioma:", error);
+  }
+}
+
+function loadSavedLanguage(languageOptions, currentLanguageText) {
+  const savedLang = sessionStorage.getItem("appLanguage") || "pt-BR";
+
+  languageOptions.forEach((option) => {
+    if (option.getAttribute("data-lang") === savedLang) {
+      option.classList.add("selected");
+
+      const langName = option.querySelector(".language-name").textContent;
+      if (currentLanguageText) {
+        currentLanguageText.textContent = langName;
+      }
+    }
+  });
+
+  console.log("📂 Idioma carregado:", savedLang);
+}
+
+function showLanguageNotification(langName) {
+  const notification = document.createElement("div");
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.5);
+    z-index: 10001;
+    animation: slideUpNotification 0.4s ease;
+  `;
+  notification.textContent = `Idioma alterado para: ${langName}`;
+
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = "slideDownNotification 0.4s ease forwards";
+    setTimeout(() => notification.remove(), 400);
+  }, 2500);
+}
+
+// ========== MODAL DE SEGURANÇA ==========
+
+function initializeSecurityModal() {
+  const securitySetting = document.getElementById("security-setting");
+  const securityModal = document.getElementById("security-modal");
+  const closeBtn = document.getElementById("close-security-modal");
+  const changePasswordOption = document.getElementById(
+    "change-password-option"
+  );
+
+  if (!securitySetting || !securityModal) {
+    console.warn("⚠️ Elementos do modal de segurança não encontrados");
+    return;
+  }
+
+  // Abrir modal
+  securitySetting.addEventListener("click", () => {
+    securityModal.classList.remove("hidden");
+    securityModal.classList.remove("closing");
+    console.log("🔒 Modal de segurança aberto");
+  });
+
+  // Fechar modal
+  function closeSecurityModal() {
+    securityModal.classList.add("closing");
+    setTimeout(() => {
+      securityModal.classList.add("hidden");
+      securityModal.classList.remove("closing");
+    }, 300);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeSecurityModal);
+  }
+
+  // Fechar ao clicar no backdrop
+  const backdrop = securityModal.querySelector(".config-modal-backdrop");
+  if (backdrop) {
+    backdrop.addEventListener("click", closeSecurityModal);
+  }
+
+  // Fechar com ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !securityModal.classList.contains("hidden")) {
+      closeSecurityModal();
+    }
+  });
+
+  // Ir para página de alteração de senha
+  if (changePasswordOption) {
+    changePasswordOption.addEventListener("click", () => {
+      console.log("🔑 Navegando para alteração de senha...");
+      window.location.href = "/pages/change-password/html/change-password.html";
+    });
+  }
+}
+
+// ========== ANIMAÇÕES CSS ADICIONAIS ==========
+
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideUpNotification {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  
+  @keyframes slideDownNotification {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+  }
+`;
+document.head.appendChild(style);
+
+console.log("✅ Sistema de modais de configuração carregado com sucesso!");
