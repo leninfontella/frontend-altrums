@@ -367,11 +367,10 @@ function createRippleEffect(event, element) {
 }
 
 // ========== SUBMIT DO FORMULÁRIO ==========
-
 async function submitForm(e) {
   e.preventDefault();
 
-  const submitBtn = document.getElementById("submitBtn"); // Captura o botão
+  const submitBtn = document.getElementById("submitBtn");
 
   if (!validateCurrentStep()) {
     return;
@@ -382,8 +381,9 @@ async function submitForm(e) {
   saveStepData();
 
   // 2. Mudar o estado do botão
-  const originalText = submitBtn.textContent; // Salva o texto original
-  submitBtn.textContent = "Criando..."; // Muda o texto
+  // CORREÇÃO: Usar innerHTML para salvar todo o conteúdo (texto + ícone HTML)
+  const originalContent = submitBtn.innerHTML;
+  submitBtn.innerHTML = "Criando..."; // Altera para o novo texto sem o ícone
   submitBtn.disabled = true; // Desabilita o botão para evitar cliques duplicados
 
   const userData = {
@@ -426,12 +426,12 @@ async function submitForm(e) {
         saveUserData(completeUserData);
       }
 
-      // 3. Redirecionar em caso de sucesso (o estado do botão não precisa ser restaurado, pois a página será trocada)
+      // 3. Redirecionar em caso de sucesso
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 1500);
 
-      // Retorna para evitar a restauração do botão no bloco 'finally' se o redirecionamento for em 1.5s
+      // Retorna para evitar a restauração do botão no 'finally', já que a página será trocada
       return;
     } else {
       const errorMessage = data.errors
@@ -443,11 +443,12 @@ async function submitForm(e) {
     console.error(err);
     showNotification("Erro de conexão com o servidor", "error");
   } finally {
-    // 4. Restaurar o estado do botão em caso de erro (ou se não houve redirecionamento)
-    submitBtn.textContent = originalText;
+    // 4. Restaurar o estado do botão em caso de erro
+    // CORREÇÃO: Usar innerHTML para restaurar o conteúdo original (Texto + Ícone)
+    submitBtn.innerHTML = originalContent;
     submitBtn.disabled = false;
-    // OBS: O validateCurrentStep() é chamado para reabilitar, mas como estamos no último step,
-    // ele já deveria estar habilitado se a validação passar. Deixamos a habilitação manual aqui para garantir.
+    // Força a revalidação/habilitação do botão caso a API retorne um erro.
+    validateCurrentStep();
   }
 }
 
