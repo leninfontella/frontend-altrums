@@ -367,17 +367,24 @@ function createRippleEffect(event, element) {
 }
 
 // ========== SUBMIT DO FORMULÁRIO ==========
+
 async function submitForm(e) {
   e.preventDefault();
+
+  const submitBtn = document.getElementById("submitBtn"); // Captura o botão
 
   if (!validateCurrentStep()) {
     return;
   }
 
-  createRippleEffect(e, document.getElementById("submitBtn"));
-
-  // Salvar dados do último step
+  // 1. Efeito visual e salvamento de dados
+  createRippleEffect(e, submitBtn);
   saveStepData();
+
+  // 2. Mudar o estado do botão
+  const originalText = submitBtn.textContent; // Salva o texto original
+  submitBtn.textContent = "Criando..."; // Muda o texto
+  submitBtn.disabled = true; // Desabilita o botão para evitar cliques duplicados
 
   const userData = {
     name: formData.name,
@@ -419,9 +426,13 @@ async function submitForm(e) {
         saveUserData(completeUserData);
       }
 
+      // 3. Redirecionar em caso de sucesso (o estado do botão não precisa ser restaurado, pois a página será trocada)
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 1500);
+
+      // Retorna para evitar a restauração do botão no bloco 'finally' se o redirecionamento for em 1.5s
+      return;
     } else {
       const errorMessage = data.errors
         ? data.errors.map((e) => e.msg).join(", ")
@@ -431,6 +442,12 @@ async function submitForm(e) {
   } catch (err) {
     console.error(err);
     showNotification("Erro de conexão com o servidor", "error");
+  } finally {
+    // 4. Restaurar o estado do botão em caso de erro (ou se não houve redirecionamento)
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+    // OBS: O validateCurrentStep() é chamado para reabilitar, mas como estamos no último step,
+    // ele já deveria estar habilitado se a validação passar. Deixamos a habilitação manual aqui para garantir.
   }
 }
 
