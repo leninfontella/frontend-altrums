@@ -628,7 +628,7 @@ class TimelineManager {
     if (profilePhotoUrl && profilePhotoUrl.startsWith("http")) {
       return `<img src="${profilePhotoUrl}" 
                  alt="${name}" 
-                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                 style="width: 100%; height: 100%; object-fit: cover; display: block;"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
               ${DEFAULT_AVATAR}
@@ -644,7 +644,7 @@ class TimelineManager {
 
       return `<img src="${imageUrl}" 
                  alt="${name}" 
-                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                 style="width: 100%; height: 100%; object-fit: cover; display: block;"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
               ${DEFAULT_AVATAR}
