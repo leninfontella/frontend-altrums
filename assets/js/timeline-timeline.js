@@ -558,13 +558,20 @@ class TimelineManager {
   }
 
   static renderAvatar(avatar, name) {
-    if (!avatar) return `<span style="font-size: 16px;">👤</span>`;
+    const DEFAULT_AVATAR = "👤";
+    const GCS_BASE_URL =
+      "https://storage.googleapis.com/altrum-storage-uploader/profiles/";
 
-    if (avatar.startsWith && avatar.startsWith("http")) {
-      return `<img src="${avatar}" alt="${name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    if (!avatar || avatar === DEFAULT_AVATAR) {
+      return `<span style="font-size: 16px;">${DEFAULT_AVATAR}</span>`;
     }
 
-    return `<span style="font-size: 16px;">${avatar}</span>`;
+    // Caso o avatar seja apenas o nome do arquivo salvo no banco
+    if (!avatar.startsWith("http")) {
+      avatar = `${GCS_BASE_URL}${avatar}`;
+    }
+
+    return `<img src="${avatar}" alt="${name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
   }
 
   static handleItemClick(donation) {
