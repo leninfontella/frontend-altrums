@@ -399,26 +399,36 @@ class TimelineManager {
       }
     }
 
-    // 🔧 NOVO: Obter profilePhotoUrl do objeto correto
+    // 🔧 CORREÇÃO: Obter profilePhotoUrl baseado no filtro e tipo de transação
     let profilePhotoUrl = null;
+
     if (currentFilter === "sent") {
-      profilePhotoUrl = currentUser?.profilePhotoUrl;
+      // No filtro "sent", mostrar foto do RECEPTOR (para quem você enviou)
+      profilePhotoUrl =
+        donation.recipientInfo?.profilePhotoUrl ||
+        donation.recipient?.profilePhotoUrl;
     } else if (currentFilter === "received") {
-      profilePhotoUrl = currentUser?.profilePhotoUrl;
+      // No filtro "received", mostrar foto do DOADOR (quem enviou para você)
+      profilePhotoUrl =
+        donation.donorInfo?.profilePhotoUrl || donation.donor?.profilePhotoUrl;
     } else {
+      // No filtro "all", determinar baseado em quem é o usuário logado
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
       const isReceived =
         donation.recipient && donation.recipient._id === currentUser?.id;
 
       if (isSent) {
+        // Você enviou, mostrar foto do receptor
         profilePhotoUrl =
           donation.recipientInfo?.profilePhotoUrl ||
           donation.recipient?.profilePhotoUrl;
       } else if (isReceived) {
+        // Você recebeu, mostrar foto do doador
         profilePhotoUrl =
           donation.donorInfo?.profilePhotoUrl ||
           donation.donor?.profilePhotoUrl;
       } else {
+        // Transação entre outros usuários, mostrar receptor
         profilePhotoUrl =
           donation.recipientInfo?.profilePhotoUrl ||
           donation.recipient?.profilePhotoUrl;
@@ -504,12 +514,20 @@ class TimelineManager {
       amountPrefix = "+";
       actionText = "Bônus do sistema";
     } else if (currentFilter === "sent") {
+      // 🔧 CORREÇÃO: No filtro "sent", mostrar foto do RECEPTOR (para quem enviou)
       userData = {
-        name: currentUser?.name || "Você",
-        avatar: currentUser?.avatar || "👤",
-        username: currentUser?.username || "",
+        name:
+          donation.recipientInfo?.name || donation.recipient?.name || "Usuário",
+        avatar:
+          donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤",
+        username:
+          donation.recipientInfo?.username ||
+          donation.recipient?.username ||
+          "",
         gradient: "#ef4444, #dc2626",
-        profilePhotoUrl: currentUser?.profilePhotoUrl, // 🔧 NOVO
+        profilePhotoUrl:
+          donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl, // 🔧 Foto do RECEPTOR
       };
       dotClass = "sent";
       dotIcon = "fas fa-arrow-up";
@@ -517,12 +535,16 @@ class TimelineManager {
       amountPrefix = "-";
       actionText = "Enviou para";
     } else if (currentFilter === "received") {
+      // 🔧 CORREÇÃO: No filtro "received", mostrar foto do DOADOR (quem enviou para você)
       userData = {
-        name: currentUser?.name || "Você",
-        avatar: currentUser?.avatar || "👤",
-        username: currentUser?.username || "",
+        name: donation.donorInfo?.name || donation.donor?.name || "Usuário",
+        avatar: donation.donorInfo?.avatar || donation.donor?.avatar || "👤",
+        username:
+          donation.donorInfo?.username || donation.donor?.username || "",
         gradient: "#22c55e, #16a34a",
-        profilePhotoUrl: currentUser?.profilePhotoUrl, // 🔧 NOVO
+        profilePhotoUrl:
+          donation.donorInfo?.profilePhotoUrl ||
+          donation.donor?.profilePhotoUrl, // 🔧 Foto do DOADOR
       };
       dotClass = "received";
       dotIcon = "fas fa-arrow-down";
