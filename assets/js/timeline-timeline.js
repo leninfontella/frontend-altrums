@@ -383,7 +383,6 @@ class TimelineManager {
       mainName = `${userName}`;
       displayActionText = `Recebeu de ${donorName}`;
     } else {
-      // Para filtro "all", mostrar transações entre usuários
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
       const isReceived =
         donation.recipient && donation.recipient._id === currentUser?.id;
@@ -400,55 +399,84 @@ class TimelineManager {
       }
     }
 
+    // 🔧 NOVO: Obter profilePhotoUrl do objeto correto
+    let profilePhotoUrl = null;
+    if (currentFilter === "sent") {
+      profilePhotoUrl = currentUser?.profilePhotoUrl;
+    } else if (currentFilter === "received") {
+      profilePhotoUrl = currentUser?.profilePhotoUrl;
+    } else {
+      const isSent = donation.donor && donation.donor._id === currentUser?.id;
+      const isReceived =
+        donation.recipient && donation.recipient._id === currentUser?.id;
+
+      if (isSent) {
+        profilePhotoUrl =
+          donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl;
+      } else if (isReceived) {
+        profilePhotoUrl =
+          donation.donorInfo?.profilePhotoUrl ||
+          donation.donor?.profilePhotoUrl;
+      } else {
+        profilePhotoUrl =
+          donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl;
+      }
+    }
+
     item.innerHTML = `
-      <div class="timeline-dot ${dotClass}">
-        <i class="${dotIcon}"></i>
-      </div>
-      <div class="timeline-content" data-donation-id="${donation._id}">
-        <div class="transaction-header">
-          <div class="user-info">
-            <div class="user-avatar" style="background: linear-gradient(135deg, ${
-              userData.gradient
-            });">
-              ${this.renderAvatar(userData.avatar, userData.name)}
-            </div>
-            <div class="user-details">
-              <h4>${mainName}</h4>
-              <p class="transaction-type">${displayActionText}</p>
-              <p class="timestamp">${timeAgo}</p>
-            </div>
+    <div class="timeline-dot ${dotClass}">
+      <i class="${dotIcon}"></i>
+    </div>
+    <div class="timeline-content" data-donation-id="${donation._id}">
+      <div class="transaction-header">
+        <div class="user-info">
+          <div class="user-avatar" style="background: linear-gradient(135deg, ${
+            userData.gradient
+          });">
+            ${this.renderAvatar(
+              userData.avatar,
+              userData.name,
+              profilePhotoUrl
+            )}
           </div>
-          <div class="transaction-amount">
-            <div class="coin-icon-small">🪙</div>
-            <span class="amount ${amountClass}">${amountPrefix}${
+          <div class="user-details">
+            <h4>${mainName}</h4>
+            <p class="transaction-type">${displayActionText}</p>
+            <p class="timestamp">${timeAgo}</p>
+          </div>
+        </div>
+        <div class="transaction-amount">
+          <div class="coin-icon-small">🪙</div>
+          <span class="amount ${amountClass}">${amountPrefix}${
       donation.amount
     }</span>
-          </div>
-        </div>
-        ${
-          donation.message
-            ? `
-          <div class="transaction-message">
-            <i class="fas fa-comment" style="margin-right: 8px; color: #64748b;"></i>
-            "${donation.message}"
-          </div>
-        `
-            : ""
-        }
-        <div class="transaction-meta">
-          <span class="transaction-status ${
-            donation.status
-          }">${this.getStatusText(donation.status)}</span>
-          ${
-            userData.username
-              ? `<span class="username">@${userData.username}</span>`
-              : ""
-          }
         </div>
       </div>
-    `;
+      ${
+        donation.message
+          ? `
+        <div class="transaction-message">
+          <i class="fas fa-comment" style="margin-right: 8px; color: #64748b;"></i>
+          "${donation.message}"
+        </div>
+      `
+          : ""
+      }
+      <div class="transaction-meta">
+        <span class="transaction-status ${
+          donation.status
+        }">${this.getStatusText(donation.status)}</span>
+        ${
+          userData.username
+            ? `<span class="username">@${userData.username}</span>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
 
-    // Adicionar interatividade
     item.addEventListener("click", () => this.handleItemClick(donation));
 
     return item;
@@ -468,6 +496,7 @@ class TimelineManager {
         name: "Sistema Neural",
         avatar: "🤖",
         gradient: "#7877c6, #5b5a9f",
+        profilePhotoUrl: null, // Sistema não tem foto
       };
       dotClass = "system";
       dotIcon = "fas fa-robot";
@@ -480,6 +509,7 @@ class TimelineManager {
         avatar: currentUser?.avatar || "👤",
         username: currentUser?.username || "",
         gradient: "#ef4444, #dc2626",
+        profilePhotoUrl: currentUser?.profilePhotoUrl, // 🔧 NOVO
       };
       dotClass = "sent";
       dotIcon = "fas fa-arrow-up";
@@ -492,6 +522,7 @@ class TimelineManager {
         avatar: currentUser?.avatar || "👤",
         username: currentUser?.username || "",
         gradient: "#22c55e, #16a34a",
+        profilePhotoUrl: currentUser?.profilePhotoUrl, // 🔧 NOVO
       };
       dotClass = "received";
       dotIcon = "fas fa-arrow-down";
@@ -509,6 +540,9 @@ class TimelineManager {
           donation.recipient?.username ||
           "",
         gradient: "#ef4444, #dc2626",
+        profilePhotoUrl:
+          donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl, // 🔧 NOVO
       };
       dotClass = "sent";
       dotIcon = "fas fa-arrow-up";
@@ -522,6 +556,9 @@ class TimelineManager {
         username:
           donation.donorInfo?.username || donation.donor?.username || "",
         gradient: "#22c55e, #16a34a",
+        profilePhotoUrl:
+          donation.donorInfo?.profilePhotoUrl ||
+          donation.donor?.profilePhotoUrl, // 🔧 NOVO
       };
       dotClass = "received";
       dotIcon = "fas fa-arrow-down";
@@ -539,6 +576,9 @@ class TimelineManager {
           donation.recipient?.username ||
           "",
         gradient: "#6366f1, #4f46e5",
+        profilePhotoUrl:
+          donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl, // 🔧 NOVO
       };
       dotClass = "neutral";
       dotIcon = "fas fa-exchange-alt";
@@ -557,21 +597,42 @@ class TimelineManager {
     };
   }
 
-  static renderAvatar(avatar, name) {
+  static renderAvatar(avatar, name, profilePhotoUrl = null) {
     const DEFAULT_AVATAR = "👤";
     const GCS_BASE_URL =
       "https://storage.googleapis.com/altrum-storage-uploader/profiles/";
 
-    if (!avatar || avatar === DEFAULT_AVATAR) {
-      return `<span style="font-size: 16px;">${DEFAULT_AVATAR}</span>`;
+    // 🔧 PRIORIDADE 1: Usar profilePhotoUrl (vindo do backend)
+    if (profilePhotoUrl && profilePhotoUrl.startsWith("http")) {
+      return `<img src="${profilePhotoUrl}" 
+                 alt="${name}" 
+                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
+              ${DEFAULT_AVATAR}
+            </span>`;
     }
 
-    // Caso o avatar seja apenas o nome do arquivo salvo no banco
-    if (!avatar.startsWith("http")) {
-      avatar = `${GCS_BASE_URL}${avatar}`;
+    // 🔧 PRIORIDADE 2: Usar avatar (pode ser filename ou URL)
+    if (avatar && avatar !== DEFAULT_AVATAR) {
+      // Se for apenas o filename, construir URL completa
+      const imageUrl = avatar.startsWith("http")
+        ? avatar
+        : `${GCS_BASE_URL}${avatar}`;
+
+      return `<img src="${imageUrl}" 
+                 alt="${name}" 
+                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
+              ${DEFAULT_AVATAR}
+            </span>`;
     }
 
-    return `<img src="${avatar}" alt="${name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    // 🔧 FALLBACK: Avatar padrão
+    return `<span style="font-size: 16px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+    ${DEFAULT_AVATAR}
+  </span>`;
   }
 
   static handleItemClick(donation) {
@@ -920,29 +981,37 @@ class SearchManager {
     const resultsHTML = results.users
       .map(
         (user) => `
-      <div class="search-result-item" 
-           data-user-id="${user._id}">
-        <div class="user-avatar-small">
-          ${user.avatar || "👤"}
-        </div>
-        <div class="user-info-small">
-          <div class="user-name">${user.name}</div>
-          ${
-            user.username
-              ? `<div class="user-details">@${user.username}</div>`
-              : ""
-          }
-        </div>
-        <div class="user-coins">${user.coins || 0} 🪙</div>
+    <div class="search-result-item" 
+         data-user-id="${user._id}">
+      <div class="user-avatar-small">
+        ${
+          user.profilePhotoUrl
+            ? `<img src="${user.profilePhotoUrl}" 
+                  alt="${user.name}" 
+                  style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                  onerror="this.outerHTML='<span>${
+                    user.avatar || "👤"
+                  }</span>';">`
+            : user.avatar || "👤"
+        }
       </div>
-    `
+      <div class="user-info-small">
+        <div class="user-name">${user.name}</div>
+        ${
+          user.username
+            ? `<div class="user-details">@${user.username}</div>`
+            : ""
+        }
+      </div>
+      <div class="user-coins">${user.coins || 0} 🪙</div>
+    </div>
+  `
       )
       .join("");
 
     searchResults.innerHTML = resultsHTML;
     searchResults.style.display = "block";
 
-    // Add click handlers
     searchResults.querySelectorAll(".search-result-item").forEach((item) => {
       item.addEventListener("click", () => {
         const userId = item.dataset.userId;
