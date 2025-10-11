@@ -659,9 +659,13 @@ function createDonationModal(user) {
   const currentBalance = getCurrentUserBalance();
 
   let recipientAvatarHTML;
-  const photoUrl = user.profilePhoto || user.photo || user.profilePhotoUrl;
 
-  if (photoUrl) {
+  // ✅ CORREÇÃO: Acessar corretamente os campos de foto
+  const photoUrl = user.profilePhotoUrl || user.photo || user.profilePhoto;
+
+  // ✅ Verificar se photoUrl existe E é uma string antes de usar startsWith
+  if (photoUrl && typeof photoUrl === "string" && photoUrl.trim() !== "") {
+    // Construir URL completa se necessário
     const fullPhotoUrl = photoUrl.startsWith("http")
       ? photoUrl
       : `http://localhost:5000${
@@ -687,12 +691,14 @@ function createDonationModal(user) {
       </div>
     `;
   } else {
+    // ✅ Fallback: usar iniciais
     const initials = user.name
       .split(" ")
       .map((word) => word[0])
       .join("")
       .toUpperCase()
       .substring(0, 2);
+
     recipientAvatarHTML = `
       <div class="recipient-avatar" style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px);">
         ${initials}
@@ -849,9 +855,11 @@ function renderSearchResults(users) {
   const resultsHTML = users
     .map((user) => {
       let avatarHTML;
-      const photoUrl = user.profilePhoto || user.photo || user.profilePhotoUrl;
 
-      if (photoUrl) {
+      // ✅ CORREÇÃO: Mesma lógica para buscar foto
+      const photoUrl = user.profilePhotoUrl || user.photo || user.profilePhoto;
+
+      if (photoUrl && typeof photoUrl === "string" && photoUrl.trim() !== "") {
         const fullPhotoUrl = photoUrl.startsWith("http")
           ? photoUrl
           : `http://localhost:5000${
@@ -883,6 +891,7 @@ function renderSearchResults(users) {
           .join("")
           .toUpperCase()
           .substring(0, 2);
+
         avatarHTML = `
           <div class="user-avatar" style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);">
             ${initials}
