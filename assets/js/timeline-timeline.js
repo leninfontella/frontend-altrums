@@ -370,18 +370,20 @@ class TimelineManager {
     const donorName =
       donation.donorInfo?.name || donation.donor?.name || "Usuário";
 
-    // Determinar nome principal e secundário baseado no filtro
+    // 🔧 CORREÇÃO: Determinar nome principal e secundário baseado no filtro
     let mainName = userData.name;
     let displayActionText = actionText;
 
     if (currentFilter === "sent") {
+      // 🔧 NOVO: Mostrar "Nome do Usuário (você)" ao invés de só "Você"
       const userName = currentUser?.name || "Você";
-      mainName = `${userName}`;
-      displayActionText = `Enviou para ${recipientName}`;
+      mainName = `${recipientName}`;
+      displayActionText = `Recebeu de <i><b>${donorName} </i></b> (você)`;
     } else if (currentFilter === "received") {
+      // 🔧 NOVO: Mostrar "Nome do Usuário (você)" ao invés de só "Você"
       const userName = currentUser?.name || "Você";
-      mainName = `${userName}`;
-      displayActionText = `Recebeu de ${donorName}`;
+      mainName = `${donorName}`;
+      displayActionText = `Enviou para <i><b>${recipientName}</b></i> (você)`;
     } else {
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
       const isReceived =
@@ -395,7 +397,7 @@ class TimelineManager {
         displayActionText = `Enviou para ${currentUser?.name || "Você"}`;
       } else {
         mainName = recipientName;
-        displayActionText = `Recebeu de ${donorName}`;
+        displayActionText = `Recebeu de <b><i>${donorName}</b></i>`;
       }
     }
 
