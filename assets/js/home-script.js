@@ -659,22 +659,8 @@ function createDonationModal(user) {
   const currentBalance = getCurrentUserBalance();
 
   let recipientAvatarHTML;
+  const photoUrl = user.profilePhoto || user.photo || user.profilePhotoUrl;
 
-  // 1. Tenta extrair a URL de qualquer campo
-  let photoUrl = user.profilePhoto || user.photo || user.profilePhotoUrl;
-
-  // 2. CORREÇÃO: Trata o caso em que o profilePhoto é um OBJETO no backend
-  // Se for um objeto com a URL dentro (ex: { path: "..." }), extrai o path.
-  if (typeof photoUrl === "object" && photoUrl !== null && photoUrl.path) {
-    photoUrl = photoUrl.path;
-  }
-
-  // 3. Garante que photoUrl é uma string e não vazia, caso contrário, será null
-  if (typeof photoUrl !== "string" || photoUrl.length === 0) {
-    photoUrl = null;
-  }
-
-  // O bloco 'if (photoUrl)' agora só executa se for uma string válida
   if (photoUrl) {
     const fullPhotoUrl = photoUrl.startsWith("http")
       ? photoUrl
@@ -851,15 +837,6 @@ function closeSuccessPopup() {
   }
 }
 
-function truncateString(str, maxLength = 15) {
-  if (!str) return "";
-  // Se o tamanho for maior que o limite, trunca e adiciona "..."
-  if (str.length > maxLength) {
-    return str.substring(0, maxLength) + "...";
-  }
-  return str;
-}
-
 function renderSearchResults(users) {
   const resultsContainer = document.getElementById("search-results");
 
@@ -918,14 +895,11 @@ function renderSearchResults(users) {
           user.id || user._id
         }')">
           ${avatarHTML}
-           <div class="user-info">
+          <div class="user-info">
             <h4>${user.name}</h4>
             <p class="username">${
-              // Aplica o truncateString ao valor de username (ou seu fallback)
-              truncateString(
-                user.username ||
-                  `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
-              )
+              user.username ||
+              `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
             }</p>      
             <div class="user-stats">
               <span class="coins-count">${(
