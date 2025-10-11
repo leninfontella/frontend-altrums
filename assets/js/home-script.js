@@ -906,11 +906,7 @@ function renderSearchResults(users) {
           ${avatarHTML}
           <div class="user-info">
             <h4>${user.name}</h4>
-            <p class="username">${
-              user.username ||
-              `@${user.name.toLowerCase().replace(/\s+/g, "_")}`
-            }</p>      
-            <div class="user-stats">
+                 <div class="user-stats">
               <span class="coins-count">${(
                 user.coins ||
                 user.balance ||
