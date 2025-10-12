@@ -115,9 +115,9 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   gap: 24px;
   animation: fadeIn 0.8s ease-out;
+  z-index: 2;
   box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
   border-radius: 20px;
 }
@@ -339,17 +339,20 @@ body {
 }
 
 /* Responsividade */
-/* @media (max-width: 480px) {
+@media (max-width: 480px) {
   body {
-    padding: 20px;
+    padding: 0;
   }
 
   .main-container {
-    padding: 20px;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 20px 20px 80px 20px;
   }
 
   .header-section {
-    margin-top: 20px;
+    margin-top: 30px;
   }
 
   .page-title {
@@ -384,7 +387,7 @@ body {
   }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 360px) {
   .page-title {
     font-size: 22px;
   }
@@ -398,4 +401,4 @@ body {
   .section-title {
     font-size: 15px;
   }
-} */
+}

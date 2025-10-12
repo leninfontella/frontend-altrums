@@ -115,9 +115,9 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   gap: 24px;
   animation: fadeIn 0.8s ease-out;
+  z-index: 2;
   box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
   border-radius: 20px;
 }
@@ -1093,10 +1093,10 @@ body {
   }
 }
 
-/* Responsividade
-@media (max-width: 450px) {
+/* Responsividade */
+@media (max-width: 768px) {
   .main-container {
-    padding: 20px;
+    padding: 16px;
   }
 
   .header-section {
@@ -1148,8 +1148,19 @@ body {
 }
 
 @media (max-width: 480px) {
-  .quick-categories {
-    gap: 6px;
+  body {
+    padding: 0;
+  }
+
+  .main-container {
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 20px 20px 80px 20px;
+  }
+
+  .header-section {
+    margin-top: 30px;
   }
 
   .category-pill {
@@ -1176,4 +1187,4 @@ body {
     height: 56px;
     font-size: 24px;
   }
-} */
+}
