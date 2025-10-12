@@ -1096,7 +1096,7 @@ body {
 /* Responsividade */
 @media (max-width: 450px) {
   .main-container {
-    padding: 16px;
+    padding: 20px;
   }
 
   .header-section {
