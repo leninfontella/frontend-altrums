@@ -293,8 +293,11 @@ class UserService {
    * Trata erro de autenticação
    */
   static handleAuthError() {
-    console.warn("Erro de autenticação detectado. Limpando dados...");
+    console.warn(
+      "Erro de autenticação detectado. Limpando dados e mostrando modal..."
+    );
 
+    // Remove todos os dados de autenticação
     const tokenKeys = [
       "token",
       "authToken",
@@ -312,18 +315,10 @@ class UserService {
     localStorage.removeItem("currentUser");
     sessionStorage.removeItem("currentUser");
 
-    const message =
-      "Sua sessão expirou. Você será redirecionado para o login em alguns segundos...";
-
-    if (typeof alert !== "undefined") {
-      setTimeout(() => alert(message), 1000);
-    } else {
-      console.error(message);
-    }
-
-    setTimeout(() => {
-      window.location.href = "/index.html";
-    }, 3000);
+    // Exibe o novo modal com fade-out e redirecionamento automático
+    showSessionExpiredModal(
+      "Sua sessão expirou. Você será redirecionado para o login em alguns segundos..."
+    );
   }
 
   /**
@@ -1109,8 +1104,9 @@ class UIManager {
    * Mostra mensagem de token expirado
    */
   static showTokenExpiredMessage() {
-    console.warn("Mostrando mensagem de token expirado");
+    console.warn("Mostrando modal de sessão expirada (UIManager)");
 
+    // Atualiza o texto básico na interface
     const elements = ["user-name", "user-balance", "user-position"];
     elements.forEach((id) => {
       const element = document.getElementById(id);
@@ -1123,15 +1119,10 @@ class UIManager {
       }
     });
 
-    setTimeout(() => {
-      const message =
-        "Sua sessão expirou. Você será redirecionado para o login.";
-      if (typeof alert !== "undefined") {
-        alert(message);
-      } else {
-        console.error(message);
-      }
-    }, 1000);
+    // Exibe o novo modal estilizado (com fade-out e redirecionamento automático)
+    showSessionExpiredModal(
+      "Sua sessão expirou. Você será redirecionado para o login."
+    );
   }
 
   /**
@@ -1573,6 +1564,76 @@ window.addEventListener("error", function (event) {
 window.addEventListener("unhandledrejection", function (event) {
   console.error("💥 Promise rejeitada não tratada:", event.reason);
 });
+
+// ========= MODAL DE SESSÃO EXPIRADA =========
+function showSessionExpiredModal(
+  message = "Sua sessão expirou. Você será redirecionado para o login."
+) {
+  const modal = document.getElementById("session-expired-modal");
+  const messageEl = document.getElementById("session-expired-message");
+  const button = document.getElementById("session-expired-ok");
+
+  if (!modal) return;
+
+  messageEl.textContent = message;
+  modal.classList.add("show");
+
+  let countdown = 10;
+  const interval = setInterval(() => {
+    countdown--;
+    messageEl.textContent = `${message} (${countdown}s)`;
+    if (countdown <= 0) {
+      clearInterval(interval);
+      fadeOutAndRedirect(modal);
+    }
+  }, 1000);
+
+  button.onclick = () => {
+    clearInterval(interval);
+    fadeOutAndRedirect(modal);
+  };
+}
+
+function fadeOutAndRedirect(modal) {
+  modal.classList.add("fade-out");
+  setTimeout(() => {
+    modal.classList.remove("show", "fade-out");
+    window.location.href = "/index.html";
+  }, 600); // espera o fade-out terminar antes de redirecionar
+}
+
+// ========= SUBSTITUI ALERTAS =========
+UserService.handleAuthError = function () {
+  console.warn(
+    "Erro de autenticação detectado. Limpando dados e mostrando modal..."
+  );
+  const keys = [
+    "token",
+    "authToken",
+    "accessToken",
+    "jwt",
+    "jwtToken",
+    "bearerToken",
+    "userToken",
+  ];
+  keys.forEach((k) => {
+    localStorage.removeItem(k);
+    sessionStorage.removeItem(k);
+  });
+  localStorage.removeItem("currentUser");
+  sessionStorage.removeItem("currentUser");
+
+  showSessionExpiredModal(
+    "Sua sessão expirou. Você será redirecionado para o login em alguns segundos..."
+  );
+};
+
+UIManager.showTokenExpiredMessage = function () {
+  console.warn("Mostrando modal de sessão expirada (UIManager)");
+  showSessionExpiredModal(
+    "Sua sessão expirou. Você será redirecionado para o login."
+  );
+};
 
 // ========== EXPOSIÇÃO GLOBAL PARA DEBUG ==========
 if (typeof window !== "undefined") {
