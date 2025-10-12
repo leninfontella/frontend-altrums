@@ -916,11 +916,7 @@ input:checked + .slider:before {
 /* Responsive */
 @media (max-width: 480px) {
   .security-container {
-    padding: 16px;
-  }
-
-  .header-section {
-    margin-top: 20px;
+    padding: 20px 16px;
   }
 
   .header-title {
@@ -958,11 +954,12 @@ input:checked + .slider:before {
 
 @media (max-width: 360px) {
   .security-container {
-    padding: 16px 12px;
+    padding: 20px 20px 80px 20px;
   }
 
   .header {
-    padding: 15px 0;
+    padding: 0 0 20px 0;
+    margin-top: 30px;
   }
 
   .status-header {

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Histórico de Transações - Altrum Coins</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../assets/css/transactions.css" />
+  </head>
+  <body>
+    <div class="screen">
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <div class="transactions-container">
+        <div class="header">
+          <button id="go-back" class="back-button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="header-title">Histórico</div>
+          <button id="filter-button" class="filter-button">
+            <i class="fas fa-filter"></i>
+          </button>
+        </div>
+
+        <div class="main-content">
+          <!-- Resumo do Período -->
+          <div class="summary-card">
+            <div class="summary-header">
+              <h3>Resumo do Mês</h3>
+              <select id="period-selector" class="period-selector">
+                <option value="current">Este Mês</option>
+                <option value="last">Mês Anterior</option>
+                <option value="all">Todos os Períodos</option>
+              </select>
+            </div>
+            <div class="summary-stats">
+              <div class="summary-item sent">
+                <div class="summary-icon">
+                  <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="summary-info">
+                  <div class="summary-label">Enviadas</div>
+                  <div id="total-sent" class="summary-value">0</div>
+                  <div id="total-sent-amount" class="summary-amount">
+                    0 moedas
+                  </div>
+                </div>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-item received">
+                <div class="summary-icon">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="summary-info">
+                  <div class="summary-label">Recebidas</div>
+                  <div id="total-received" class="summary-value">0</div>
+                  <div id="total-received-amount" class="summary-amount">
+                    0 moedas
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtros -->
+          <div id="filter-panel" class="filter-panel">
+            <div class="filter-options">
+              <button class="filter-chip active" data-filter="all">
+                <i class="fas fa-list"></i> Todas
+              </button>
+              <button class="filter-chip" data-filter="sent">
+                <i class="fas fa-arrow-up"></i> Enviadas
+              </button>
+              <button class="filter-chip" data-filter="received">
+                <i class="fas fa-arrow-down"></i> Recebidas
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de Transações -->
+          <div class="transactions-section">
+            <h3 class="section-title">
+              <i class="fas fa-history"></i>
+              Transações Recentes
+            </h3>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading-state">
+              <div class="loading-spinner"></div>
+              <p>Carregando transações...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state" style="display: none">
+              <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <h4>Nenhuma transação encontrada</h4>
+              <p>
+                Suas transações aparecerão aqui quando você fazer doações ou
+                receber moedas.
+              </p>
+            </div>
+
+            <!-- Lista de Transações -->
+            <div id="transactions-list" class="transactions-list">
+              <!-- As transações serão inseridas aqui dinamicamente -->
+            </div>
+
+            <!-- Load More Button -->
+            <button id="load-more" class="load-more-btn" style="display: none">
+              <i class="fas fa-chevron-down"></i>
+              Carregar Mais
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div id="go-home" class="nav-item" data-tab="home">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+          </div>
+          <div id="go-timeline" class="nav-item" data-tab="timeline">
+            <i class="fas fa-history"></i>
+            <span>Timeline</span>
+          </div>
+          <div id="go-ranks" class="nav-item" data-tab="ranks">
+            <i class="fas fa-trophy"></i>
+            <span>Ranking</span>
+          </div>
+          <div id="go-profile" class="nav-item" data-tab="profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Perfil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Detalhes da Transação -->
+    <div id="transaction-modal" class="transaction-modal">
+      <div class="transaction-modal-content">
+        <div class="modal-header">
+          <h4>Detalhes da Transação</h4>
+          <button id="close-modal" class="close-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="modal-body" class="modal-body">
+          <!-- Conteúdo será inserido dinamicamente -->
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../assets/js/auth.js"></script>
+    <script src="../../../assets/js/websocket-client.js"></script>
+    <script src="../../../assets/js/config-edit-apiConfig.js"></script>
+    <script src="../../../assets/js/config-edit-userService.js"></script>
+    <script src="../../../assets/js/transactions.js"></script>
+  </body>
+</html>

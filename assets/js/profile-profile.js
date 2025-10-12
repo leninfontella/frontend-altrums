@@ -801,6 +801,7 @@ const navigationButtons = {
   "go-home": "/pages/home/html/index.html",
   "go-support": "../../support/html/suporte.html",
   "go-security": "/pages/security/html/security.html",
+  "go-transactions": "/pages/transactions/html/transactions.html",
 };
 
 Object.keys(navigationButtons).forEach((buttonId) => {

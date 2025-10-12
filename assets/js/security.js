@@ -9,8 +9,6 @@ const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
 
 // Estado global das configurações
 let securitySettings = {
-  twoFactorAuth: false,
-  biometric: false,
   publicProfile: true,
   showRanking: true,
   publicDonationHistory: false,
@@ -20,9 +18,6 @@ let securitySettings = {
 // ========== FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO ==========
 function initializeSecurity() {
   loadSecuritySettings();
-  setupPasswordToggle();
-  setupPasswordStrength();
-  setupPasswordChange();
   setupToggles();
   setupModal();
   setupSessions();
@@ -52,10 +47,6 @@ function loadSecuritySettings() {
 }
 
 function applySettingsToUI() {
-  document.getElementById("toggle-2fa").checked =
-    securitySettings.twoFactorAuth;
-  document.getElementById("toggle-biometric").checked =
-    securitySettings.biometric;
   document.getElementById("toggle-public-profile").checked =
     securitySettings.publicProfile;
   document.getElementById("toggle-ranking").checked =
@@ -81,174 +72,9 @@ function saveSecuritySettings() {
   }
 }
 
-// ========== TOGGLE DE VISIBILIDADE DE SENHA ==========
-function setupPasswordToggle() {
-  const toggleButtons = document.querySelectorAll(".toggle-visibility");
-
-  toggleButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const targetId = this.getAttribute("data-target");
-      const input = document.getElementById(targetId);
-      const icon = this.querySelector("i");
-
-      if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-      } else {
-        input.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-      }
-    });
-  });
-}
-
-// ========== VERIFICAÇÃO DE FORÇA DA SENHA ==========
-function setupPasswordStrength() {
-  const newPasswordInput = document.getElementById("new-password");
-
-  if (newPasswordInput) {
-    newPasswordInput.addEventListener("input", function () {
-      const password = this.value;
-      const strength = calculatePasswordStrength(password);
-      updateStrengthUI(strength);
-    });
-  }
-}
-
-function calculatePasswordStrength(password) {
-  if (!password) return { score: 0, text: "Digite uma senha", class: "" };
-
-  let score = 0;
-
-  // Comprimento
-  if (password.length >= 8) score += 25;
-  if (password.length >= 12) score += 15;
-
-  // Caracteres diversos
-  if (/[a-z]/.test(password)) score += 15;
-  if (/[A-Z]/.test(password)) score += 15;
-  if (/[0-9]/.test(password)) score += 15;
-  if (/[^a-zA-Z0-9]/.test(password)) score += 15;
-
-  // Determinar nível
-  let text, className;
-
-  if (score < 40) {
-    text = "Fraca";
-    className = "weak";
-  } else if (score < 70) {
-    text = "Média";
-    className = "medium";
-  } else {
-    text = "Forte";
-    className = "strong";
-  }
-
-  return { score, text, class: className };
-}
-
-function updateStrengthUI(strength) {
-  const strengthFill = document.getElementById("strength-fill");
-  const strengthText = document.getElementById("strength-text");
-
-  if (strengthFill) {
-    strengthFill.style.width = `${strength.score}%`;
-    strengthFill.className = `strength-fill ${strength.class}`;
-  }
-
-  if (strengthText) {
-    strengthText.textContent = strength.text;
-  }
-}
-
-// ========== ALTERAÇÃO DE SENHA ==========
-function setupPasswordChange() {
-  const toggleBtn = document.getElementById("toggle-password-change");
-  const passwordForm = document.getElementById("password-change-form");
-  const saveBtn = document.getElementById("save-password");
-
-  if (toggleBtn && passwordForm) {
-    toggleBtn.addEventListener("click", function () {
-      if (passwordForm.style.display === "none") {
-        passwordForm.style.display = "block";
-        this.classList.add("active");
-      } else {
-        passwordForm.style.display = "none";
-        this.classList.remove("active");
-      }
-    });
-  }
-
-  if (saveBtn) {
-    saveBtn.addEventListener("click", handlePasswordChange);
-  }
-}
-
-async function handlePasswordChange() {
-  const currentPassword = document.getElementById("current-password").value;
-  const newPassword = document.getElementById("new-password").value;
-  const confirmPassword = document.getElementById("confirm-password").value;
-
-  // Validações
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    showToast("Preencha todos os campos", "error");
-    return;
-  }
-
-  if (newPassword !== confirmPassword) {
-    showToast("As senhas não coincidem", "error");
-    return;
-  }
-
-  const strength = calculatePasswordStrength(newPassword);
-  if (strength.score < 40) {
-    showToast("A senha é muito fraca", "warning");
-    return;
-  }
-
-  // Simular chamada à API
-  const saveBtn = document.getElementById("save-password");
-  const originalText = saveBtn.innerHTML;
-  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-  saveBtn.disabled = true;
-
-  try {
-    // Aqui você faria a chamada real à API
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Limpar campos
-    document.getElementById("current-password").value = "";
-    document.getElementById("new-password").value = "";
-    document.getElementById("confirm-password").value = "";
-
-    // Resetar indicador de força
-    updateStrengthUI({ score: 0, text: "Digite uma senha", class: "" });
-
-    showToast("Senha alterada com sucesso!", "success");
-
-    // Fechar formulário
-    setTimeout(() => {
-      document.getElementById("password-change-form").style.display = "none";
-      document
-        .getElementById("toggle-password-change")
-        .classList.remove("active");
-    }, 1000);
-  } catch (error) {
-    console.error("Erro ao alterar senha:", error);
-    showToast("Erro ao alterar senha", "error");
-  } finally {
-    saveBtn.innerHTML = originalText;
-    saveBtn.disabled = false;
-  }
-}
-
 // ========== CONFIGURAÇÃO DE TOGGLES ==========
 function setupToggles() {
   const toggles = {
-    "toggle-2fa": "twoFactorAuth",
-    "toggle-biometric": "biometric",
     "toggle-public-profile": "publicProfile",
     "toggle-ranking": "showRanking",
     "toggle-donation-history": "publicDonationHistory",
@@ -282,12 +108,12 @@ function setupToggles() {
 
 // ========== CÁLCULO DO SCORE DE SEGURANÇA ==========
 function calculateSecurityScore() {
-  let score = 50; // Base score
+  let score = 70; // Base score (maior já que não tem autenticação extra)
 
-  if (securitySettings.twoFactorAuth) score += 25;
-  if (securitySettings.biometric) score += 15;
-  if (!securitySettings.publicProfile) score += 5;
-  if (!securitySettings.publicDonationHistory) score += 5;
+  // Privacidade conta mais agora
+  if (!securitySettings.publicProfile) score += 10;
+  if (!securitySettings.showRanking) score += 10;
+  if (!securitySettings.publicDonationHistory) score += 10;
 
   // Atualizar UI
   const progressBar = document.getElementById("security-progress-bar");
@@ -304,8 +130,8 @@ function calculateSecurityScore() {
 
   if (levelText) {
     let level;
-    if (score < 60) level = "Básico";
-    else if (score < 80) level = "Médio";
+    if (score < 75) level = "Básico";
+    else if (score < 90) level = "Médio";
     else level = "Forte";
 
     levelText.textContent = `Nível: ${level}`;
@@ -682,16 +508,16 @@ function checkSecurityStatus() {
   // Verificações básicas
   const recommendations = [];
 
-  if (!securitySettings.twoFactorAuth) {
-    recommendations.push("Ative a autenticação de dois fatores");
-  }
-
-  if (!securitySettings.biometric && "credentials" in navigator) {
-    recommendations.push("Considere ativar login biométrico");
+  if (securitySettings.publicProfile) {
+    recommendations.push("Considere tornar seu perfil privado");
   }
 
   if (securitySettings.publicDonationHistory) {
     recommendations.push("Seu histórico de doações está público");
+  }
+
+  if (securitySettings.showRanking) {
+    recommendations.push("Você está visível nos rankings públicos");
   }
 
   if (recommendations.length > 0) {
@@ -757,17 +583,24 @@ function generateSecurityReport() {
   };
 
   // Adicionar recomendações
-  if (!securitySettings.twoFactorAuth) {
+  if (securitySettings.publicProfile) {
     report.recommendations.push({
-      priority: "high",
-      message: "Ative a autenticação de dois fatores",
+      priority: "medium",
+      message: "Considere tornar seu perfil privado",
     });
   }
 
-  if (securitySettings.publicProfile) {
+  if (securitySettings.publicDonationHistory) {
+    report.recommendations.push({
+      priority: "medium",
+      message: "Seu histórico de doações está público",
+    });
+  }
+
+  if (securitySettings.showRanking) {
     report.recommendations.push({
       priority: "low",
-      message: "Considere tornar seu perfil privado",
+      message: "Você está visível nos rankings",
     });
   }
 
@@ -775,11 +608,10 @@ function generateSecurityReport() {
 }
 
 function calculateSecurityScoreValue() {
-  let score = 50;
-  if (securitySettings.twoFactorAuth) score += 25;
-  if (securitySettings.biometric) score += 15;
-  if (!securitySettings.publicProfile) score += 5;
-  if (!securitySettings.publicDonationHistory) score += 5;
+  let score = 70;
+  if (!securitySettings.publicProfile) score += 10;
+  if (!securitySettings.showRanking) score += 10;
+  if (!securitySettings.publicDonationHistory) score += 10;
   return score;
 }
 
@@ -910,6 +742,22 @@ if ("performance" in window) {
     }
   });
 }
+
+// ========== MENSAGEM DE BOAS-VINDAS NO CONSOLE ==========
+console.log(`
+🔒 Sistema de Segurança - Altrum Coins
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Página inicializada com sucesso
+📱 Dispositivo: ${detectDevice()}
+🔐 Score de segurança: ${calculateSecurityScoreValue()}/100
+
+🛠️ Comandos de Debug Disponíveis:
+   • debugSecurity() - Ver estado atual
+   • copySecurityLogs() - Copiar logs
+   • generateSecurityReport() - Gerar relatório
+   • showToast(msg, type) - Testar notificações
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`);
 
 // ========== EXPORTS ==========
 if (typeof module !== "undefined" && module.exports) {
