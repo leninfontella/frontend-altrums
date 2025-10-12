@@ -800,6 +800,7 @@ const navigationButtons = {
   "go-settings": "../../configuracao/html/index.html",
   "go-home": "/pages/home/html/index.html",
   "go-support": "../../support/html/suporte.html",
+  "go-security": "/pages/security/html/security.html",
 };
 
 Object.keys(navigationButtons).forEach((buttonId) => {

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Segurança e Privacidade - Altrum Coins</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../assets/css/security.css" />
+  </head>
+  <body>
+    <div class="screen">
+      <!-- Partículas de fundo -->
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <div class="security-container">
+        <!-- Header -->
+        <div class="header">
+          <button id="go-back" class="back-button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="header-title">Segurança</div>
+          <button id="save-all" class="save-button" style="opacity: 0">
+            <i class="fas fa-check"></i>
+          </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+          <!-- Status de Segurança -->
+          <div class="security-status-card">
+            <div class="status-header">
+              <div class="status-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="status-info">
+                <h3 class="status-title">Status de Segurança</h3>
+                <p id="security-level" class="status-level">Nível: Forte</p>
+              </div>
+            </div>
+            <div class="status-progress">
+              <div
+                id="security-progress-bar"
+                class="security-bar"
+                style="width: 85%"
+              ></div>
+            </div>
+            <p id="security-score" class="status-score">85/100 pontos</p>
+          </div>
+
+          <!-- Seção de Autenticação -->
+          <div class="settings-section">
+            <h3 class="section-title">
+              <i class="fas fa-key"></i>
+              Autenticação
+            </h3>
+
+            <!-- Alterar Senha -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon password">
+                  <i class="fas fa-lock"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Alterar Senha</h4>
+                  <p class="setting-description">
+                    Última alteração: há 30 dias
+                  </p>
+                </div>
+                <button
+                  id="toggle-password-change"
+                  class="setting-toggle"
+                  type="button"
+                >
+                  <i class="fas fa-chevron-down"></i>
+                </button>
+              </div>
+
+              <div
+                id="password-change-form"
+                class="setting-content"
+                style="display: none"
+              >
+                <div class="form-group">
+                  <label for="current-password">Senha Atual</label>
+                  <div class="input-wrapper">
+                    <input
+                      type="password"
+                      id="current-password"
+                      class="form-input"
+                      placeholder="Digite sua senha atual"
+                    />
+                    <button
+                      class="toggle-visibility"
+                      type="button"
+                      data-target="current-password"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="new-password">Nova Senha</label>
+                  <div class="input-wrapper">
+                    <input
+                      type="password"
+                      id="new-password"
+                      class="form-input"
+                      placeholder="Digite a nova senha"
+                    />
+                    <button
+                      class="toggle-visibility"
+                      type="button"
+                      data-target="new-password"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                  <div id="password-strength" class="password-strength">
+                    <div class="strength-bar">
+                      <div
+                        id="strength-fill"
+                        class="strength-fill"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+                    <p id="strength-text" class="strength-text">
+                      Digite uma senha
+                    </p>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="confirm-password">Confirmar Nova Senha</label>
+                  <div class="input-wrapper">
+                    <input
+                      type="password"
+                      id="confirm-password"
+                      class="form-input"
+                      placeholder="Confirme a nova senha"
+                    />
+                    <button
+                      class="toggle-visibility"
+                      type="button"
+                      data-target="confirm-password"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <button id="save-password" class="btn-primary" type="button">
+                  <i class="fas fa-check"></i>
+                  Salvar Nova Senha
+                </button>
+              </div>
+            </div>
+
+            <!-- Autenticação de Dois Fatores -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon twofa">
+                  <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Autenticação de Dois Fatores</h4>
+                  <p class="setting-description">
+                    Proteção adicional para sua conta
+                  </p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-2fa" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Biometria -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon biometric">
+                  <i class="fas fa-fingerprint"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Login com Biometria</h4>
+                  <p class="setting-description">Use sua digital ou Face ID</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-biometric" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção de Privacidade -->
+          <div class="settings-section">
+            <h3 class="section-title">
+              <i class="fas fa-user-shield"></i>
+              Privacidade
+            </h3>
+
+            <!-- Perfil Público -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon privacy">
+                  <i class="fas fa-eye"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Perfil Público</h4>
+                  <p class="setting-description">
+                    Permite que outros vejam seu perfil
+                  </p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-public-profile" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Mostrar Ranking -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon ranking">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Aparecer no Ranking</h4>
+                  <p class="setting-description">
+                    Exibir sua posição nos rankings
+                  </p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-ranking" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Histórico de Doações -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon history">
+                  <i class="fas fa-history"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Histórico Público de Doações</h4>
+                  <p class="setting-description">
+                    Mostrar suas doações para outros
+                  </p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-donation-history" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Notificações -->
+            <div class="setting-card">
+              <div class="setting-header">
+                <div class="setting-icon notification">
+                  <i class="fas fa-bell"></i>
+                </div>
+                <div class="setting-info">
+                  <h4 class="setting-title">Notificações de Doações</h4>
+                  <p class="setting-description">
+                    Receber alertas de doações recebidas
+                  </p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-notifications" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção de Sessão -->
+          <div class="settings-section">
+            <h3 class="section-title">
+              <i class="fas fa-laptop"></i>
+              Sessões Ativas
+            </h3>
+
+            <!-- Dispositivo Atual -->
+            <div class="session-card current">
+              <div class="session-icon">
+                <i class="fas fa-desktop"></i>
+              </div>
+              <div class="session-info">
+                <h4 class="session-device">Dispositivo Atual</h4>
+                <p class="session-location">Porto Alegre, RS - Brasil</p>
+                <p class="session-time">Ativo agora</p>
+              </div>
+              <span class="session-badge">Atual</span>
+            </div>
+
+            <!-- Outras Sessões -->
+            <div id="other-sessions-container">
+              <!-- Sessões serão inseridas via JavaScript -->
+            </div>
+
+            <button id="logout-all" class="btn-danger" type="button">
+              <i class="fas fa-sign-out-alt"></i>
+              Encerrar Todas as Sessões
+            </button>
+          </div>
+
+          <!-- Seção de Dados -->
+          <div class="settings-section">
+            <h3 class="section-title">
+              <i class="fas fa-database"></i>
+              Gerenciar Dados
+            </h3>
+
+            <div class="data-card">
+              <button id="download-data" class="data-button" type="button">
+                <div class="data-icon">
+                  <i class="fas fa-download"></i>
+                </div>
+                <div class="data-info">
+                  <h4 class="data-title">Baixar Meus Dados</h4>
+                  <p class="data-description">Exportar todos os seus dados</p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <div class="data-card danger">
+              <button id="delete-account" class="data-button" type="button">
+                <div class="data-icon">
+                  <i class="fas fa-trash-alt"></i>
+                </div>
+                <div class="data-info">
+                  <h4 class="data-title">Excluir Conta</h4>
+                  <p class="data-description">
+                    Remover permanentemente sua conta
+                  </p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirm-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h3 id="modal-title" class="modal-title">Confirmar Ação</h3>
+        </div>
+        <div class="modal-body">
+          <p id="modal-message" class="modal-message">
+            Tem certeza que deseja continuar?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel" class="btn-secondary" type="button">
+            Cancelar
+          </button>
+          <button id="modal-confirm" class="btn-primary" type="button">
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="toast" class="toast">
+      <div class="toast-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <p id="toast-message" class="toast-message">
+        Configuração salva com sucesso!
+      </p>
+    </div>
+
+    <script src="../../../assets/js/auth.js"></script>
+    <script src="../../../assets/js/security.js"></script>
+  </body>
+</html>
