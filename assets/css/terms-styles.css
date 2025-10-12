@@ -339,7 +339,7 @@ body {
 }
 
 /* Responsividade */
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
   body {
     padding: 20px;
   }
@@ -398,4 +398,4 @@ body {
   .section-title {
     font-size: 15px;
   }
-}
+} */
