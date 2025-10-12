@@ -115,6 +115,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   gap: 24px;
   animation: fadeIn 0.8s ease-out;
   z-index: 2;
