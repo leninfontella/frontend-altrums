@@ -23,7 +23,7 @@ body {
 .screen {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+  background: black;
   position: relative;
   overflow-x: hidden;
   display: flex;
