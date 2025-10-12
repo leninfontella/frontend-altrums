@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Central de Ajuda - Altrum</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/help-center-styles.css" />
+  </head>
+  <body>
+    <!-- Partículas flutuantes -->
+    <div class="floating-particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+
+    <div class="main-container">
+      <!-- Header -->
+      <div class="header-section">
+        <button class="back-button" id="go-back">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <h1 class="page-title">
+          <div class="title-icon">
+            <i class="fas fa-question-circle"></i>
+          </div>
+          Central de Ajuda
+        </h1>
+        <p class="page-subtitle">FAQ e tutoriais para você aproveitar melhor</p>
+      </div>
+
+      <!-- Barra de busca -->
+      <div class="search-section">
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="Buscar ajuda..."
+          />
+          <button class="search-clear" id="search-clear" style="display: none">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="search-suggestions" id="search-suggestions"></div>
+      </div>
+
+      <!-- Conteúdo Principal -->
+      <div class="content-container">
+        <!-- Tutoriais em Destaque -->
+        <section class="section tutorials-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-graduation-cap"></i>
+              Tutoriais em Destaque
+            </h2>
+          </div>
+
+          <div class="tutorials-grid">
+            <div class="tutorial-card" data-tutorial="getting-started">
+              <div class="tutorial-icon">
+                <i class="fas fa-rocket"></i>
+              </div>
+              <div class="tutorial-content">
+                <h3 class="tutorial-title">Primeiros Passos</h3>
+                <p class="tutorial-description">
+                  Aprenda o básico para começar a usar o Altrum
+                </p>
+                <div class="tutorial-meta">
+                  <span class="tutorial-duration">
+                    <i class="fas fa-clock"></i> 5 min
+                  </span>
+                  <span class="tutorial-level beginner">Iniciante</span>
+                </div>
+              </div>
+              <i class="fas fa-chevron-right tutorial-arrow"></i>
+            </div>
+
+            <div class="tutorial-card" data-tutorial="receive-donations">
+              <div class="tutorial-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+              </div>
+              <div class="tutorial-content">
+                <h3 class="tutorial-title">Como Receber Doações</h3>
+                <p class="tutorial-description">
+                  Guia completo para configurar e receber doações
+                </p>
+                <div class="tutorial-meta">
+                  <span class="tutorial-duration">
+                    <i class="fas fa-clock"></i> 8 min
+                  </span>
+                  <span class="tutorial-level intermediate">Intermediário</span>
+                </div>
+              </div>
+              <i class="fas fa-chevron-right tutorial-arrow"></i>
+            </div>
+
+            <div class="tutorial-card" data-tutorial="secure-account">
+              <div class="tutorial-icon">
+                <i class="fas fa-lock"></i>
+              </div>
+              <div class="tutorial-content">
+                <h3 class="tutorial-title">Protegendo sua Conta</h3>
+                <p class="tutorial-description">
+                  Dicas essenciais de segurança para sua conta
+                </p>
+                <div class="tutorial-meta">
+                  <span class="tutorial-duration">
+                    <i class="fas fa-clock"></i> 6 min
+                  </span>
+                  <span class="tutorial-level beginner">Iniciante</span>
+                </div>
+              </div>
+              <i class="fas fa-chevron-right tutorial-arrow"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="section faq-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-comments"></i>
+              Perguntas Frequentes
+            </h2>
+          </div>
+
+          <div class="faq-container" id="faq-container">
+            <!-- FAQ items serão inseridos via JavaScript -->
+          </div>
+
+          <div class="no-results" id="no-results" style="display: none">
+            <i class="fas fa-search"></i>
+            <h3>Nenhum resultado encontrado</h3>
+            <p>Tente buscar com palavras-chave diferentes</p>
+          </div>
+        </section>
+
+        <!-- Contato e Suporte -->
+        <section class="section contact-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-headset"></i>
+              Ainda precisa de ajuda?
+            </h2>
+          </div>
+
+          <div class="contact-options">
+            <div class="contact-card">
+              <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <h3 class="contact-title">E-mail</h3>
+              <p class="contact-description">suporte@altrum.com</p>
+              <button class="contact-button">
+                <i class="fas fa-paper-plane"></i>
+                Enviar E-mail
+              </button>
+            </div>
+
+            <div class="contact-card">
+              <div class="contact-icon">
+                <i class="fab fa-whatsapp"></i>
+              </div>
+              <h3 class="contact-title">WhatsApp</h3>
+              <p class="contact-description">+55 11 99999-9999</p>
+              <button class="contact-button">
+                <i class="fab fa-whatsapp"></i>
+                Abrir Chat
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recursos Adicionais -->
+        <section class="section resources-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-book"></i>
+              Recursos Adicionais
+            </h2>
+          </div>
+
+          <div class="resources-grid">
+            <a href="#" class="resource-link">
+              <i class="fas fa-file-alt"></i>
+              <span>Termos de Uso</span>
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+            <a href="#" class="resource-link">
+              <i class="fas fa-shield-alt"></i>
+              <span>Política de Privacidade</span>
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
+        </section>
+
+        <!-- Footer Info -->
+        <div class="footer-info">
+          <p class="footer-text">
+            <i class="fas fa-info-circle"></i>
+            Esta página é atualizada regularmente com novas informações
+          </p>
+          <p class="footer-version">Última atualização: Janeiro 2025</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Tutorial Detalhado -->
+    <div id="tutorial-modal" class="tutorial-modal hidden">
+      <div class="tutorial-modal-backdrop"></div>
+      <div class="tutorial-modal-content">
+        <div class="tutorial-modal-header">
+          <h3 id="modal-title">Tutorial</h3>
+          <button class="tutorial-modal-close" id="close-tutorial-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="tutorial-modal-body" id="modal-body">
+          <!-- Conteúdo do tutorial será inserido aqui -->
+        </div>
+      </div>
+    </div>
+
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/help-center-script.js"></script>
+  </body>
+</html>
