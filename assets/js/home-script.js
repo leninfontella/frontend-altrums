@@ -711,7 +711,7 @@ function createDonationModal(user) {
       <div class="modal-backdrop" onclick="closeDonationModal()"></div>
       <div class="modal-content donation-content">
         <div class="modal-header">
-          <h3>Doar Moedas</h3>
+          <h3>Doar moedas para:</h3>
           <button class="close-btn" onclick="closeDonationModal()">✕</button>
         </div>
         
@@ -720,12 +720,8 @@ function createDonationModal(user) {
             ${recipientAvatarHTML}
             <div class="recipient-details">
               <h4>${user.name}</h4>
-              <p class="username">${
-                user.username ||
-                user.email?.toLowerCase().replace(/\s+/g, "_") ||
-                user.name.toLowerCase().replace(/\s+/g, "_")
-              }</p>
-              <p class="institution">${user.institution || "Nível atual:"}</p>
+   
+              
               <div class="level-badge ${(user.level || "iniciante")
                 .toLowerCase()
                 .replace(" ", "-")}">${user.level || "Iniciante"}</div>
@@ -761,7 +757,7 @@ function createDonationModal(user) {
             <label for="donation-message">Mensagem (opcional):</label>
             <textarea 
               id="donation-message" 
-              placeholder="Escreva uma mensagem motivacional..."
+              placeholder="Escreva uma mensagem..."
               maxlength="200"
             ></textarea>
             <div class="char-counter">0/200</div>
