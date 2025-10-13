@@ -4,26 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeTransactions();
 });
 
-import { apiRequest } from "../../../assets/js/apiService.js";
-
-async function loadTransactions(period = "current", type = "all") {
-  try {
-    const response = await apiRequest(
-      `/transactions?period=${period}&type=${type}`
-    );
-
-    if (response.success) {
-      renderTransactions(response.data.transactions);
-      updateSummary(response.data.summary);
-    } else {
-      showEmptyState();
-    }
-  } catch (err) {
-    console.error("Erro ao carregar transações:", err);
-    showErrorMessage("Falha ao buscar transações. Tente novamente.");
-  }
-}
-
 // ========== CONFIGURAÇÃO DA API ==========
 const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
 
