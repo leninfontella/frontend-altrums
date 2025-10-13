@@ -160,7 +160,7 @@
 
         <div class="settings-section">
           <h2 class="section-title">Dados e Backup</h2>
-          <div class="setting-item">
+          <div class="setting-item" id="clear-cache-setting">
             <div class="setting-content">
               <div class="setting-left">
                 <div class="setting-icon">
@@ -664,6 +664,159 @@
             </div>
             <button class="btn-close-success" id="btn-close-success">
               Entendido
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Limpar Cache -->
+    <div id="clear-cache-modal" class="clear-cache-modal hidden">
+      <div class="clear-cache-modal-backdrop"></div>
+      <div class="clear-cache-modal-content">
+        <div class="clear-cache-modal-header">
+          <h3><i class="fas fa-trash-alt"></i> Limpar Cache</h3>
+          <button class="clear-cache-modal-close" id="close-clear-cache-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="clear-cache-modal-body">
+          <!-- Formulário de Limpeza -->
+          <div id="cache-form">
+            <!-- Info do Cache -->
+            <div class="cache-info-box">
+              <i class="fas fa-database cache-icon-display"></i>
+              <div class="cache-size" id="cache-total-size">125 MB</div>
+              <div class="cache-label">Espaço em cache</div>
+            </div>
+
+            <!-- Lista de Itens em Cache -->
+            <div class="cache-items-list">
+              <div class="cache-items-title">
+                <i class="fas fa-list"></i>
+                O que será removido:
+              </div>
+
+              <div class="cache-item">
+                <div class="cache-item-icon">
+                  <i class="fas fa-image"></i>
+                </div>
+                <div class="cache-item-info">
+                  <div class="cache-item-name">Imagens em Cache</div>
+                  <div class="cache-item-description">
+                    Fotos de perfil, thumbnails
+                  </div>
+                </div>
+                <div class="cache-item-size" id="cache-images-size">45 MB</div>
+              </div>
+
+              <div class="cache-item">
+                <div class="cache-item-icon">
+                  <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="cache-item-info">
+                  <div class="cache-item-name">Arquivos Temporários</div>
+                  <div class="cache-item-description">
+                    Downloads e uploads incompletos
+                  </div>
+                </div>
+                <div class="cache-item-size" id="cache-temp-size">28 MB</div>
+              </div>
+
+              <div class="cache-item">
+                <div class="cache-item-icon">
+                  <i class="fas fa-history"></i>
+                </div>
+                <div class="cache-item-info">
+                  <div class="cache-item-name">Logs e Histórico</div>
+                  <div class="cache-item-description">
+                    Registros de atividades antigas
+                  </div>
+                </div>
+                <div class="cache-item-size" id="cache-logs-size">20 MB</div>
+              </div>
+            </div>
+
+            <!-- Benefícios -->
+            <div class="cache-benefits">
+              <div class="benefits-title">
+                <i class="fas fa-check-circle"></i>
+                Benefícios da limpeza:
+              </div>
+
+              <div class="benefit-item">
+                <div class="benefit-icon">
+                  <i class="fas fa-bolt"></i>
+                </div>
+                <div class="benefit-text">
+                  Melhor desempenho e velocidade do app
+                </div>
+              </div>
+
+              <div class="benefit-item">
+                <div class="benefit-icon">
+                  <i class="fas fa-hdd"></i>
+                </div>
+                <div class="benefit-text">
+                  Libera espaço de armazenamento no dispositivo
+                </div>
+              </div>
+
+              <div class="benefit-item">
+                <div class="benefit-icon">
+                  <i class="fas fa-sync-alt"></i>
+                </div>
+                <div class="benefit-text">
+                  Resolve problemas de carregamento e sincronização
+                </div>
+              </div>
+            </div>
+
+            <!-- Aviso -->
+            <div class="cache-warning-note">
+              <i class="fas fa-info-circle warning-note-icon"></i>
+              <div class="warning-note-text">
+                <strong>Nota:</strong> Limpar o cache não afeta seus dados
+                pessoais, configurações ou preferências. Apenas remove arquivos
+                temporários e dados em cache.
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="cache-actions">
+              <button class="btn-cache-cancel" id="btn-cache-cancel">
+                <i class="fas fa-times"></i>
+                Cancelar
+              </button>
+              <button class="btn-cache-clear" id="btn-cache-clear">
+                <span class="btn-text">
+                  <i class="fas fa-trash-alt"></i>
+                  Limpar Cache
+                </span>
+                <div class="btn-cache-loading"></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tela de Sucesso -->
+          <div id="cache-success" class="cache-success">
+            <div class="cache-success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="cache-success-title">Cache Limpo!</div>
+            <div class="cache-success-text">Você liberou com sucesso:</div>
+            <div class="cache-freed-space" id="cache-freed-space">125 MB</div>
+            <div class="cache-success-text">
+              Seu aplicativo agora deve funcionar mais rápido e com melhor
+              desempenho.
+            </div>
+            <button
+              class="btn-cache-close-success"
+              id="btn-cache-close-success"
+            >
+              <i class="fas fa-check"></i>
+              Concluído
             </button>
           </div>
         </div>

@@ -1738,6 +1738,326 @@ function initializeDeactivateModal() {
   console.log("✅ Modal de desativação inicializado");
 }
 
+// ========== MODAL DE LIMPAR CACHE ==========
+// ADICIONAR NO ARQUIVO: configuracao-script.js
+// Adicionar após a função initializeDeactivateModal()
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🧹 Inicializando modal de limpar cache...");
+
+  initializeClearCacheModal();
+});
+
+function initializeClearCacheModal() {
+  const clearCacheModal = document.getElementById("clear-cache-modal");
+  const clearCacheSetting = document.getElementById("clear-cache-setting");
+  const closeBtn = document.getElementById("close-clear-cache-modal");
+  const cancelBtn = document.getElementById("btn-cache-cancel");
+  const clearBtn = document.getElementById("btn-cache-clear");
+  const cacheForm = document.getElementById("cache-form");
+  const successScreen = document.getElementById("cache-success");
+  const closeSuccessBtn = document.getElementById("btn-cache-close-success");
+
+  if (!clearCacheSetting || !clearCacheModal) {
+    console.warn("⚠️ Elementos do modal de cache não encontrados");
+    return;
+  }
+
+  // Calcular tamanho do cache (simulado)
+  function calculateCacheSize() {
+    // Em produção, isso viria de uma API real
+    const sizes = {
+      images: Math.floor(Math.random() * 50) + 20, // 20-70 MB
+      temp: Math.floor(Math.random() * 30) + 10, // 10-40 MB
+      logs: Math.floor(Math.random() * 20) + 5, // 5-25 MB
+    };
+
+    const total = Object.values(sizes).reduce((a, b) => a + b, 0);
+
+    return { sizes, total };
+  }
+
+  // Atualizar tamanhos no modal
+  function updateCacheSizes() {
+    const { sizes, total } = calculateCacheSize();
+
+    // Atualizar tamanho total
+    const cacheSizeEl = document.getElementById("cache-total-size");
+    if (cacheSizeEl) {
+      cacheSizeEl.textContent = `${total} MB`;
+    }
+
+    // Atualizar preview na tela de configurações
+    const cachePreviewEl = document.getElementById("cache-size-preview");
+    if (cachePreviewEl) {
+      cachePreviewEl.textContent = total;
+    }
+
+    // Atualizar itens individuais
+    const imageSize = document.getElementById("cache-images-size");
+    const tempSize = document.getElementById("cache-temp-size");
+    const logsSize = document.getElementById("cache-logs-size");
+
+    if (imageSize) imageSize.textContent = `${sizes.images} MB`;
+    if (tempSize) tempSize.textContent = `${sizes.temp} MB`;
+    if (logsSize) logsSize.textContent = `${sizes.logs} MB`;
+
+    return total;
+  }
+
+  // Abrir modal
+  clearCacheSetting.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openClearCacheModal();
+  });
+
+  function openClearCacheModal() {
+    clearCacheModal.classList.remove("hidden");
+    clearCacheModal.classList.remove("closing");
+    updateCacheSizes();
+    resetCacheForm();
+    console.log("🧹 Modal de limpar cache aberto");
+  }
+
+  // Fechar modal
+  function closeClearCacheModal() {
+    clearCacheModal.classList.add("closing");
+    setTimeout(() => {
+      clearCacheModal.classList.add("hidden");
+      clearCacheModal.classList.remove("closing");
+      resetCacheForm();
+    }, 300);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeClearCacheModal);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", closeClearCacheModal);
+  }
+
+  // Fechar ao clicar no backdrop
+  const backdrop = clearCacheModal.querySelector(".clear-cache-modal-backdrop");
+  if (backdrop) {
+    backdrop.addEventListener("click", closeClearCacheModal);
+  }
+
+  // Fechar com ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !clearCacheModal.classList.contains("hidden")) {
+      closeClearCacheModal();
+    }
+  });
+
+  // Limpar cache
+  if (clearBtn) {
+    clearBtn.addEventListener("click", handleClearCache);
+  }
+
+  async function handleClearCache() {
+    console.log("🧹 Iniciando limpeza de cache...");
+
+    // Guardar tamanho antes de limpar
+    const sizeBeforeCleaning = parseInt(
+      document
+        .getElementById("cache-total-size")
+        ?.textContent.replace(" MB", "") || "0"
+    );
+
+    // Mostrar loading
+    if (clearBtn) {
+      clearBtn.classList.add("loading");
+      clearBtn.disabled = true;
+    }
+
+    try {
+      // Simular limpeza de cache
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Em produção, fazer chamada à API
+      // const result = await clearCacheAPI();
+      // Exemplo de chamada real:
+      /*
+      const response = await fetch('/api/cache/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token') || localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao limpar cache');
+      }
+      
+      const result = await response.json();
+      const sizeBeforeCleaning = result.freedSpace;
+      */
+
+      console.log("✅ Cache limpo com sucesso");
+
+      // Atualizar texto de espaço liberado
+      const freedSpaceEl = document.getElementById("cache-freed-space");
+      if (freedSpaceEl) {
+        freedSpaceEl.textContent = `${sizeBeforeCleaning} MB`;
+      }
+
+      // Mostrar tela de sucesso
+      showCacheSuccessScreen();
+
+      // Resetar tamanhos (simular cache vazio)
+      setTimeout(() => {
+        const cacheSizeEl = document.getElementById("cache-total-size");
+        if (cacheSizeEl) {
+          cacheSizeEl.textContent = "0 MB";
+        }
+
+        const cachePreviewEl = document.getElementById("cache-size-preview");
+        if (cachePreviewEl) {
+          cachePreviewEl.textContent = "0";
+        }
+
+        const sizes = document.querySelectorAll('[id^="cache-"][id$="-size"]');
+        sizes.forEach((el) => {
+          if (el.id !== "cache-total-size") {
+            el.textContent = "0 MB";
+          }
+        });
+      }, 100);
+
+      // Atualizar novamente após 3 segundos (simular novo acúmulo)
+      setTimeout(() => {
+        updateCacheSizes();
+      }, 3000);
+    } catch (error) {
+      console.error("❌ Erro ao limpar cache:", error);
+
+      // Mostrar notificação de erro
+      showCacheErrorNotification();
+
+      if (clearBtn) {
+        clearBtn.classList.remove("loading");
+        clearBtn.disabled = false;
+      }
+    }
+  }
+
+  // Mostrar tela de sucesso
+  function showCacheSuccessScreen() {
+    if (cacheForm) {
+      cacheForm.style.display = "none";
+    }
+
+    if (successScreen) {
+      successScreen.classList.add("show");
+    }
+
+    if (clearBtn) {
+      clearBtn.classList.remove("loading");
+      clearBtn.disabled = false;
+    }
+  }
+
+  // Resetar formulário
+  function resetCacheForm() {
+    if (cacheForm) {
+      cacheForm.style.display = "block";
+    }
+
+    if (successScreen) {
+      successScreen.classList.remove("show");
+    }
+
+    if (clearBtn) {
+      clearBtn.classList.remove("loading");
+      clearBtn.disabled = false;
+    }
+  }
+
+  // Fechar tela de sucesso
+  if (closeSuccessBtn) {
+    closeSuccessBtn.addEventListener("click", () => {
+      closeClearCacheModal();
+    });
+  }
+
+  // Mostrar notificação de erro
+  function showCacheErrorNotification() {
+    const notification = document.createElement("div");
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5);
+      z-index: 10001;
+      animation: slideUpNotification 0.4s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    notification.innerHTML = `
+      <i class="fas fa-exclamation-circle"></i>
+      <span>Erro ao limpar cache. Tente novamente.</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.style.animation = "slideDownNotification 0.4s ease forwards";
+      setTimeout(() => notification.remove(), 400);
+    }, 3000);
+  }
+
+  // Atualizar tamanhos ao carregar a página
+  updateCacheSizes();
+
+  console.log("✅ Modal de limpar cache inicializado");
+}
+
+// Função auxiliar para limpar cache via API (exemplo)
+async function clearCacheAPI() {
+  try {
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
+    const userId =
+      sessionStorage.getItem("userId") || localStorage.getItem("userId");
+
+    const response = await fetch("/api/cache/clear", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Falha ao limpar cache");
+    }
+
+    const data = await response.json();
+    console.log("Resposta da API:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Erro na API de limpeza de cache:", error);
+    throw error;
+  }
+}
+
+console.log("✅ Sistema de limpar cache carregado!");
+
 // Adicionar animação de shake para erro
 const shakeStyles = document.createElement("style");
 shakeStyles.textContent = `
