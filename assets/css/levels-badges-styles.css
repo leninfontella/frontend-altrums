@@ -178,25 +178,41 @@ body {
   margin-top: 50px; /* Adiciona margin-top */
 }
 
-.back-button {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+.header-top {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  justify-content: center; /* mantém o título centralizado */
+  position: relative;
+}
 
+/* Botão afastado à esquerda */
+.header-top .back-button {
+  position: absolute;
+  left: 0; /* fixa o botão no canto esquerdo */
+  font-size: 18px;
   color: #00d4ff;
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  flex-shrink: 0;
-  overflow: hidden;
-  position: absolute; /* Adiciona posição absoluta */
-  top: 0;
-  left: 0;
+  transition: all 0.3s ease;
+  padding-left: 20px; /* aumenta o afastamento do canto */
+}
+
+.header-top .back-button:hover {
+  transform: scale(1.1);
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #00d4ff;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .back-button:hover {
