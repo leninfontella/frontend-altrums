@@ -514,7 +514,7 @@ function setupNavigation() {
     "go-home": "/pages/home/html/index.html",
     "go-timeline": "../../timeline/html/timeline.html",
     "go-ranks": "../../ranking/html/ranks.html",
-    "go-profile": "../html/profile.html",
+    "go-profile": "/pages/profile/pages/profile.html",
   };
 
   Object.keys(navigationButtons).forEach((buttonId) => {
