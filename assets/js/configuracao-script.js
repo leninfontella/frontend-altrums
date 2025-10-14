@@ -2100,3 +2100,319 @@ style.textContent = `
 document.head.appendChild(style);
 
 console.log("✅ Sistema de modais de configuração carregado com sucesso!");
+
+// ========== MODAL DE AVALIAR APP ==========
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("⭐ Inicializando modal de avaliação...");
+  initializeRatingModal();
+});
+
+function initializeRatingModal() {
+  const ratingModal = document.getElementById("rating-modal");
+
+  // Buscar o item "Avaliar App"
+  const settingItems = document.querySelectorAll(".setting-item");
+  let ratingButton = null;
+
+  settingItems.forEach((item) => {
+    const title = item.querySelector(".setting-title");
+    if (title && title.textContent.trim().includes("Avaliar App")) {
+      ratingButton = item;
+      console.log("✅ Botão de avaliação encontrado");
+    }
+  });
+
+  if (!ratingButton || !ratingModal) {
+    console.warn("⚠️ Elementos do modal de avaliação não encontrados");
+    return;
+  }
+
+  const closeBtn = document.getElementById("close-rating-modal");
+  const cancelBtn = document.getElementById("btn-rating-cancel");
+  const submitBtn = document.getElementById("btn-rating-submit");
+  const stars = document.querySelectorAll(".rating-stars i");
+  const feedbackText = document.getElementById("rating-feedback");
+  const commentGroup = document.getElementById("comment-group");
+  const commentTextarea = document.getElementById("rating-comment");
+  const charCount = document.getElementById("char-count");
+  const ratingForm = document.getElementById("rating-form");
+  const successScreen = document.getElementById("rating-success");
+  const closeSuccessBtn = document.getElementById("btn-rating-close-success");
+  const successStarsContainer = document.getElementById("success-stars");
+
+  let selectedRating = 0;
+
+  // Mensagens de feedback
+  const feedbackMessages = {
+    1: "😔 Sentimos muito! O que podemos melhorar?",
+    2: "😕 Poderia ser melhor. Conte-nos mais!",
+    3: "😊 Bom! Como podemos deixar ainda melhor?",
+    4: "😃 Ótimo! Ficamos felizes que esteja gostando!",
+    5: "🤩 Incrível! Você é demais! Muito obrigado!",
+  };
+
+  // Abrir modal
+  ratingButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    ratingModal.classList.remove("hidden");
+    ratingModal.classList.remove("closing");
+    resetRatingForm();
+    console.log("⭐ Modal de avaliação aberto");
+  });
+
+  // Fechar modal
+  function closeRatingModal() {
+    ratingModal.classList.add("closing");
+    setTimeout(() => {
+      ratingModal.classList.add("hidden");
+      ratingModal.classList.remove("closing");
+      resetRatingForm();
+    }, 300);
+  }
+
+  if (closeBtn) closeBtn.addEventListener("click", closeRatingModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeRatingModal);
+
+  // Fechar ao clicar no backdrop
+  const backdrop = ratingModal.querySelector(".rating-modal-backdrop");
+  if (backdrop) {
+    backdrop.addEventListener("click", closeRatingModal);
+  }
+
+  // Fechar com ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !ratingModal.classList.contains("hidden")) {
+      closeRatingModal();
+    }
+  });
+
+  // Sistema de estrelas
+  stars.forEach((star, index) => {
+    star.addEventListener("mouseenter", () => {
+      highlightStars(index + 1);
+    });
+
+    star.addEventListener("click", () => {
+      selectedRating = index + 1;
+      selectStars(selectedRating);
+      updateFeedback(selectedRating);
+      showCommentField();
+      enableSubmitButton();
+      console.log(`⭐ Avaliação: ${selectedRating} estrelas`);
+    });
+  });
+
+  // Resetar hover
+  const starsContainer = document.querySelector(".rating-stars");
+  if (starsContainer) {
+    starsContainer.addEventListener("mouseleave", () => {
+      if (selectedRating > 0) {
+        selectStars(selectedRating);
+      } else {
+        resetStars();
+      }
+    });
+  }
+
+  function highlightStars(count) {
+    stars.forEach((star, index) => {
+      if (index < count) {
+        star.style.color = "#ffd700";
+        star.style.transform = "scale(1.15)";
+      } else {
+        star.style.color = "rgba(255, 215, 0, 0.3)";
+        star.style.transform = "scale(1)";
+      }
+    });
+  }
+
+  function selectStars(count) {
+    stars.forEach((star, index) => {
+      if (index < count) {
+        star.classList.add("active");
+      } else {
+        star.classList.remove("active");
+      }
+    });
+  }
+
+  function resetStars() {
+    stars.forEach((star) => {
+      star.classList.remove("active");
+      star.style.color = "";
+      star.style.transform = "";
+    });
+  }
+
+  function updateFeedback(rating) {
+    if (feedbackText) {
+      feedbackText.textContent = feedbackMessages[rating];
+    }
+  }
+
+  function showCommentField() {
+    if (commentGroup) {
+      commentGroup.style.display = "block";
+    }
+  }
+
+  function enableSubmitButton() {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+    }
+  }
+
+  // Contador de caracteres
+  if (commentTextarea && charCount) {
+    commentTextarea.addEventListener("input", () => {
+      const count = commentTextarea.value.length;
+      charCount.textContent = count;
+      charCount.style.color =
+        count > 450 ? "#f59e0b" : "rgba(255, 255, 255, 0.5)";
+    });
+  }
+
+  // Enviar avaliação
+  if (submitBtn) {
+    submitBtn.addEventListener("click", handleSubmitRating);
+  }
+
+  async function handleSubmitRating() {
+    if (selectedRating === 0) return;
+
+    const comment = commentTextarea?.value.trim() || "";
+
+    console.log("📤 Enviando avaliação...");
+
+    submitBtn.classList.add("loading");
+    submitBtn.disabled = true;
+
+    try {
+      // Simular API
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      console.log("✅ Avaliação enviada:", { rating: selectedRating, comment });
+
+      // Confetes em 5 estrelas
+      if (selectedRating === 5) {
+        setTimeout(() => showConfetti(), 800);
+      }
+
+      updateSuccessStars(selectedRating);
+      showRatingSuccessScreen();
+    } catch (error) {
+      console.error("❌ Erro ao enviar avaliação:", error);
+      showRatingErrorNotification();
+      submitBtn.classList.remove("loading");
+      submitBtn.disabled = false;
+    }
+  }
+
+  function updateSuccessStars(rating) {
+    if (successStarsContainer) {
+      const successStars = successStarsContainer.querySelectorAll("i");
+      successStars.forEach((star, index) => {
+        if (index < rating) {
+          star.style.color = "#ffd700";
+        } else {
+          star.style.color = "rgba(255, 215, 0, 0.3)";
+        }
+      });
+    }
+  }
+
+  function showRatingSuccessScreen() {
+    if (ratingForm) ratingForm.style.display = "none";
+    if (successScreen) successScreen.classList.add("show");
+    if (submitBtn) {
+      submitBtn.classList.remove("loading");
+      submitBtn.disabled = false;
+    }
+  }
+
+  function resetRatingForm() {
+    selectedRating = 0;
+    resetStars();
+    if (commentTextarea) commentTextarea.value = "";
+    if (charCount) {
+      charCount.textContent = "0";
+      charCount.style.color = "rgba(255, 255, 255, 0.5)";
+    }
+    if (feedbackText) {
+      feedbackText.textContent = "Toque nas estrelas para avaliar";
+    }
+    if (commentGroup) commentGroup.style.display = "none";
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.remove("loading");
+    }
+    if (ratingForm) ratingForm.style.display = "block";
+    if (successScreen) successScreen.classList.remove("show");
+  }
+
+  if (closeSuccessBtn) {
+    closeSuccessBtn.addEventListener("click", closeRatingModal);
+  }
+
+  function showRatingErrorNotification() {
+    const notification = document.createElement("div");
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    notification.innerHTML = `
+      <i class="fas fa-exclamation-circle"></i>
+      <span>Erro ao enviar avaliação. Tente novamente.</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 3000);
+  }
+
+  console.log("✅ Modal de avaliação inicializado");
+}
+
+// Função de confetes para 5 estrelas
+function showConfetti() {
+  const colors = ["#ffd700", "#ffb700", "#ff6b6b", "#4ecdc4", "#95e1d3"];
+  const confettiCount = 50;
+
+  for (let i = 0; i < confettiCount; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement("div");
+      confetti.style.cssText = `
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        top: -10px;
+        left: ${Math.random() * 100}%;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 10002;
+        animation: confettiRain ${2 + Math.random() * 2}s linear forwards;
+        transform: rotate(${Math.random() * 360}deg);
+      `;
+
+      document.body.appendChild(confetti);
+      setTimeout(() => confetti.remove(), 4000);
+    }, i * 30);
+  }
+}
+
+console.log("⭐ Sistema de avaliação com efeitos especiais carregado!");

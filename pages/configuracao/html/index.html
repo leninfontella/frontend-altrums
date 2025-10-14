@@ -822,5 +822,112 @@
         </div>
       </div>
     </div>
+
+    <!-- ADICIONAR ANTES de </body> -->
+
+    <!-- Modal de Avaliar App -->
+    <div id="rating-modal" class="rating-modal hidden">
+      <div class="rating-modal-backdrop"></div>
+      <div class="rating-modal-content">
+        <div class="rating-modal-header">
+          <h3><i class="fas fa-star"></i> Avaliar Altrum</h3>
+          <button class="rating-modal-close" id="close-rating-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="rating-modal-body">
+          <!-- Formulário de Avaliação -->
+          <div id="rating-form">
+            <!-- Ícone Principal -->
+            <div class="rating-icon-display">
+              <i class="fas fa-heart"></i>
+            </div>
+
+            <!-- Título -->
+            <div class="rating-title">Está gostando do Altrum?</div>
+            <div class="rating-subtitle">
+              Sua opinião nos ajuda a melhorar cada vez mais!
+            </div>
+
+            <!-- Estrelas de Avaliação -->
+            <div class="rating-stars" id="rating-stars">
+              <i class="fas fa-star" data-rating="1"></i>
+              <i class="fas fa-star" data-rating="2"></i>
+              <i class="fas fa-star" data-rating="3"></i>
+              <i class="fas fa-star" data-rating="4"></i>
+              <i class="fas fa-star" data-rating="5"></i>
+            </div>
+
+            <!-- Texto dinâmico baseado na avaliação -->
+            <div class="rating-feedback" id="rating-feedback">
+              Toque nas estrelas para avaliar
+            </div>
+
+            <!-- Comentário Opcional -->
+            <div class="form-group" id="comment-group" style="display: none;">
+              <label class="form-label" for="rating-comment">
+                Comentário (opcional)
+              </label>
+              <textarea
+                id="rating-comment"
+                class="rating-textarea"
+                placeholder="Conte-nos o que você pensa..."
+                maxlength="500"
+              ></textarea>
+              <div class="character-count">
+                <span id="char-count">0</span>/500
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="rating-actions" id="rating-actions">
+              <button class="btn-rating-cancel" id="btn-rating-cancel">
+                Agora não
+              </button>
+              <button
+                class="btn-rating-submit"
+                id="btn-rating-submit"
+                disabled
+              >
+                <span class="btn-text">
+                  <i class="fas fa-paper-plane"></i>
+                  Enviar Avaliação
+                </span>
+                <div class="btn-rating-loading"></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tela de Sucesso -->
+          <div id="rating-success" class="rating-success">
+            <div class="rating-success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="rating-success-title">Obrigado!</div>
+            <div class="rating-success-text">
+              Sua avaliação foi enviada com sucesso. Agradecemos muito pelo seu
+              feedback!
+            </div>
+            <div class="rating-success-stars" id="success-stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <button
+              class="btn-rating-close-success"
+              id="btn-rating-close-success"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
   </body>
 </html>
