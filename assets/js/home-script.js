@@ -719,7 +719,7 @@ function createDonationModal(user) {
           <div class="recipient-info">
             ${recipientAvatarHTML}
             <div class="recipient-details">
-              <h4>${user.name}</h4>
+              <h4>${user.name}🤑</h4>
    
               
               <div class="level-badge ${(user.level || "iniciante")
@@ -733,7 +733,7 @@ function createDonationModal(user) {
           </div>
           
           <div class="donation-amount-section">
-            <label for="donation-amount">Quantidade de moedas para doar:</label>
+            <label for="donation-amount">Quantidade de moedas para doar: 🫰</label>
             <div class="amount-input-wrapper">
               <input 
                 type="number" 
@@ -754,7 +754,7 @@ function createDonationModal(user) {
           </div>
           
           <div class="donation-message-section">
-            <label for="donation-message">Mensagem (opcional):</label>
+            <label for="donation-message">Mensagem (opcional): 💬</label>
             <textarea 
               id="donation-message" 
               placeholder="Escreva uma mensagem..."
@@ -913,7 +913,7 @@ function renderSearchResults(users) {
                 .replace(" ", "-")}">${user.level || "Iniciante"}</span>
             </div>
           </div>
-          <div class="donate-icon">💝</div>
+          <div class="donate-icon">💸</div>
         </div>
       `;
     })
