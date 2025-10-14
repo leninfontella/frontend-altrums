@@ -39,12 +39,7 @@
           <!-- Resumo do Período -->
           <div class="summary-card">
             <div class="summary-header">
-              <h3>Resumo do Mês</h3>
-              <select id="period-selector" class="period-selector">
-                <option value="current">Este Mês</option>
-                <option value="last">Mês Anterior</option>
-                <option value="all">Todos os Períodos</option>
-              </select>
+              <h3>Resumo de transações</h3>
             </div>
             <div class="summary-stats">
               <div class="summary-item sent">
@@ -78,10 +73,7 @@
           <!-- Filtros -->
           <div id="filter-panel" class="filter-panel">
             <div class="filter-options">
-              <button class="filter-chip active" data-filter="all">
-                <i class="fas fa-list"></i> Todas
-              </button>
-              <button class="filter-chip" data-filter="sent">
+              <button class="filter-chip active" data-filter="sent">
                 <i class="fas fa-arrow-up"></i> Enviadas
               </button>
               <button class="filter-chip" data-filter="received">
@@ -94,7 +86,7 @@
           <div class="transactions-section">
             <h3 class="section-title">
               <i class="fas fa-history"></i>
-              Transações Recentes
+              Suas Transações
             </h3>
 
             <!-- Loading State -->

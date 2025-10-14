@@ -13,7 +13,7 @@ let lastApiCall = 0;
 const API_COOLDOWN = 1000; // Reduzido para 1s
 
 // Estado da aplicação
-let currentFilter = "all"; // 'all', 'sent', 'received'
+let currentFilter = "sent"; // Inicia com 'sent' como padrão
 let currentPage = 1;
 let hasMoreTransactions = true;
 const ITEMS_PER_PAGE = 20;
@@ -59,8 +59,6 @@ async function apiRequest(endpoint, options = {}) {
     if (!response.ok) {
       if (response.status === 401) {
         console.error("❌ Token inválido ou expirado");
-        // Redirecionar para login se necessário
-        // window.location.href = '/login.html';
       }
       if (response.status === 429) {
         throw new Error("Muitas requisições - tente novamente");
@@ -77,26 +75,6 @@ async function apiRequest(endpoint, options = {}) {
 
 // ========== SERVIÇO DE TRANSAÇÕES ==========
 class TransactionsService {
-  // Buscar todas as doações (botão "all")
-  static async getAllDonations(page = 1, limit = ITEMS_PER_PAGE) {
-    try {
-      console.log(`📄 Buscando TODAS as doações - Página: ${page}`);
-
-      const response = await apiRequest(
-        `/users/donations/all?page=${page}&limit=${limit}`
-      );
-
-      if (response.success && response.data) {
-        console.log("✅ Todas as doações carregadas:", response.data);
-        return this.formatDonations(response.data, "all");
-      }
-      throw new Error("Resposta inválida da API");
-    } catch (error) {
-      console.error("❌ Erro ao buscar todas as doações:", error);
-      throw error;
-    }
-  }
-
   // Buscar doações enviadas
   static async getSentDonations(page = 1, limit = ITEMS_PER_PAGE) {
     try {
@@ -143,12 +121,8 @@ class TransactionsService {
 
     // Transformar doações do backend para formato do frontend
     const formattedTransactions = donations.map((donation) => {
-      // Determinar o tipo baseado no filtro ou nos dados
-      let type = filterType;
-      if (filterType === "all") {
-        // Para "all", determinar pela presença do usuário logado
-        type = donation.type || "sent"; // Backend já retorna o tipo
-      }
+      // Determinar o tipo baseado no filtro
+      const type = filterType;
 
       // Determinar qual usuário mostrar baseado no tipo
       const otherUser = type === "sent" ? donation.recipient : donation.donor;
@@ -159,7 +133,7 @@ class TransactionsService {
         amount: donation.amount,
         user: otherUser?.fullName || otherUser?.name || "Usuário Desconhecido",
         userAvatar: otherUser?.avatar || "👤",
-        userPhoto: otherUser?.profilePhotoUrl || null, // URL do GCS ou null
+        userPhoto: otherUser?.profilePhotoUrl || null,
         date: donation.createdAt,
         status: donation.status || "completed",
         message: donation.message || "",
@@ -195,7 +169,7 @@ class TransactionsService {
 
   // Buscar transações baseado no filtro atual
   static async getTransactions(
-    filter = "all",
+    filter = "sent",
     page = 1,
     limit = ITEMS_PER_PAGE
   ) {
@@ -204,9 +178,8 @@ class TransactionsService {
         return await this.getSentDonations(page, limit);
       case "received":
         return await this.getReceivedDonations(page, limit);
-      case "all":
       default:
-        return await this.getAllDonations(page, limit);
+        return await this.getSentDonations(page, limit);
     }
   }
 }
@@ -588,7 +561,7 @@ function setupNavigation() {
     "go-home": "/pages/home/html/index.html",
     "go-timeline": "../../timeline/html/timeline.html",
     "go-ranks": "../../ranking/html/ranks.html",
-    "go-profile": "../html/profile.html",
+    "go-profile": "/pages/profile/pages/profile.html",
   };
 
   Object.keys(navigationButtons).forEach((buttonId) => {
@@ -676,8 +649,6 @@ async function initializeTransactions() {
   // Verificar autenticação
   if (!Auth.getToken()) {
     console.error("❌ Usuário não autenticado");
-    // Redirecionar para login se necessário
-    // window.location.href = '/login.html';
     return;
   }
 
@@ -701,12 +672,12 @@ async function refreshTransactions() {
   console.log("🔄 Atualizando transações...");
   transactionsCache = null;
   currentPage = 1;
-  currentFilter = "all";
+  currentFilter = "sent";
 
   // Reset filter chips
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.classList.remove("active");
-    if (chip.dataset.filter === "all") {
+    if (chip.dataset.filter === "sent") {
       chip.classList.add("active");
     }
   });
@@ -741,7 +712,6 @@ console.log(`
 🛠️ Debug: debugTransactions()
 🔄 Reload: refreshTransactions()
 📊 Endpoints:
-   - /users/donations/all (todas)
    - /users/donations/sent (enviadas)
    - /users/donations/received (recebidas)
 `);

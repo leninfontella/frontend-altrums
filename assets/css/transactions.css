@@ -188,28 +188,6 @@ body {
   font-weight: 700;
 }
 
-.period-selector {
-  background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  border-radius: 12px;
-  color: #fff;
-  font-size: 13px;
-  padding: 8px 12px;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.period-selector:focus {
-  border-color: #00d4ff;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
-}
-
-.period-selector option {
-  background: #2a2a2a;
-  color: #fff;
-}
-
 .summary-stats {
   display: flex;
   align-items: center;
