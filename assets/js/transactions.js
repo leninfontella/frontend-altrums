@@ -325,7 +325,7 @@ class TransactionsUI {
       iconContainer.innerHTML = `
         <img src="${transaction.userPhoto}" 
              alt="${transaction.user}" 
-             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+             style="width: 100%; height: 100%; object-fit: cover; border-radius: 25%;"
              onerror="this.style.display='none'; this.parentElement.innerHTML='${transaction.userAvatar}';">
       `;
     } else {
