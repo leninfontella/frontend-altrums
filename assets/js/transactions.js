@@ -10,11 +10,10 @@ const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
 // Cache e rate limiting
 let transactionsCache = null;
 let lastApiCall = 0;
-const API_COOLDOWN = 2000;
+const API_COOLDOWN = 1000; // Reduzido para 1s
 
 // Estado da aplicação
-let currentFilter = "all";
-let currentPeriod = "current";
+let currentFilter = "all"; // 'all', 'sent', 'received'
 let currentPage = 1;
 let hasMoreTransactions = true;
 const ITEMS_PER_PAGE = 20;
@@ -31,10 +30,14 @@ async function apiRequest(endpoint, options = {}) {
     }
 
     const token = Auth.getToken();
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
     const config = {
       headers: {
         "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
+        Authorization: `Bearer ${token}`,
         ...options.headers,
       },
       ...options,
@@ -50,10 +53,15 @@ async function apiRequest(endpoint, options = {}) {
     } else {
       const textResponse = await response.text();
       console.error("Resposta não é JSON:", textResponse);
-      throw new Error(`Resposta inválida do servidor`);
+      throw new Error("Resposta inválida do servidor");
     }
 
     if (!response.ok) {
+      if (response.status === 401) {
+        console.error("❌ Token inválido ou expirado");
+        // Redirecionar para login se necessário
+        // window.location.href = '/login.html';
+      }
       if (response.status === 429) {
         throw new Error("Muitas requisições - tente novamente");
       }
@@ -69,93 +77,137 @@ async function apiRequest(endpoint, options = {}) {
 
 // ========== SERVIÇO DE TRANSAÇÕES ==========
 class TransactionsService {
-  static async getTransactions(
-    period = "current",
-    page = 1,
-    limit = ITEMS_PER_PAGE
-  ) {
+  // Buscar todas as doações (botão "all")
+  static async getAllDonations(page = 1, limit = ITEMS_PER_PAGE) {
     try {
-      console.log(
-        `📄 Buscando transações - Período: ${period}, Página: ${page}`
-      );
+      console.log(`📄 Buscando TODAS as doações - Página: ${page}`);
 
       const response = await apiRequest(
-        `/transactions?period=${period}&page=${page}&limit=${limit}`
+        `/users/donations/all?page=${page}&limit=${limit}`
       );
 
       if (response.success && response.data) {
-        console.log("✅ Transações carregadas:", response.data);
-        return response.data;
-      } else {
-        throw new Error("Resposta inválida da API");
+        console.log("✅ Todas as doações carregadas:", response.data);
+        return this.formatDonations(response.data, "all");
       }
+      throw new Error("Resposta inválida da API");
     } catch (error) {
-      console.error("❌ Erro ao buscar transações:", error);
-      return this.getTransactionsFallback();
+      console.error("❌ Erro ao buscar todas as doações:", error);
+      throw error;
     }
   }
 
-  static getTransactionsFallback() {
-    console.log("📄 Usando dados de fallback para transações...");
+  // Buscar doações enviadas
+  static async getSentDonations(page = 1, limit = ITEMS_PER_PAGE) {
+    try {
+      console.log(`📤 Buscando doações ENVIADAS - Página: ${page}`);
 
-    // Gerar transações de exemplo
-    const transactions = [];
-    const users = [
-      "Ana Silva",
-      "Carlos Santos",
-      "Maria Oliveira",
-      "João Pedro",
-      "Fernanda Costa",
-      "Ricardo Lima",
-      "Juliana Souza",
-      "Paulo Mendes",
-    ];
+      const response = await apiRequest(
+        `/users/donations/sent?page=${page}&limit=${limit}`
+      );
 
-    const now = new Date();
-
-    for (let i = 0; i < 15; i++) {
-      const daysAgo = Math.floor(Math.random() * 30);
-      const date = new Date(now);
-      date.setDate(date.getDate() - daysAgo);
-
-      const type = Math.random() > 0.5 ? "sent" : "received";
-      const amount = Math.floor(Math.random() * 200) + 10;
-      const user = users[Math.floor(Math.random() * users.length)];
-
-      transactions.push({
-        id: `tx_${Date.now()}_${i}`,
-        type: type,
-        amount: amount,
-        user: user,
-        date: date.toISOString(),
-        status: "completed",
-        description:
-          type === "sent" ? `Doação para ${user}` : `Doação de ${user}`,
-      });
+      if (response.success && response.data) {
+        console.log("✅ Doações enviadas carregadas:", response.data);
+        return this.formatDonations(response.data, "sent");
+      }
+      throw new Error("Resposta inválida da API");
+    } catch (error) {
+      console.error("❌ Erro ao buscar doações enviadas:", error);
+      throw error;
     }
+  }
 
-    // Ordenar por data (mais recente primeiro)
-    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Buscar doações recebidas
+  static async getReceivedDonations(page = 1, limit = ITEMS_PER_PAGE) {
+    try {
+      console.log(`📥 Buscando doações RECEBIDAS - Página: ${page}`);
 
-    // Calcular totais
-    const sent = transactions.filter((t) => t.type === "sent");
-    const received = transactions.filter((t) => t.type === "received");
+      const response = await apiRequest(
+        `/users/donations/received?page=${page}&limit=${limit}`
+      );
+
+      if (response.success && response.data) {
+        console.log("✅ Doações recebidas carregadas:", response.data);
+        return this.formatDonations(response.data, "received");
+      }
+      throw new Error("Resposta inválida da API");
+    } catch (error) {
+      console.error("❌ Erro ao buscar doações recebidas:", error);
+      throw error;
+    }
+  }
+
+  // Formatar doações do backend para o formato esperado pelo frontend
+  static formatDonations(data, filterType) {
+    const { donations, pagination } = data;
+
+    // Transformar doações do backend para formato do frontend
+    const formattedTransactions = donations.map((donation) => {
+      // Determinar o tipo baseado no filtro ou nos dados
+      let type = filterType;
+      if (filterType === "all") {
+        // Para "all", determinar pela presença do usuário logado
+        type = donation.type || "sent"; // Backend já retorna o tipo
+      }
+
+      // Determinar qual usuário mostrar baseado no tipo
+      const otherUser = type === "sent" ? donation.recipient : donation.donor;
+
+      return {
+        id: donation._id,
+        type: type,
+        amount: donation.amount,
+        user: otherUser?.fullName || otherUser?.name || "Usuário Desconhecido",
+        userAvatar: otherUser?.avatar || "👤",
+        userPhoto: otherUser?.profilePhotoUrl || null, // URL do GCS ou null
+        date: donation.createdAt,
+        status: donation.status || "completed",
+        message: donation.message || "",
+        description:
+          type === "sent"
+            ? `Doação para ${otherUser?.fullName || otherUser?.name}`
+            : `Doação de ${otherUser?.fullName || otherUser?.name}`,
+
+        // Dados completos para detalhes
+        donor: donation.donor,
+        recipient: donation.recipient,
+        donorInfo: donation.donorInfo,
+        recipientInfo: donation.recipientInfo,
+      };
+    });
+
+    // Calcular totais para resumo
+    const sent = formattedTransactions.filter((t) => t.type === "sent");
+    const received = formattedTransactions.filter((t) => t.type === "received");
 
     return {
-      transactions: transactions,
+      transactions: formattedTransactions,
       summary: {
         totalSent: sent.length,
         totalSentAmount: sent.reduce((sum, t) => sum + t.amount, 0),
         totalReceived: received.length,
         totalReceivedAmount: received.reduce((sum, t) => sum + t.amount, 0),
       },
-      hasMore: false,
+      hasMore: pagination?.hasNext || false,
+      pagination: pagination,
     };
   }
 
-  static filterTransactions(transactions, filter) {
-    if (filter === "all") return transactions;
-    return transactions.filter((t) => t.type === filter);
+  // Buscar transações baseado no filtro atual
+  static async getTransactions(
+    filter = "all",
+    page = 1,
+    limit = ITEMS_PER_PAGE
+  ) {
+    switch (filter) {
+      case "sent":
+        return await this.getSentDonations(page, limit);
+      case "received":
+        return await this.getReceivedDonations(page, limit);
+      case "all":
+      default:
+        return await this.getAllDonations(page, limit);
+    }
   }
 }
 
@@ -179,6 +231,22 @@ class TransactionsUI {
   static showEmpty() {
     const emptyState = document.getElementById("empty-state");
     if (emptyState) emptyState.style.display = "flex";
+  }
+
+  static showError(message) {
+    const transactionsList = document.getElementById("transactions-list");
+    if (transactionsList) {
+      transactionsList.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #666;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #f44336;"></i>
+          <p style="font-size: 16px; margin-bottom: 8px;">Erro ao carregar transações</p>
+          <p style="font-size: 14px; color: #999;">${message}</p>
+          <button onclick="refreshTransactions()" style="margin-top: 16px; padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            <i class="fas fa-redo"></i> Tentar Novamente
+          </button>
+        </div>
+      `;
+    }
   }
 
   static updateSummary(summary) {
@@ -248,12 +316,26 @@ class TransactionsUI {
     item.className = `transaction-item ${transaction.type}`;
     item.dataset.transactionId = transaction.id;
 
-    const icon = document.createElement("div");
-    icon.className = "transaction-icon";
-    icon.innerHTML =
-      transaction.type === "sent"
-        ? '<i class="fas fa-arrow-up"></i>'
-        : '<i class="fas fa-arrow-down"></i>';
+    // Avatar/Foto do usuário
+    const iconContainer = document.createElement("div");
+    iconContainer.className = "transaction-icon";
+
+    if (transaction.userPhoto) {
+      // Usar foto real do GCS
+      iconContainer.innerHTML = `
+        <img src="${transaction.userPhoto}" 
+             alt="${transaction.user}" 
+             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='${transaction.userAvatar}';">
+      `;
+    } else {
+      // Usar emoji avatar como fallback
+      iconContainer.textContent = transaction.userAvatar;
+      iconContainer.style.fontSize = "24px";
+      iconContainer.style.display = "flex";
+      iconContainer.style.alignItems = "center";
+      iconContainer.style.justifyContent = "center";
+    }
 
     const info = document.createElement("div");
     info.className = "transaction-info";
@@ -279,7 +361,7 @@ class TransactionsUI {
         ? `-${transaction.amount}`
         : `+${transaction.amount}`;
 
-    item.appendChild(icon);
+    item.appendChild(iconContainer);
     item.appendChild(info);
     item.appendChild(amount);
 
@@ -330,7 +412,17 @@ class TransactionsUI {
     const userLabel = transaction.type === "sent" ? "Para" : "De";
     const amountClass = transaction.type === "sent" ? "sent" : "received";
 
+    // Foto do usuário no modal
+    const otherUser =
+      transaction.type === "sent" ? transaction.recipient : transaction.donor;
+    const photoHtml = otherUser?.profilePhotoUrl
+      ? `<img src="${otherUser.profilePhotoUrl}" alt="${transaction.user}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px;" onerror="this.style.display='none';">`
+      : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">${transaction.userAvatar}</div>`;
+
     modalBody.innerHTML = `
+      <div style="text-align: center; margin-bottom: 24px;">
+        ${photoHtml}
+      </div>
       <div class="detail-row">
         <span class="detail-label">Tipo</span>
         <span class="detail-value">${typeText}</span>
@@ -359,11 +451,25 @@ class TransactionsUI {
       </div>
       <div class="detail-row">
         <span class="detail-label">Status</span>
-        <span class="detail-value">Concluída</span>
+        <span class="detail-value">
+          <span style="color: #4CAF50; font-weight: 500;">
+            <i class="fas fa-check-circle"></i> Concluída
+          </span>
+        </span>
       </div>
+      ${
+        transaction.message
+          ? `
+        <div class="detail-row">
+          <span class="detail-label">Mensagem</span>
+          <span class="detail-value" style="font-style: italic; color: #666;">"${transaction.message}"</span>
+        </div>
+      `
+          : ""
+      }
       <div class="detail-row">
         <span class="detail-label">ID da Transação</span>
-        <span class="detail-value" style="font-size: 12px; color: #666;">${
+        <span class="detail-value" style="font-size: 12px; color: #666; word-break: break-all;">${
           transaction.id
         }</span>
       </div>
@@ -390,19 +496,9 @@ class FilterManager {
         this.handleFilterChange(chip);
       });
     });
-
-    // Period selector
-    const periodSelector = document.getElementById("period-selector");
-    if (periodSelector) {
-      periodSelector.addEventListener("change", (e) => {
-        currentPeriod = e.target.value;
-        currentPage = 1;
-        loadTransactions();
-      });
-    }
   }
 
-  static handleFilterChange(chip) {
+  static async handleFilterChange(chip) {
     // Remover active de todos
     document.querySelectorAll(".filter-chip").forEach((c) => {
       c.classList.remove("active");
@@ -411,40 +507,12 @@ class FilterManager {
     // Adicionar active no clicado
     chip.classList.add("active");
 
-    // Aplicar filtro
+    // Atualizar filtro e resetar página
     currentFilter = chip.dataset.filter;
-    this.applyFilter();
-  }
+    currentPage = 1;
 
-  static applyFilter() {
-    if (!transactionsCache) return;
-
-    const filtered = TransactionsService.filterTransactions(
-      transactionsCache.transactions,
-      currentFilter
-    );
-
-    TransactionsUI.renderTransactions(filtered);
-
-    // Atualizar resumo baseado no filtro
-    if (currentFilter === "all") {
-      TransactionsUI.updateSummary(transactionsCache.summary);
-    } else {
-      const filteredSummary = this.calculateFilteredSummary(filtered);
-      TransactionsUI.updateSummary(filteredSummary);
-    }
-  }
-
-  static calculateFilteredSummary(transactions) {
-    const sent = transactions.filter((t) => t.type === "sent");
-    const received = transactions.filter((t) => t.type === "received");
-
-    return {
-      totalSent: sent.length,
-      totalSentAmount: sent.reduce((sum, t) => sum + t.amount, 0),
-      totalReceived: received.length,
-      totalReceivedAmount: received.reduce((sum, t) => sum + t.amount, 0),
-    };
+    // Recarregar transações com novo filtro
+    await loadTransactions();
   }
 }
 
@@ -456,40 +524,46 @@ async function loadTransactions(append = false) {
 
   try {
     const data = await TransactionsService.getTransactions(
-      currentPeriod,
+      currentFilter,
       currentPage,
       ITEMS_PER_PAGE
     );
 
     if (data) {
       if (append && transactionsCache) {
+        // Adicionar novas transações ao cache
         transactionsCache.transactions = [
           ...transactionsCache.transactions,
           ...data.transactions,
         ];
-        hasMoreTransactions = data.hasMore || false;
+        // Atualizar totais
+        transactionsCache.summary = data.summary;
+        hasMoreTransactions = data.hasMore;
       } else {
+        // Novo carregamento
         transactionsCache = data;
-        hasMoreTransactions = data.hasMore || false;
+        hasMoreTransactions = data.hasMore;
       }
 
       TransactionsUI.hideLoading();
-      TransactionsUI.updateSummary(data.summary);
-
-      const filtered = TransactionsService.filterTransactions(
-        transactionsCache.transactions,
-        currentFilter
+      TransactionsUI.updateSummary(transactionsCache.summary);
+      TransactionsUI.renderTransactions(
+        append ? data.transactions : transactionsCache.transactions,
+        append
       );
-
-      TransactionsUI.renderTransactions(filtered, append);
       TransactionsUI.updateLoadMoreButton(hasMoreTransactions);
 
-      console.log("✅ Transações carregadas com sucesso!");
+      console.log("✅ Transações carregadas com sucesso!", {
+        filter: currentFilter,
+        page: currentPage,
+        total: transactionsCache.transactions.length,
+        hasMore: hasMoreTransactions,
+      });
     }
   } catch (error) {
     console.error("❌ Erro ao carregar transações:", error);
     TransactionsUI.hideLoading();
-    TransactionsUI.showEmpty();
+    TransactionsUI.showError(error.message);
   }
 }
 
@@ -514,7 +588,7 @@ function setupNavigation() {
     "go-home": "/pages/home/html/index.html",
     "go-timeline": "../../timeline/html/timeline.html",
     "go-ranks": "../../ranking/html/ranks.html",
-    "go-profile": "/pages/profile/pages/profile.html",
+    "go-profile": "../html/profile.html",
   };
 
   Object.keys(navigationButtons).forEach((buttonId) => {
@@ -599,6 +673,14 @@ function animateInitialLoad() {
 async function initializeTransactions() {
   console.log("⚙️ Configurando página de transações...");
 
+  // Verificar autenticação
+  if (!Auth.getToken()) {
+    console.error("❌ Usuário não autenticado");
+    // Redirecionar para login se necessário
+    // window.location.href = '/login.html';
+    return;
+  }
+
   // Configurar componentes
   setupNavigation();
   setupModal();
@@ -636,10 +718,10 @@ async function refreshTransactions() {
 function debugTransactions() {
   console.log("🔧 DEBUG - Estado atual:");
   console.log("Current Filter:", currentFilter);
-  console.log("Current Period:", currentPeriod);
   console.log("Current Page:", currentPage);
   console.log("Has More:", hasMoreTransactions);
   console.log("Cache:", transactionsCache);
+  console.log("Token:", Auth.getToken() ? "Presente" : "Ausente");
 }
 
 // ========== EXPOSIÇÃO GLOBAL PARA DEBUG ==========
@@ -653,11 +735,13 @@ if (typeof window !== "undefined") {
 }
 
 console.log(`
-💳 Sistema de Histórico de Transações
+💳 Sistema de Histórico de Transações v2.0
 📡 API Base: ${API_BASE_URL}
-🔌 Conectado ao backend
+🔌 Conectado ao backend REAL
 🛠️ Debug: debugTransactions()
 🔄 Reload: refreshTransactions()
-📊 Services: TransactionsService, TransactionsUI
-🎯 Filters: FilterManager
+📊 Endpoints:
+   - /users/donations/all (todas)
+   - /users/donations/sent (enviadas)
+   - /users/donations/received (recebidas)
 `);
