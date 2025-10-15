@@ -251,5 +251,24 @@
 
     <script src="../../../assets/js/auth.js"></script>
     <script src="../../../assets/js/security.js"></script>
+
+    <!-- Modal de confirmação já existe, mas verificar se tem estrutura correta -->
+    <div id="confirm-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h2 id="modal-title">Confirmar Ação</h2>
+        </div>
+        <div class="modal-body" id="modal-body">
+          <p id="modal-message">Mensagem aqui</p>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel" class="btn-secondary">Cancelar</button>
+          <button id="modal-confirm" class="btn-primary">Confirmar</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

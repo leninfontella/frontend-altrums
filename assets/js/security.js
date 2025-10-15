@@ -268,22 +268,333 @@ async function handleDownloadData() {
   showToast("Dados baixados com sucesso!", "success");
 }
 
-function handleDeleteAccount() {
-  showConfirmModal(
-    "Excluir Conta Permanentemente",
-    "⚠️ Esta ação não pode ser desfeita! Todos os seus dados, moedas e histórico serão perdidos permanentemente. Tem certeza?",
-    () => {
-      showToast("Conta excluída. Redirecionando...", "error");
+// security.js - Substituir função handleDeleteAccount
 
+/**
+ * Modal de confirmação de exclusão com senha
+ */
+function showDeleteAccountModal() {
+  const modal = document.getElementById("confirm-modal");
+  const modalBody = modal.querySelector(".modal-body");
+
+  // Criar formulário de confirmação
+  modalBody.innerHTML = `
+    <div class="delete-account-form">
+      <div class="warning-box">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p><strong>⚠️ ATENÇÃO: Esta ação é irreversível!</strong></p>
+        <p>Todos os seus dados serão permanentemente excluídos:</p>
+        <ul style="text-align: left; margin: 10px 0;">
+          <li>✗ Perfil e informações pessoais</li>
+          <li>✗ Saldo de moedas</li>
+          <li>✗ Histórico de doações</li>
+          <li>✗ Notificações</li>
+          <li>✗ Estatísticas e conquistas</li>
+        </ul>
+      </div>
+
+      <div class="form-group">
+        <label for="delete-password">
+          <i class="fas fa-lock"></i> Digite sua senha para confirmar
+        </label>
+        <input 
+          type="password" 
+          id="delete-password" 
+          class="form-input" 
+          placeholder="Senha"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="delete-confirmation">
+          Digite exatamente: <strong>EXCLUIR MINHA CONTA</strong>
+        </label>
+        <input 
+          type="text" 
+          id="delete-confirmation" 
+          class="form-input" 
+          placeholder="EXCLUIR MINHA CONTA"
+          required
+        />
+      </div>
+
+      <div id="delete-error" class="error-message" style="display: none;"></div>
+    </div>
+  `;
+
+  // Configurar botões do modal
+  const modalTitle = document.getElementById("modal-title");
+  const confirmBtn = document.getElementById("modal-confirm");
+  const cancelBtn = document.getElementById("modal-cancel");
+
+  if (modalTitle) {
+    modalTitle.textContent = "Excluir Conta Permanentemente";
+  }
+
+  if (confirmBtn) {
+    confirmBtn.textContent = "Excluir Conta";
+    confirmBtn.className = "btn-danger";
+    confirmBtn.style.background = "linear-gradient(135deg, #ff6b6b, #ee5a24)";
+
+    // Remover listeners antigos
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+    newBtn.addEventListener("click", async () => {
+      await processAccountDeletion();
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.textContent = "Cancelar";
+  }
+
+  // Mostrar modal
+  modal.classList.add("show");
+
+  // Focar no campo de senha
+  setTimeout(() => {
+    document.getElementById("delete-password")?.focus();
+  }, 300);
+}
+
+/**
+ * Processar exclusão da conta
+ */
+async function processAccountDeletion() {
+  const passwordInput = document.getElementById("delete-password");
+  const confirmationInput = document.getElementById("delete-confirmation");
+  const errorDiv = document.getElementById("delete-error");
+  const confirmBtn = document.getElementById("modal-confirm");
+
+  // Validações no frontend
+  const password = passwordInput?.value?.trim();
+  const confirmation = confirmationInput?.value?.trim();
+
+  if (!password) {
+    showDeleteError("Por favor, digite sua senha");
+    return;
+  }
+
+  if (confirmation !== "EXCLUIR MINHA CONTA") {
+    showDeleteError('Digite exatamente: "EXCLUIR MINHA CONTA"');
+    return;
+  }
+
+  // Desabilitar botão durante processamento
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+  }
+
+  try {
+    // Obter token de autenticação
+    const token =
+      localStorage.getItem("accessToken") ||
+      sessionStorage.getItem("accessToken");
+
+    if (!token) {
+      showDeleteError("Sessão expirada. Faça login novamente.");
+      return;
+    }
+
+    // Fazer requisição para API
+    const response = await fetch(`${API_BASE_URL}/users/account`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        password: password,
+        confirmation: confirmation,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Erro ao excluir conta");
+    }
+
+    // Sucesso - Limpar dados e redirecionar
+    console.log("✅ Conta excluída com sucesso:", data);
+
+    // Fechar modal
+    hideModal();
+
+    // Mostrar mensagem de sucesso
+    showToast("Conta excluída com sucesso. Até logo! 👋", "success");
+
+    // Aguardar 2 segundos
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Limpar todos os dados locais
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Limpar cookies (se houver)
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    // Redirecionar para página inicial
+    window.location.href = "/index.html";
+  } catch (error) {
+    console.error("❌ Erro ao excluir conta:", error);
+
+    // Exibir erro específico
+    if (error.message.includes("Senha incorreta")) {
+      showDeleteError("Senha incorreta. Tente novamente.");
+    } else if (error.message.includes("Confirmação incorreta")) {
+      showDeleteError('Digite exatamente: "EXCLUIR MINHA CONTA"');
+    } else if (error.message.includes("Sessão expirada")) {
+      showDeleteError("Sessão expirada. Faça login novamente.");
       setTimeout(() => {
-        // Limpar dados
-        sessionStorage.clear();
-        // Redirecionar para página de login
         window.location.href = "/index.html";
       }, 2000);
-    },
-    true
-  );
+    } else {
+      showDeleteError(
+        error.message || "Erro ao excluir conta. Tente novamente."
+      );
+    }
+
+    // Reabilitar botão
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = "Excluir Conta";
+    }
+  }
+}
+
+/**
+ * Exibir mensagem de erro no modal
+ */
+function showDeleteError(message) {
+  const errorDiv = document.getElementById("delete-error");
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = "block";
+
+    // Esconder após 5 segundos
+    setTimeout(() => {
+      errorDiv.style.display = "none";
+    }, 5000);
+  }
+}
+
+/**
+ * Atualizar handleDeleteAccount para usar o novo modal
+ */
+function handleDeleteAccount() {
+  showDeleteAccountModal();
+}
+
+const deleteModalStyles = `
+<style>
+.delete-account-form {
+  text-align: center;
+}
+
+.warning-box {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(238, 90, 36, 0.1));
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.warning-box i {
+  font-size: 48px;
+  color: #ff6b6b;
+  margin-bottom: 10px;
+}
+
+.warning-box p {
+  margin: 10px 0;
+  color: #ff6b6b;
+}
+
+.warning-box ul {
+  color: #666;
+  font-size: 14px;
+}
+
+.form-group {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+}
+
+.form-group label i {
+  margin-right: 8px;
+  color: #00d4ff;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.error-message {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>
+`;
+
+// Adicionar estilos ao documento se ainda não existirem
+if (!document.getElementById("delete-modal-styles")) {
+  const styleEl = document.createElement("div");
+  styleEl.id = "delete-modal-styles";
+  styleEl.innerHTML = deleteModalStyles;
+  document.head.appendChild(styleEl);
 }
 
 // ========== MODAL DE CONFIRMAÇÃO ==========
