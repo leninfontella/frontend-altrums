@@ -390,15 +390,56 @@ async function processAccountDeletion() {
   }
 
   try {
-    // Obter token de autenticação
-    const token =
-      localStorage.getItem("accessToken") ||
-      sessionStorage.getItem("accessToken");
+    // 🔧 CORREÇÃO: Buscar token de múltiplas formas
+    let token = null;
 
+    // 1. Tentar localStorage
+    token = localStorage.getItem("accessToken");
+    console.log(
+      "📍 Token no localStorage:",
+      token ? "✅ Encontrado" : "❌ Não encontrado"
+    );
+
+    // 2. Se não encontrar, tentar sessionStorage
     if (!token) {
-      showDeleteError("Sessão expirada. Faça login novamente.");
+      token = sessionStorage.getItem("accessToken");
+      console.log(
+        "📍 Token no sessionStorage:",
+        token ? "✅ Encontrado" : "❌ Não encontrado"
+      );
+    }
+
+    // 3. Se ainda não encontrar, tentar usar a classe Auth (se existir)
+    if (!token && typeof Auth !== "undefined") {
+      try {
+        token = Auth.getToken();
+        console.log(
+          "📍 Token via Auth.getToken():",
+          token ? "✅ Encontrado" : "❌ Não encontrado"
+        );
+      } catch (e) {
+        console.warn("⚠️ Erro ao obter token via Auth:", e);
+      }
+    }
+
+    // 4. Verificar se encontrou o token
+    if (!token) {
+      console.error("❌ Token não encontrado em nenhum lugar!");
+      console.log("🔍 Debug - localStorage:", localStorage);
+      console.log("🔍 Debug - sessionStorage:", sessionStorage);
+
+      showDeleteError("Sessão não encontrada. Faça login novamente.");
+
+      // Aguardar e redirecionar para login
+      setTimeout(() => {
+        window.location.href = "/index.html";
+      }, 2000);
+
       return;
     }
+
+    console.log("✅ Token encontrado, fazendo requisição...");
+    console.log("📡 URL da API:", `${API_BASE_URL}/users/account`);
 
     // Fazer requisição para API
     const response = await fetch(`${API_BASE_URL}/users/account`, {
@@ -413,7 +454,10 @@ async function processAccountDeletion() {
       }),
     });
 
+    console.log("📥 Resposta da API:", response.status, response.statusText);
+
     const data = await response.json();
+    console.log("📦 Dados retornados:", data);
 
     if (!response.ok) {
       throw new Error(data.message || "Erro ao excluir conta");
@@ -442,26 +486,38 @@ async function processAccountDeletion() {
         .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
+    console.log("🧹 Dados locais limpos");
+
     // Redirecionar para página inicial
     window.location.href = "/index.html";
   } catch (error) {
     console.error("❌ Erro ao excluir conta:", error);
+    console.error("📋 Stack trace:", error.stack);
 
     // Exibir erro específico
-    if (error.message.includes("Senha incorreta")) {
-      showDeleteError("Senha incorreta. Tente novamente.");
-    } else if (error.message.includes("Confirmação incorreta")) {
-      showDeleteError('Digite exatamente: "EXCLUIR MINHA CONTA"');
-    } else if (error.message.includes("Sessão expirada")) {
-      showDeleteError("Sessão expirada. Faça login novamente.");
+    let errorMessage = error.message;
+
+    if (errorMessage.includes("Senha incorreta")) {
+      errorMessage = "Senha incorreta. Tente novamente.";
+    } else if (errorMessage.includes("Confirmação incorreta")) {
+      errorMessage = 'Digite exatamente: "EXCLUIR MINHA CONTA"';
+    } else if (errorMessage.includes("Token") || errorMessage.includes("401")) {
+      errorMessage = "Sessão expirada. Faça login novamente.";
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
-    } else {
-      showDeleteError(
-        error.message || "Erro ao excluir conta. Tente novamente."
-      );
+    } else if (
+      errorMessage.includes("NetworkError") ||
+      errorMessage.includes("Failed to fetch")
+    ) {
+      errorMessage =
+        "Erro de conexão. Verifique sua internet e tente novamente.";
+    } else if (errorMessage.includes("404")) {
+      errorMessage =
+        "Endpoint não encontrado. Verifique a configuração da API.";
     }
+
+    showDeleteError(errorMessage);
 
     // Reabilitar botão
     if (confirmBtn) {
