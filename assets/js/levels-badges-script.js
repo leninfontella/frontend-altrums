@@ -48,6 +48,7 @@ const levels = {
 // Variáveis para armazenar dados do usuário
 let currentUserData = null;
 let currentPoints = 0;
+let lastKnownLevel = 0;
 
 // Função para buscar dados do usuário atual usando a rota unificada de badges
 async function fetchUserData() {
@@ -391,36 +392,49 @@ function showLevelUpNotification(newLevel) {
 }
 
 // Função para atualizar toda a exibição
+// Função para atualizar toda a exibição
 async function updateDisplay() {
   try {
     console.log("🔄 Atualizando display de badges...");
-
-    // Mostrar loading
     showLoadingState();
 
-    // Buscar dados atualizados via Auth integrado
+    // 1. Armazenar o nível ANTES de buscar novos dados (oldLevel será 0 na primeira carga)
+    const oldLevel = lastKnownLevel;
+
+    // Buscar dados atualizados via Auth integrado (atualiza currentPoints)
     await fetchUserData();
 
-    // Tentar buscar dados específicos de badges da API
+    // Tentar buscar dados específicos de badges da API (garante pontos mais recentes)
     const badgeProgress = await fetchBadgeProgressFromAPI();
     if (badgeProgress) {
       currentPoints = badgeProgress.points || currentPoints;
       console.log("📊 Dados de badge da API:", badgeProgress);
     }
 
+    // 2. Determinar o novo nível com os pontos atualizados
+    const newLevelData = getCurrentLevel(currentPoints);
+    const newLevel = newLevelData.level;
+
+    // 3. Lógica de Subida de Nível:
+    // oldLevel !== 0: Garante que o modal não aparecerá na primeira carga da página.
+    // newLevel > oldLevel: Checa se houve uma subida de nível real.
+    if (oldLevel !== 0 && newLevel > oldLevel) {
+      console.log(`🎉 Nível Subiu: ${oldLevel} -> ${newLevel}!`);
+      showLevelUpModal(newLevelData); // Chama a função do modal principal
+    }
+
+    // 4. Atualizar o nível conhecido para o próximo ciclo de update
+    lastKnownLevel = newLevel;
+
     // Renderizar interface
     renderCurrentLevelCard();
     renderBadgesGrid();
 
-    // Esconder loading
     hideLoadingState();
-
     console.log("✅ Display atualizado com sucesso");
   } catch (error) {
     console.error("❌ Erro ao atualizar display:", error);
     hideLoadingState();
-
-    // Tentar renderizar com dados locais
     if (currentUserData) {
       renderCurrentLevelCard();
       renderBadgesGrid();
@@ -906,92 +920,58 @@ if (typeof window.Auth !== "undefined" && typeof window.api !== "undefined") {
  * Exibe o modal de Level Up com os dados do novo nível
  * @param {Object} levelData - Dados do novo nível alcançado
  */
-function showLevelUpModal(levelData) {
+function showLevelUpModal(newLevelData) {
   const modal = document.getElementById("levelUpModal");
+  const badge = document.getElementById("levelUpBadge");
+  const badgeIcon = document.getElementById("levelUpBadgeIcon");
+  const name = document.getElementById("levelUpName");
+  const levelNumber = document.getElementById("levelUpNumber");
+  const totalPoints = document.getElementById("levelUpTotalPoints");
+  const nextLevelEl = document.getElementById("levelUpNextLevel");
+
   if (!modal) {
-    console.error("Modal de level up não encontrado");
+    console.error("Elemento levelUpModal não encontrado.");
     return;
   }
 
-  // Preencher dados do modal
-  const levelUpIcon = document.getElementById("levelUpIcon");
-  const levelUpBadgeIcon = document.getElementById("levelUpBadgeIcon");
-  const levelUpBadge = document.querySelector(".level-up-badge-icon");
-  const levelUpName = document.getElementById("levelUpName");
-  const levelUpNumber = document.getElementById("levelUpNumber");
-  const levelUpTotalPoints = document.getElementById("levelUpTotalPoints");
-  const levelUpNextLevel = document.getElementById("levelUpNextLevel");
+  // 1. Atualizar conteúdo do modal com os dados do novo nível
+  badge.style.background = `linear-gradient(135deg, ${newLevelData.color}90, ${newLevelData.color}50)`;
+  badge.style.borderColor = `${newLevelData.color}80`;
+  badgeIcon.textContent = newLevelData.icon;
+  name.textContent = newLevelData.name;
+  levelNumber.textContent = newLevelData.level;
+  totalPoints.textContent = formatNumber(currentPoints);
 
-  // Definir ícone e cor
-  if (levelUpIcon) levelUpIcon.textContent = levelData.icon || "🎉";
-  if (levelUpBadgeIcon) levelUpBadgeIcon.textContent = levelData.icon || "🏆";
+  const nextLevelData = getNextLevel(newLevelData.level);
+  nextLevelEl.textContent = nextLevelData ? nextLevelData.name : "Nível Máximo";
 
-  // Definir cor do badge
-  if (levelUpBadge && levelData.color) {
-    levelUpBadge.style.background = `linear-gradient(135deg, ${levelData.color}, ${levelData.color}CC)`;
-    levelUpBadge.style.borderColor = `${levelData.color}99`;
+  // 2. Adicionar classe 'open' para exibir o modal (o CSS está pronto para isso)
+  modal.classList.add("open");
+
+  // 3. Adicionar animações especiais (partículas)
+  const badgeElement = document.getElementById("levelUpBadge");
+  if (typeof playLevelUpParticles === "function" && badgeElement) {
+    playLevelUpParticles(badgeElement);
   }
 
-  // Definir nome do nível
-  if (levelUpName) {
-    levelUpName.textContent = levelData.name || "Novo Nível";
-    levelUpName.style.color = levelData.color || "#00d4ff";
-    levelUpName.style.textShadow = `0 0 20px ${
-      levelData.color || "#00d4ff"
-    }80, 0 3px 10px ${levelData.color || "#00d4ff"}60`;
+  // Opcional: Adicionar um listener para fechar o modal
+  const closeButton = document.getElementById("levelUpCloseButton");
+  if (closeButton) {
+    closeButton.onclick = () => hideLevelUpModal();
   }
-
-  // Definir número do nível
-  if (levelUpNumber) {
-    levelUpNumber.textContent = levelData.level || 1;
-  }
-
-  // Definir pontos totais
-  if (levelUpTotalPoints) {
-    levelUpTotalPoints.textContent = formatNumber(
-      levelData.totalPoints || currentPoints
-    );
-  }
-
-  // Definir próximo nível
-  if (levelUpNextLevel) {
-    const nextLevel = getNextLevel(levelData.level);
-    levelUpNextLevel.textContent = nextLevel ? nextLevel.name : "Nível Máximo";
-  }
-
-  // Exibir modal com animação
-  modal.style.display = "flex";
-  document.body.style.overflow = "hidden";
-
-  // Tocar som de level up (opcional - descomente se tiver arquivo de áudio)
-  // playLevelUpSound();
-
-  // Adicionar vibração no mobile (se suportado)
-  if (navigator.vibrate) {
-    navigator.vibrate([200, 100, 200]);
-  }
-
-  console.log("✨ Modal de Level Up exibido:", levelData);
 }
 
-/**
- * Fecha o modal de Level Up com animação
- */
-function closeLevelUpModal() {
+// Função para esconder o modal
+function hideLevelUpModal() {
   const modal = document.getElementById("levelUpModal");
-  if (!modal) return;
-
-  // Adicionar classe de animação de saída
-  modal.classList.add("closing");
-
-  // Aguardar animação terminar antes de esconder
-  setTimeout(() => {
-    modal.style.display = "none";
-    modal.classList.remove("closing");
-    document.body.style.overflow = "auto";
-  }, 400);
-
-  console.log("Modal de Level Up fechado");
+  if (modal) {
+    // Adiciona a classe 'closing' para iniciar a animação de saída no CSS
+    modal.classList.add("closing");
+    setTimeout(() => {
+      modal.classList.remove("open");
+      modal.classList.remove("closing");
+    }, 400); // O tempo (400ms) deve ser o mesmo da animação de saída no CSS
+  }
 }
 
 /**
