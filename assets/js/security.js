@@ -322,7 +322,7 @@ function showDeleteAccountModal() {
 
   if (confirmBtn) {
     confirmBtn.textContent = "Excluir Conta";
-    confirmBtn.className = "btn-danger";
+    confirmBtn.className = "btn-delete-account"; // Classe específica para evitar conflitos
 
     const newBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
@@ -524,6 +524,10 @@ function setupModal() {
 
 function showConfirmModal(title, message, onConfirm, isDanger = false) {
   const modal = document.getElementById("confirm-modal");
+
+  // Resetar modal antes de usar
+  resetModalToDefault();
+
   const modalTitle = document.getElementById("modal-title");
   const modalMessage = document.getElementById("modal-message");
   const confirmBtn = document.getElementById("modal-confirm");
@@ -569,6 +573,48 @@ function hideModal() {
   const modal = document.getElementById("confirm-modal");
   if (modal) {
     modal.classList.remove("show");
+
+    // Resetar modal para estado original após fechar
+    setTimeout(() => {
+      resetModalToDefault();
+    }, 300);
+  }
+}
+
+function resetModalToDefault() {
+  const modal = document.getElementById("confirm-modal");
+  const modalBody = modal.querySelector(".modal-body");
+  const modalTitle = document.getElementById("modal-title");
+  const confirmBtn = document.getElementById("modal-confirm");
+  const modalIcon = document.querySelector(".modal-icon");
+
+  // Restaurar conteúdo padrão do body
+  if (modalBody) {
+    modalBody.innerHTML =
+      '<p id="modal-message" class="modal-message">Tem certeza que deseja continuar?</p>';
+  }
+
+  // Restaurar título padrão
+  if (modalTitle) {
+    modalTitle.textContent = "Confirmar Ação";
+  }
+
+  // Restaurar botão de confirmação
+  if (confirmBtn) {
+    confirmBtn.className = "btn-primary";
+    confirmBtn.textContent = "Confirmar";
+    confirmBtn.disabled = false;
+    confirmBtn.style.background = "";
+
+    // Remover todos os event listeners clonando o botão
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+  }
+
+  // Restaurar ícone padrão
+  if (modalIcon) {
+    modalIcon.style.background = "";
+    modalIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
   }
 }
 
