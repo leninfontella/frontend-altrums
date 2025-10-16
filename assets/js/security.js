@@ -394,18 +394,18 @@ async function processAccountDeletion() {
     let token = null;
 
     // 1. Tentar localStorage
-    token = localStorage.getItem("accessToken");
-    console.log(
-      "📍 Token no localStorage:",
-      token ? "✅ Encontrado" : "❌ Não encontrado"
-    );
-
-    // 2. Se não encontrar, tentar sessionStorage
+    const possibleKeys = ["accessToken", "token", "authToken", "jwt"];
+    for (const key of possibleKeys) {
+      token = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (token) {
+        console.log(`✅ Token encontrado na chave: ${key}`);
+        break;
+      }
+    }
     if (!token) {
-      token = sessionStorage.getItem("accessToken");
-      console.log(
-        "📍 Token no sessionStorage:",
-        token ? "✅ Encontrado" : "❌ Não encontrado"
+      console.warn(
+        "❌ Nenhum token encontrado nas chaves conhecidas:",
+        possibleKeys
       );
     }
 
