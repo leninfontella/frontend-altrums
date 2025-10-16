@@ -48,7 +48,6 @@ const levels = {
 // Variáveis para armazenar dados do usuário
 let currentUserData = null;
 let currentPoints = 0;
-let lastKnownLevel = 0;
 
 // Função para buscar dados do usuário atual usando a rota unificada de badges
 async function fetchUserData() {
@@ -392,49 +391,36 @@ function showLevelUpNotification(newLevel) {
 }
 
 // Função para atualizar toda a exibição
-// Função para atualizar toda a exibição
 async function updateDisplay() {
   try {
     console.log("🔄 Atualizando display de badges...");
+
+    // Mostrar loading
     showLoadingState();
 
-    // 1. Armazenar o nível ANTES de buscar novos dados (oldLevel será 0 na primeira carga)
-    const oldLevel = lastKnownLevel;
-
-    // Buscar dados atualizados via Auth integrado (atualiza currentPoints)
+    // Buscar dados atualizados via Auth integrado
     await fetchUserData();
 
-    // Tentar buscar dados específicos de badges da API (garante pontos mais recentes)
+    // Tentar buscar dados específicos de badges da API
     const badgeProgress = await fetchBadgeProgressFromAPI();
     if (badgeProgress) {
       currentPoints = badgeProgress.points || currentPoints;
       console.log("📊 Dados de badge da API:", badgeProgress);
     }
 
-    // 2. Determinar o novo nível com os pontos atualizados
-    const newLevelData = getCurrentLevel(currentPoints);
-    const newLevel = newLevelData.level;
-
-    // 3. Lógica de Subida de Nível:
-    // oldLevel !== 0: Garante que o modal não aparecerá na primeira carga da página.
-    // newLevel > oldLevel: Checa se houve uma subida de nível real.
-    if (oldLevel !== 0 && newLevel > oldLevel) {
-      console.log(`🎉 Nível Subiu: ${oldLevel} -> ${newLevel}!`);
-      showLevelUpModal(newLevelData); // Chama a função do modal principal
-    }
-
-    // 4. Atualizar o nível conhecido para o próximo ciclo de update
-    lastKnownLevel = newLevel;
-
     // Renderizar interface
     renderCurrentLevelCard();
     renderBadgesGrid();
 
+    // Esconder loading
     hideLoadingState();
+
     console.log("✅ Display atualizado com sucesso");
   } catch (error) {
     console.error("❌ Erro ao atualizar display:", error);
     hideLoadingState();
+
+    // Tentar renderizar com dados locais
     if (currentUserData) {
       renderCurrentLevelCard();
       renderBadgesGrid();
@@ -496,10 +482,7 @@ function hideLoadingState() {
 
 // Função para atualizar dados em tempo real (chamada quando houver mudanças)
 async function refreshUserData() {
-  console.log("🔄 Atualizando dados do usuário...");
-
   const oldLevel = getCurrentLevel(currentPoints);
-  console.log("📊 Nível anterior:", oldLevel);
 
   await fetchUserData();
 
@@ -510,58 +493,16 @@ async function refreshUserData() {
   }
 
   const newLevel = getCurrentLevel(currentPoints);
-  console.log("📊 Nível atual:", newLevel);
 
   // Verificar se subiu de nível
   if (newLevel.level > oldLevel.level) {
-    console.log("🎉 LEVEL UP DETECTADO!", {
-      de: oldLevel.level,
-      para: newLevel.level,
-      pontos: currentPoints,
-    });
-
-    // Aguardar um pouco para garantir que o DOM está pronto
-    setTimeout(() => {
-      showLevelUpNotification(newLevel);
-    }, 500);
-  } else {
-    console.log("ℹ️ Nenhuma mudança de nível");
+    showLevelUpNotification(newLevel);
   }
 
   // Atualizar display
   renderCurrentLevelCard();
   renderBadgesGrid();
-
-  console.log("✅ Dados atualizados");
 }
-
-// TESTE MANUAL - Adicione esta função para testar o modal
-window.testLevelUpModal = function (levelNumber = 4) {
-  console.log("🧪 TESTANDO MODAL - Nível", levelNumber);
-
-  const levelData = levels[levelNumber];
-  if (!levelData) {
-    console.error("❌ Nível inválido:", levelNumber);
-    return;
-  }
-
-  const testLevel = {
-    level: levelNumber,
-    ...levelData,
-  };
-
-  showLevelUpNotification(testLevel);
-};
-
-// Adicionar listener para ESC
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeLevelUpModal();
-  }
-});
-
-console.log("✅ Sistema de modal local carregado com debug");
-console.log("🧪 Para testar: testLevelUpModal(4)");
 
 // Função de voltar
 function goBack() {
@@ -913,384 +854,3 @@ if (typeof window.Auth !== "undefined" && typeof window.api !== "undefined") {
 } else {
   console.log("⏳ Aguardando carregamento das dependências...");
 }
-
-// ========== FUNÇÕES DO MODAL DE LEVEL UP ==========
-
-/**
- * Exibe o modal de Level Up com os dados do novo nível
- * @param {Object} levelData - Dados do novo nível alcançado
- */
-function showLevelUpModal(newLevelData) {
-  const modal = document.getElementById("levelUpModal");
-  const badge = document.getElementById("levelUpBadge");
-  const badgeIcon = document.getElementById("levelUpBadgeIcon");
-  const name = document.getElementById("levelUpName");
-  const levelNumber = document.getElementById("levelUpNumber");
-  const totalPoints = document.getElementById("levelUpTotalPoints");
-  const nextLevelEl = document.getElementById("levelUpNextLevel");
-
-  if (!modal) {
-    console.error("Elemento levelUpModal não encontrado.");
-    return;
-  }
-
-  // 1. Atualizar conteúdo do modal com os dados do novo nível
-  badge.style.background = `linear-gradient(135deg, ${newLevelData.color}90, ${newLevelData.color}50)`;
-  badge.style.borderColor = `${newLevelData.color}80`;
-  badgeIcon.textContent = newLevelData.icon;
-  name.textContent = newLevelData.name;
-  levelNumber.textContent = newLevelData.level;
-  totalPoints.textContent = formatNumber(currentPoints);
-
-  const nextLevelData = getNextLevel(newLevelData.level);
-  nextLevelEl.textContent = nextLevelData ? nextLevelData.name : "Nível Máximo";
-
-  // 2. Adicionar classe 'open' para exibir o modal (o CSS está pronto para isso)
-  modal.classList.add("open");
-
-  // 3. Adicionar animações especiais (partículas)
-  const badgeElement = document.getElementById("levelUpBadge");
-  if (typeof playLevelUpParticles === "function" && badgeElement) {
-    playLevelUpParticles(badgeElement);
-  }
-
-  // Opcional: Adicionar um listener para fechar o modal
-  const closeButton = document.getElementById("levelUpCloseButton");
-  if (closeButton) {
-    closeButton.onclick = () => hideLevelUpModal();
-  }
-}
-
-// Função para esconder o modal
-function hideLevelUpModal() {
-  const modal = document.getElementById("levelUpModal");
-  if (modal) {
-    // Adiciona a classe 'closing' para iniciar a animação de saída no CSS
-    modal.classList.add("closing");
-    setTimeout(() => {
-      modal.classList.remove("open");
-      modal.classList.remove("closing");
-    }, 400); // O tempo (400ms) deve ser o mesmo da animação de saída no CSS
-  }
-}
-
-/**
- * Toca som de level up (opcional)
- * Você pode adicionar um arquivo de áudio para tornar a experiência mais imersiva
- */
-function playLevelUpSound() {
-  try {
-    const audio = new Audio("/assets/sounds/level-up.mp3");
-    audio.volume = 0.5;
-    audio
-      .play()
-      .catch((err) => console.warn("Não foi possível tocar o som:", err));
-  } catch (error) {
-    console.warn("Som de level up não disponível:", error);
-  }
-}
-
-/**
- * Integração com a função existente showLevelUpNotification
- * Substitui a notificação simples pelo modal completo
- */
-function showLevelUpNotification(newLevel) {
-  console.log("🎖️ showLevelUpNotification chamada com:", newLevel);
-
-  // Verificar se o modal já existe, se sim, remover
-  const existingModal = document.getElementById("levelUpModal");
-  if (existingModal) {
-    console.log("⚠️ Modal existente encontrado, removendo...");
-    existingModal.remove();
-  }
-
-  // Criar elemento do modal
-  const modal = document.createElement("div");
-  modal.id = "levelUpModal";
-  modal.className = "level-up-modal";
-
-  // Determinar próximo nível
-  const nextLevel = getNextLevel(newLevel.level);
-  const nextLevelName = nextLevel ? nextLevel.name : "Nível Máximo";
-
-  modal.innerHTML = `
-    <div class="level-up-backdrop"></div>
-    <div class="level-up-content">
-      <!-- Confete animado -->
-      <div class="level-up-confetti">
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-        <div class="confetti-particle"></div>
-      </div>
-
-      <!-- Ícone do novo nível -->
-      <div class="level-up-icon-container">
-        <div class="level-up-icon">${newLevel.icon}</div>
-        <div class="level-up-glow"></div>
-      </div>
-
-      <!-- Título -->
-      <h2 class="level-up-title">
-        <span class="level-up-title-line">Parabéns!</span>
-        <span class="level-up-title-line">Você subiu de nível!</span>
-      </h2>
-
-      <!-- Badge do novo nível -->
-      <div class="level-up-badge">
-        <div class="level-up-badge-icon" style="background: linear-gradient(135deg, ${
-          newLevel.color
-        }, ${newLevel.color}CC); border-color: ${newLevel.color}99;">
-          ${newLevel.icon}
-        </div>
-      </div>
-
-      <!-- Nome do nível -->
-      <div class="level-up-name" style="color: ${
-        newLevel.color
-      }; text-shadow: 0 0 20px ${newLevel.color}80, 0 3px 10px ${
-    newLevel.color
-  }60;">
-        ${newLevel.name}
-      </div>
-
-      <!-- Descrição -->
-      <div class="level-up-description">
-        Você alcançou o nível <strong>${newLevel.level}</strong>
-      </div>
-
-      <!-- Linha divisória -->
-      <div class="level-up-divider"></div>
-
-      <!-- Informações do progresso -->
-      <div class="level-up-stats">
-        <div class="level-up-stat">
-          <div class="level-up-stat-label">Pontos Totais</div>
-          <div class="level-up-stat-value">${formatNumber(currentPoints)}</div>
-        </div>
-        <div class="level-up-stat-divider"></div>
-        <div class="level-up-stat">
-          <div class="level-up-stat-label">Próximo Nível</div>
-          <div class="level-up-stat-value">${nextLevelName}</div>
-        </div>
-      </div>
-
-      <!-- Botão de fechar -->
-      <button class="level-up-close" onclick="closeLevelUpModal()">
-        <span>Continuar</span>
-        <i class="fas fa-arrow-right"></i>
-      </button>
-    </div>
-  `;
-
-  // Adicionar ao body
-  document.body.appendChild(modal);
-
-  // Forçar reflow para garantir que a animação funcione
-  modal.offsetHeight;
-
-  // Mostrar modal
-  modal.style.display = "flex";
-  document.body.style.overflow = "hidden";
-
-  console.log("✅ Modal de Level Up exibido!");
-
-  // Efeitos extras
-  playLevelUpSound();
-  if (navigator.vibrate) {
-    navigator.vibrate([200, 100, 200]);
-  }
-
-  // Auto-fechar após 8 segundos
-  setTimeout(() => {
-    closeLevelUpModal();
-  }, 8000);
-
-  // Fechar ao clicar no backdrop
-  const backdrop = modal.querySelector(".level-up-backdrop");
-  if (backdrop) {
-    backdrop.addEventListener("click", closeLevelUpModal);
-  }
-}
-
-// Função para fechar o modal
-function closeLevelUpModal() {
-  const modal = document.getElementById("levelUpModal");
-  if (!modal) {
-    console.log("⚠️ Modal não encontrado para fechar");
-    return;
-  }
-
-  console.log("🔒 Fechando modal...");
-
-  modal.classList.add("closing");
-
-  setTimeout(() => {
-    if (modal.parentNode) {
-      modal.remove();
-    }
-    document.body.style.overflow = "auto";
-    console.log("✅ Modal fechado");
-  }, 400);
-}
-
-// Função para tocar som de level up
-function playLevelUpSound() {
-  try {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-    let currentTime = audioContext.currentTime;
-
-    notes.forEach((freq, index) => {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = freq;
-      oscillator.type = index === notes.length - 1 ? "triangle" : "sine";
-
-      const volume = index === notes.length - 1 ? 0.15 : 0.1;
-      gainNode.gain.setValueAtTime(volume, currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.4);
-
-      oscillator.start(currentTime);
-      oscillator.stop(currentTime + 0.4);
-
-      currentTime += 0.18;
-    });
-
-    console.log("🔊 Som de level up tocado");
-  } catch (error) {
-    console.log("⚠️ Som de level up não disponível:", error);
-  }
-}
-
-/**
- * Fechar modal ao clicar fora do conteúdo
- */
-document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("levelUpModal");
-  if (modal) {
-    const backdrop = modal.querySelector(".level-up-backdrop");
-    if (backdrop) {
-      backdrop.addEventListener("click", closeLevelUpModal);
-    }
-  }
-});
-
-/**
- * Fechar modal com a tecla ESC
- */
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    const modal = document.getElementById("levelUpModal");
-    if (modal && modal.style.display === "flex") {
-      closeLevelUpModal();
-    }
-  }
-});
-
-/**
- * Animação de entrada dos elementos do modal (opcional - para mais dinamismo)
- */
-function animateLevelUpElements() {
-  const elements = [
-    ".level-up-icon-container",
-    ".level-up-title",
-    ".level-up-badge",
-    ".level-up-name",
-    ".level-up-description",
-    ".level-up-stats",
-    ".level-up-close",
-  ];
-
-  elements.forEach((selector, index) => {
-    const element = document.querySelector(selector);
-    if (element) {
-      element.style.opacity = "0";
-      element.style.transform = "translateY(20px)";
-
-      setTimeout(() => {
-        element.style.transition = "all 0.5s ease-out";
-        element.style.opacity = "1";
-        element.style.transform = "translateY(0)";
-      }, 100 * index);
-    }
-  });
-}
-
-/**
- * Criar efeito de partículas extras ao redor do badge (opcional)
- */
-function createLevelUpParticles() {
-  const badge = document.querySelector(".level-up-badge");
-  if (!badge) return;
-
-  for (let i = 0; i < 8; i++) {
-    const particle = document.createElement("div");
-    particle.className = "level-up-particle";
-    particle.style.cssText = `
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: linear-gradient(135deg, #00d4ff, #00ff88);
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0;
-    `;
-
-    badge.appendChild(particle);
-
-    const angle = (360 / 8) * i;
-    const distance = 60;
-    const x = Math.cos((angle * Math.PI) / 180) * distance;
-    const y = Math.sin((angle * Math.PI) / 180) * distance;
-
-    setTimeout(() => {
-      particle.style.transition = "all 1.5s ease-out";
-      particle.style.transform = `translate(${x}px, ${y}px)`;
-      particle.style.opacity = "1";
-
-      setTimeout(() => {
-        particle.style.opacity = "0";
-        setTimeout(() => particle.remove(), 500);
-      }, 1000);
-    }, 50);
-  }
-}
-
-/**
- * Exemplo de como chamar o modal programaticamente
- * (para testes ou integrações futuras)
- */
-function testLevelUpModal() {
-  const exampleLevel = {
-    icon: "🏆",
-    color: "#F59E0B",
-    name: "Benfeitor",
-    level: 4,
-    totalPoints: 1500,
-    min: 1000,
-    max: 4999,
-  };
-
-  showLevelUpModal(exampleLevel);
-}
-
-// Exportar funções para uso global
-window.LevelUpModal = {
-  show: showLevelUpModal,
-  close: closeLevelUpModal,
-  test: testLevelUpModal,
-};
-
-console.log("✅ Sistema de Modal Level Up carregado");
