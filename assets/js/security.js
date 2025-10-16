@@ -31,7 +31,6 @@ function initializeSecurity() {
 // ========== CARREGAR CONFIGURAÇÕES DO USUÁRIO ==========
 function loadSecuritySettings() {
   try {
-    // Tentar carregar do sessionStorage
     const savedSettings = sessionStorage.getItem("securitySettings");
 
     if (savedSettings) {
@@ -39,7 +38,6 @@ function loadSecuritySettings() {
       console.log("📄 Configurações carregadas:", securitySettings);
     }
 
-    // Aplicar configurações aos toggles
     applySettingsToUI();
   } catch (error) {
     console.error("❌ Erro ao carregar configurações:", error);
@@ -108,14 +106,12 @@ function setupToggles() {
 
 // ========== CÁLCULO DO SCORE DE SEGURANÇA ==========
 function calculateSecurityScore() {
-  let score = 70; // Base score (maior já que não tem autenticação extra)
+  let score = 70;
 
-  // Privacidade conta mais agora
   if (!securitySettings.publicProfile) score += 10;
   if (!securitySettings.showRanking) score += 10;
   if (!securitySettings.publicDonationHistory) score += 10;
 
-  // Atualizar UI
   const progressBar = document.getElementById("security-progress-bar");
   const scoreText = document.getElementById("security-score");
   const levelText = document.getElementById("security-level");
@@ -151,7 +147,6 @@ function setupSessions() {
 }
 
 function loadOtherSessions() {
-  // Dados de exemplo de sessões
   const sessions = [
     {
       device: "iPhone 13",
@@ -182,7 +177,7 @@ function loadOtherSessions() {
         <p class="session-location">${session.location}</p>
         <p class="session-time">${session.time}</p>
       </div>
-      <button onclick="handleLogoutSession(this)">
+      <button onclick="handleLogoutSession(this)" type="button" aria-label="Encerrar sessão">
         <i class="fas fa-sign-out-alt"></i>
       </button>
     </div>
@@ -242,10 +237,8 @@ function setupDataManagement() {
 async function handleDownloadData() {
   showToast("Preparando seus dados...", "success");
 
-  // Simular preparação de dados
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  // Criar dados de exemplo
   const userData = {
     name: "Usuário Demo",
     email: "usuario@exemplo.com",
@@ -255,7 +248,6 @@ async function handleDownloadData() {
     exportDate: new Date().toISOString(),
   };
 
-  // Criar e baixar arquivo JSON
   const dataStr = JSON.stringify(userData, null, 2);
   const dataBlob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(dataBlob);
@@ -268,23 +260,18 @@ async function handleDownloadData() {
   showToast("Dados baixados com sucesso!", "success");
 }
 
-// security.js - Substituir função handleDeleteAccount
-
-/**
- * Modal de confirmação de exclusão com senha
- */
+// ========== MODAL DE EXCLUSÃO DE CONTA ==========
 function showDeleteAccountModal() {
   const modal = document.getElementById("confirm-modal");
   const modalBody = modal.querySelector(".modal-body");
 
-  // Criar formulário de confirmação
   modalBody.innerHTML = `
     <div class="delete-account-form">
       <div class="warning-box">
         <i class="fas fa-exclamation-triangle"></i>
         <p><strong>⚠️ ATENÇÃO: Esta ação é irreversível!</strong></p>
         <p>Todos os seus dados serão permanentemente excluídos:</p>
-        <ul style="text-align: left; margin: 10px 0;">
+        <ul>
           <li>✗ Perfil e informações pessoais</li>
           <li>✗ Saldo de moedas</li>
           <li>✗ Histórico de doações</li>
@@ -303,6 +290,7 @@ function showDeleteAccountModal() {
           class="form-input" 
           placeholder="Senha"
           required
+          autocomplete="current-password"
         />
       </div>
 
@@ -316,6 +304,7 @@ function showDeleteAccountModal() {
           class="form-input" 
           placeholder="EXCLUIR MINHA CONTA"
           required
+          autocomplete="off"
         />
       </div>
 
@@ -323,7 +312,6 @@ function showDeleteAccountModal() {
     </div>
   `;
 
-  // Configurar botões do modal
   const modalTitle = document.getElementById("modal-title");
   const confirmBtn = document.getElementById("modal-confirm");
   const cancelBtn = document.getElementById("modal-cancel");
@@ -335,9 +323,7 @@ function showDeleteAccountModal() {
   if (confirmBtn) {
     confirmBtn.textContent = "Excluir Conta";
     confirmBtn.className = "btn-danger";
-    confirmBtn.style.background = "linear-gradient(135deg, #ff6b6b, #ee5a24)";
 
-    // Remover listeners antigos
     const newBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
 
@@ -350,25 +336,20 @@ function showDeleteAccountModal() {
     cancelBtn.textContent = "Cancelar";
   }
 
-  // Mostrar modal
   modal.classList.add("show");
 
-  // Focar no campo de senha
   setTimeout(() => {
     document.getElementById("delete-password")?.focus();
   }, 300);
 }
 
-/**
- * Processar exclusão da conta
- */
+// ========== PROCESSAR EXCLUSÃO DA CONTA ==========
 async function processAccountDeletion() {
   const passwordInput = document.getElementById("delete-password");
   const confirmationInput = document.getElementById("delete-confirmation");
   const errorDiv = document.getElementById("delete-error");
   const confirmBtn = document.getElementById("modal-confirm");
 
-  // Validações no frontend
   const password = passwordInput?.value?.trim();
   const confirmation = confirmationInput?.value?.trim();
 
@@ -382,7 +363,6 @@ async function processAccountDeletion() {
     return;
   }
 
-  // Desabilitar botão durante processamento
   if (confirmBtn) {
     confirmBtn.disabled = true;
     confirmBtn.innerHTML =
@@ -390,10 +370,8 @@ async function processAccountDeletion() {
   }
 
   try {
-    // 🔧 CORREÇÃO: Buscar token de múltiplas formas
     let token = null;
 
-    // 1. Tentar localStorage
     const possibleKeys = ["accessToken", "token", "authToken", "jwt"];
     for (const key of possibleKeys) {
       token = localStorage.getItem(key) || sessionStorage.getItem(key);
@@ -402,14 +380,7 @@ async function processAccountDeletion() {
         break;
       }
     }
-    if (!token) {
-      console.warn(
-        "❌ Nenhum token encontrado nas chaves conhecidas:",
-        possibleKeys
-      );
-    }
 
-    // 3. Se ainda não encontrar, tentar usar a classe Auth (se existir)
     if (!token && typeof Auth !== "undefined") {
       try {
         token = Auth.getToken();
@@ -422,7 +393,6 @@ async function processAccountDeletion() {
       }
     }
 
-    // 4. Verificar se encontrou o token
     if (!token) {
       console.error("❌ Token não encontrado em nenhum lugar!");
       console.log("🔍 Debug - localStorage:", localStorage);
@@ -430,7 +400,6 @@ async function processAccountDeletion() {
 
       showDeleteError("Sessão não encontrada. Faça login novamente.");
 
-      // Aguardar e redirecionar para login
       setTimeout(() => {
         window.location.href = "/index.html";
       }, 2000);
@@ -441,7 +410,6 @@ async function processAccountDeletion() {
     console.log("✅ Token encontrado, fazendo requisição...");
     console.log("📡 URL da API:", `${API_BASE_URL}/users/account`);
 
-    // Fazer requisição para API
     const response = await fetch(`${API_BASE_URL}/users/account`, {
       method: "DELETE",
       headers: {
@@ -463,23 +431,17 @@ async function processAccountDeletion() {
       throw new Error(data.message || "Erro ao excluir conta");
     }
 
-    // Sucesso - Limpar dados e redirecionar
     console.log("✅ Conta excluída com sucesso:", data);
 
-    // Fechar modal
     hideModal();
 
-    // Mostrar mensagem de sucesso
     showToast("Conta excluída com sucesso. Até logo! 👋", "success");
 
-    // Aguardar 2 segundos
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Limpar todos os dados locais
     localStorage.clear();
     sessionStorage.clear();
 
-    // Limpar cookies (se houver)
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")
@@ -488,13 +450,11 @@ async function processAccountDeletion() {
 
     console.log("🧹 Dados locais limpos");
 
-    // Redirecionar para página inicial
     window.location.href = "/index.html";
   } catch (error) {
     console.error("❌ Erro ao excluir conta:", error);
     console.error("📋 Stack trace:", error.stack);
 
-    // Exibir erro específico
     let errorMessage = error.message;
 
     if (errorMessage.includes("Senha incorreta")) {
@@ -519,7 +479,6 @@ async function processAccountDeletion() {
 
     showDeleteError(errorMessage);
 
-    // Reabilitar botão
     if (confirmBtn) {
       confirmBtn.disabled = false;
       confirmBtn.innerHTML = "Excluir Conta";
@@ -527,137 +486,28 @@ async function processAccountDeletion() {
   }
 }
 
-/**
- * Exibir mensagem de erro no modal
- */
+// ========== EXIBIR ERRO NO MODAL ==========
 function showDeleteError(message) {
   const errorDiv = document.getElementById("delete-error");
   if (errorDiv) {
     errorDiv.textContent = message;
     errorDiv.style.display = "block";
 
-    // Esconder após 5 segundos
     setTimeout(() => {
       errorDiv.style.display = "none";
     }, 5000);
   }
 }
 
-/**
- * Atualizar handleDeleteAccount para usar o novo modal
- */
+// ========== HANDLER PRINCIPAL DE EXCLUSÃO ==========
 function handleDeleteAccount() {
   showDeleteAccountModal();
-}
-
-const deleteModalStyles = `
-<style>
-.delete-account-form {
-  text-align: center;
-}
-
-.warning-box {
-  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(238, 90, 36, 0.1));
-  border: 2px solid rgba(255, 107, 107, 0.3);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.warning-box i {
-  font-size: 48px;
-  color: #ff6b6b;
-  margin-bottom: 10px;
-}
-
-.warning-box p {
-  margin: 10px 0;
-  color: #ff6b6b;
-}
-
-.warning-box ul {
-  color: #666;
-  font-size: 14px;
-}
-
-.form-group {
-  margin: 20px 0;
-  text-align: left;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #333;
-  font-weight: 600;
-}
-
-.form-group label i {
-  margin-right: 8px;
-  color: #00d4ff;
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #00d4ff;
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
-}
-
-.error-message {
-  background: rgba(255, 107, 107, 0.1);
-  border: 1px solid #ff6b6b;
-  color: #ff6b6b;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 15px;
-  font-size: 14px;
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
-}
-
-.btn-danger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-</style>
-`;
-
-// Adicionar estilos ao documento se ainda não existirem
-if (!document.getElementById("delete-modal-styles")) {
-  const styleEl = document.createElement("div");
-  styleEl.id = "delete-modal-styles";
-  styleEl.innerHTML = deleteModalStyles;
-  document.head.appendChild(styleEl);
 }
 
 // ========== MODAL DE CONFIRMAÇÃO ==========
 function setupModal() {
   const modal = document.getElementById("confirm-modal");
   const cancelBtn = document.getElementById("modal-cancel");
-  const confirmBtn = document.getElementById("modal-confirm");
 
   if (cancelBtn) {
     cancelBtn.addEventListener("click", hideModal);
@@ -683,11 +533,9 @@ function showConfirmModal(title, message, onConfirm, isDanger = false) {
   if (modalMessage) modalMessage.textContent = message;
 
   if (confirmBtn) {
-    // Remover listeners antigos
     const newBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
 
-    // Estilizar botão
     if (isDanger) {
       newBtn.className = "btn-primary";
       newBtn.style.background = "linear-gradient(135deg, #ff6b6b, #ee5a24)";
@@ -732,10 +580,8 @@ function showToast(message, type = "success") {
 
   if (!toast) return;
 
-  // Configurar tipo
   toast.className = `toast ${type}`;
 
-  // Configurar ícone
   if (toastIcon) {
     toastIcon.className =
       type === "error"
@@ -749,10 +595,8 @@ function showToast(message, type = "success") {
     toastMessage.textContent = message;
   }
 
-  // Mostrar toast
   toast.classList.add("show");
 
-  // Esconder após 3 segundos
   setTimeout(() => {
     toast.classList.remove("show");
   }, 3000);
@@ -779,7 +623,7 @@ function debugSecurity() {
   console.log("SessionStorage:", sessionStorage.getItem("securitySettings"));
 }
 
-// Expor funções globalmente para debug
+// Expor funções globalmente
 if (typeof window !== "undefined") {
   window.securitySettings = securitySettings;
   window.debugSecurity = debugSecurity;
@@ -788,7 +632,7 @@ if (typeof window !== "undefined") {
   window.handleLogoutSession = handleLogoutSession;
 }
 
-// ========== INTEGRAÇÃO COM API (OPCIONAL) ==========
+// ========== INTEGRAÇÃO COM API ==========
 async function syncSettingsWithAPI() {
   try {
     const token = Auth?.getToken();
@@ -833,7 +677,6 @@ function markAsSaved() {
   }
 }
 
-// Avisar antes de sair se houver mudanças não salvas
 window.addEventListener("beforeunload", (e) => {
   if (hasUnsavedChanges) {
     e.preventDefault();
@@ -860,19 +703,16 @@ function animateSecurityCards() {
   });
 }
 
-// Executar animações após carregamento
 setTimeout(animateSecurityCards, 100);
 
 // ========== VERIFICAÇÃO DE SEGURANÇA PERIÓDICA ==========
 function startSecurityMonitoring() {
-  // Verificar a cada 5 minutos
   setInterval(() => {
     checkSecurityStatus();
   }, 5 * 60 * 1000);
 }
 
 function checkSecurityStatus() {
-  // Verificações básicas
   const recommendations = [];
 
   if (securitySettings.publicProfile) {
@@ -892,17 +732,14 @@ function checkSecurityStatus() {
   }
 }
 
-// Iniciar monitoramento
 startSecurityMonitoring();
 
 // ========== KEYBOARD SHORTCUTS ==========
 document.addEventListener("keydown", (e) => {
-  // ESC para fechar modal
   if (e.key === "Escape") {
     hideModal();
   }
 
-  // Ctrl/Cmd + S para salvar (se implementado)
   if ((e.ctrlKey || e.metaKey) && e.key === "s") {
     e.preventDefault();
     if (hasUnsavedChanges) {
@@ -945,11 +782,10 @@ function generateSecurityReport() {
     securityScore: calculateSecurityScoreValue(),
     settings: securitySettings,
     recommendations: [],
-    activeSessions: 3, // Exemplo
-    lastPasswordChange: "há 30 dias", // Exemplo
+    activeSessions: 3,
+    lastPasswordChange: "há 30 dias",
   };
 
-  // Adicionar recomendações
   if (securitySettings.publicProfile) {
     report.recommendations.push({
       priority: "medium",
@@ -992,9 +828,6 @@ function logSecurityEvent(eventType, details) {
   };
 
   console.log("📝 Evento de segurança:", event);
-
-  // Aqui você poderia enviar para a API
-  // await fetch(`${API_BASE_URL}/security/log`, { ... });
 }
 
 // ========== DETECÇÃO DE DISPOSITIVO ==========
@@ -1077,7 +910,6 @@ function copySecurityLogs() {
     });
 }
 
-// Adicionar à janela para debug
 if (typeof window !== "undefined") {
   window.copySecurityLogs = copySecurityLogs;
   window.generateSecurityReport = generateSecurityReport;

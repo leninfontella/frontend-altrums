@@ -28,11 +28,22 @@
       <div class="security-container">
         <!-- Header -->
         <div class="header">
-          <button id="go-back" class="back-button">
+          <button
+            id="go-back"
+            class="back-button"
+            type="button"
+            aria-label="Voltar"
+          >
             <i class="fas fa-chevron-left"></i>
           </button>
           <div class="header-title">Segurança</div>
-          <button id="save-all" class="save-button" style="opacity: 0">
+          <button
+            id="save-all"
+            class="save-button"
+            type="button"
+            style="opacity: 0"
+            aria-label="Salvar"
+          >
             <i class="fas fa-check"></i>
           </button>
         </div>
@@ -80,7 +91,12 @@
                   </p>
                 </div>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-public-profile" checked />
+                  <input
+                    type="checkbox"
+                    id="toggle-public-profile"
+                    checked
+                    aria-label="Perfil Público"
+                  />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -99,7 +115,12 @@
                   </p>
                 </div>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-ranking" checked />
+                  <input
+                    type="checkbox"
+                    id="toggle-ranking"
+                    checked
+                    aria-label="Aparecer no Ranking"
+                  />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -118,7 +139,11 @@
                   </p>
                 </div>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-donation-history" />
+                  <input
+                    type="checkbox"
+                    id="toggle-donation-history"
+                    aria-label="Histórico Público de Doações"
+                  />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -137,7 +162,12 @@
                   </p>
                 </div>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-notifications" checked />
+                  <input
+                    type="checkbox"
+                    id="toggle-notifications"
+                    checked
+                    aria-label="Notificações de Doações"
+                  />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -183,7 +213,12 @@
             </h3>
 
             <div class="data-card">
-              <button id="download-data" class="data-button" type="button">
+              <button
+                id="download-data"
+                class="data-button"
+                type="button"
+                aria-label="Baixar Meus Dados"
+              >
                 <div class="data-icon">
                   <i class="fas fa-download"></i>
                 </div>
@@ -196,7 +231,12 @@
             </div>
 
             <div class="data-card danger">
-              <button id="delete-account" class="data-button" type="button">
+              <button
+                id="delete-account"
+                class="data-button"
+                type="button"
+                aria-label="Excluir Conta"
+              >
                 <div class="data-icon">
                   <i class="fas fa-trash-alt"></i>
                 </div>
@@ -215,13 +255,19 @@
     </div>
 
     <!-- Modal de Confirmação -->
-    <div id="confirm-modal" class="modal">
+    <div
+      id="confirm-modal"
+      class="modal"
+      role="dialog"
+      aria-labelledby="modal-title"
+      aria-modal="true"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <div class="modal-icon">
             <i class="fas fa-exclamation-triangle"></i>
           </div>
-          <h3 id="modal-title" class="modal-title">Confirmar Ação</h3>
+          <h2 id="modal-title" class="modal-title">Confirmar Ação</h2>
         </div>
         <div class="modal-body">
           <p id="modal-message" class="modal-message">
@@ -240,7 +286,7 @@
     </div>
 
     <!-- Toast de Notificação -->
-    <div id="toast" class="toast">
+    <div id="toast" class="toast" role="alert" aria-live="polite">
       <div class="toast-icon">
         <i class="fas fa-check-circle"></i>
       </div>
@@ -251,24 +297,5 @@
 
     <script src="../../../assets/js/auth.js"></script>
     <script src="../../../assets/js/security.js"></script>
-
-    <!-- Modal de confirmação já existe, mas verificar se tem estrutura correta -->
-    <div id="confirm-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="modal-icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <h2 id="modal-title">Confirmar Ação</h2>
-        </div>
-        <div class="modal-body" id="modal-body">
-          <p id="modal-message">Mensagem aqui</p>
-        </div>
-        <div class="modal-footer">
-          <button id="modal-cancel" class="btn-secondary">Cancelar</button>
-          <button id="modal-confirm" class="btn-primary">Confirmar</button>
-        </div>
-      </div>
-    </div>
   </body>
 </html>
