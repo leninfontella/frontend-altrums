@@ -1289,9 +1289,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: levelUpModalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
+  /* >>> ESTAS LINHAS ESTÃO FALTANDO OU INCOMPLETAS PARA OCULTAR O MODAL POR PADRÃO <<< */
+  opacity: 0; /* Torna o modal transparente */
+  visibility: hidden; /* Oculta o modal para leitores de tela e fluxo */
+  pointer-events: none; /* Impede cliques quando invisível */
+  /* Transição para que a abertura seja suave */
+  transition: opacity 0.4s ease-out, visibility 0s linear 0.4s,
+    background 0.4s ease;
+  /* FIM DAS LINHAS A SEREM ADICIONADAS/CORRIGIDAS */
 
+  animation: levelUpModalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* A animação 'levelUpModalFadeIn' deve ser removida daqui e aplicada apenas quando a classe '.open' é adicionada,
+     ou a classe '.open' precisa sobrescrever esse estado. */
+}
 .level-up-backdrop {
   position: absolute;
   top: 0;
@@ -1830,7 +1840,11 @@ body {
 
 /* Animação de saída */
 .level-up-modal.closing {
-  animation: levelUpModalFadeOut 0.4s ease-in;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease-in, visibility 0s linear 0.4s;
+  animation: none; /* Desativa animações de abertura se houver conflito */
 }
 
 .level-up-modal.closing .level-up-content {
