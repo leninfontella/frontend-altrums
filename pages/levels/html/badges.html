@@ -98,5 +98,74 @@
     <script src="../../../assets/js/config-edit-apiConfig.js"></script>
 
     <script src="../../../assets/js/levels-badges-script.js"></script>
+
+    <!-- Modal de Level Up - Adicionar antes do fechamento do </body> -->
+    <div id="levelUpModal" class="level-up-modal" style="display: none">
+      <div class="level-up-backdrop"></div>
+      <div class="level-up-content">
+        <!-- Confete animado -->
+        <div class="level-up-confetti">
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+          <div class="confetti-particle"></div>
+        </div>
+
+        <!-- Ícone do novo nível -->
+        <div class="level-up-icon-container">
+          <div class="level-up-icon" id="levelUpIcon">🎉</div>
+          <div class="level-up-glow"></div>
+        </div>
+
+        <!-- Título -->
+        <h2 class="level-up-title">
+          <span class="level-up-title-line">Parabéns!</span>
+          <span class="level-up-title-line">Você subiu de nível!</span>
+        </h2>
+
+        <!-- Badge do novo nível -->
+        <div class="level-up-badge" id="levelUpBadge">
+          <div class="level-up-badge-icon" id="levelUpBadgeIcon">🏆</div>
+        </div>
+
+        <!-- Nome do nível -->
+        <div class="level-up-name" id="levelUpName">Benfeitor</div>
+
+        <!-- Descrição -->
+        <div class="level-up-description">
+          Você alcançou o nível <strong id="levelUpNumber">4</strong>
+        </div>
+
+        <!-- Linha divisória -->
+        <div class="level-up-divider"></div>
+
+        <!-- Informações do progresso -->
+        <div class="level-up-stats">
+          <div class="level-up-stat">
+            <div class="level-up-stat-label">Pontos Totais</div>
+            <div class="level-up-stat-value" id="levelUpTotalPoints">1,000</div>
+          </div>
+          <div class="level-up-stat-divider"></div>
+          <div class="level-up-stat">
+            <div class="level-up-stat-label">Próximo Nível</div>
+            <div class="level-up-stat-value" id="levelUpNextLevel">
+              Generoso
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão de fechar -->
+        <button class="level-up-close" onclick="closeLevelUpModal()">
+          <span>Continuar</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
   </body>
 </html>

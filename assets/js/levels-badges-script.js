@@ -854,3 +854,254 @@ if (typeof window.Auth !== "undefined" && typeof window.api !== "undefined") {
 } else {
   console.log("⏳ Aguardando carregamento das dependências...");
 }
+
+// ========== FUNÇÕES DO MODAL DE LEVEL UP ==========
+
+/**
+ * Exibe o modal de Level Up com os dados do novo nível
+ * @param {Object} levelData - Dados do novo nível alcançado
+ */
+function showLevelUpModal(levelData) {
+  const modal = document.getElementById("levelUpModal");
+  if (!modal) {
+    console.error("Modal de level up não encontrado");
+    return;
+  }
+
+  // Preencher dados do modal
+  const levelUpIcon = document.getElementById("levelUpIcon");
+  const levelUpBadgeIcon = document.getElementById("levelUpBadgeIcon");
+  const levelUpBadge = document.querySelector(".level-up-badge-icon");
+  const levelUpName = document.getElementById("levelUpName");
+  const levelUpNumber = document.getElementById("levelUpNumber");
+  const levelUpTotalPoints = document.getElementById("levelUpTotalPoints");
+  const levelUpNextLevel = document.getElementById("levelUpNextLevel");
+
+  // Definir ícone e cor
+  if (levelUpIcon) levelUpIcon.textContent = levelData.icon || "🎉";
+  if (levelUpBadgeIcon) levelUpBadgeIcon.textContent = levelData.icon || "🏆";
+
+  // Definir cor do badge
+  if (levelUpBadge && levelData.color) {
+    levelUpBadge.style.background = `linear-gradient(135deg, ${levelData.color}, ${levelData.color}CC)`;
+    levelUpBadge.style.borderColor = `${levelData.color}99`;
+  }
+
+  // Definir nome do nível
+  if (levelUpName) {
+    levelUpName.textContent = levelData.name || "Novo Nível";
+    levelUpName.style.color = levelData.color || "#00d4ff";
+    levelUpName.style.textShadow = `0 0 20px ${
+      levelData.color || "#00d4ff"
+    }80, 0 3px 10px ${levelData.color || "#00d4ff"}60`;
+  }
+
+  // Definir número do nível
+  if (levelUpNumber) {
+    levelUpNumber.textContent = levelData.level || 1;
+  }
+
+  // Definir pontos totais
+  if (levelUpTotalPoints) {
+    levelUpTotalPoints.textContent = formatNumber(
+      levelData.totalPoints || currentPoints
+    );
+  }
+
+  // Definir próximo nível
+  if (levelUpNextLevel) {
+    const nextLevel = getNextLevel(levelData.level);
+    levelUpNextLevel.textContent = nextLevel ? nextLevel.name : "Nível Máximo";
+  }
+
+  // Exibir modal com animação
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  // Tocar som de level up (opcional - descomente se tiver arquivo de áudio)
+  // playLevelUpSound();
+
+  // Adicionar vibração no mobile (se suportado)
+  if (navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+  }
+
+  console.log("✨ Modal de Level Up exibido:", levelData);
+}
+
+/**
+ * Fecha o modal de Level Up com animação
+ */
+function closeLevelUpModal() {
+  const modal = document.getElementById("levelUpModal");
+  if (!modal) return;
+
+  // Adicionar classe de animação de saída
+  modal.classList.add("closing");
+
+  // Aguardar animação terminar antes de esconder
+  setTimeout(() => {
+    modal.style.display = "none";
+    modal.classList.remove("closing");
+    document.body.style.overflow = "auto";
+  }, 400);
+
+  console.log("Modal de Level Up fechado");
+}
+
+/**
+ * Toca som de level up (opcional)
+ * Você pode adicionar um arquivo de áudio para tornar a experiência mais imersiva
+ */
+function playLevelUpSound() {
+  try {
+    const audio = new Audio("/assets/sounds/level-up.mp3");
+    audio.volume = 0.5;
+    audio
+      .play()
+      .catch((err) => console.warn("Não foi possível tocar o som:", err));
+  } catch (error) {
+    console.warn("Som de level up não disponível:", error);
+  }
+}
+
+/**
+ * Integração com a função existente showLevelUpNotification
+ * Substitui a notificação simples pelo modal completo
+ */
+function showLevelUpNotification(newLevel) {
+  // Preparar dados do nível para o modal
+  const levelData = {
+    icon: newLevel.icon,
+    color: newLevel.color,
+    name: newLevel.name,
+    level: newLevel.level,
+    totalPoints: currentPoints,
+    min: newLevel.min,
+    max: newLevel.max,
+  };
+
+  // Exibir modal em vez da notificação antiga
+  showLevelUpModal(levelData);
+}
+
+/**
+ * Fechar modal ao clicar fora do conteúdo
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("levelUpModal");
+  if (modal) {
+    const backdrop = modal.querySelector(".level-up-backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", closeLevelUpModal);
+    }
+  }
+});
+
+/**
+ * Fechar modal com a tecla ESC
+ */
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    const modal = document.getElementById("levelUpModal");
+    if (modal && modal.style.display === "flex") {
+      closeLevelUpModal();
+    }
+  }
+});
+
+/**
+ * Animação de entrada dos elementos do modal (opcional - para mais dinamismo)
+ */
+function animateLevelUpElements() {
+  const elements = [
+    ".level-up-icon-container",
+    ".level-up-title",
+    ".level-up-badge",
+    ".level-up-name",
+    ".level-up-description",
+    ".level-up-stats",
+    ".level-up-close",
+  ];
+
+  elements.forEach((selector, index) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.style.opacity = "0";
+      element.style.transform = "translateY(20px)";
+
+      setTimeout(() => {
+        element.style.transition = "all 0.5s ease-out";
+        element.style.opacity = "1";
+        element.style.transform = "translateY(0)";
+      }, 100 * index);
+    }
+  });
+}
+
+/**
+ * Criar efeito de partículas extras ao redor do badge (opcional)
+ */
+function createLevelUpParticles() {
+  const badge = document.querySelector(".level-up-badge");
+  if (!badge) return;
+
+  for (let i = 0; i < 8; i++) {
+    const particle = document.createElement("div");
+    particle.className = "level-up-particle";
+    particle.style.cssText = `
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: linear-gradient(135deg, #00d4ff, #00ff88);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+    `;
+
+    badge.appendChild(particle);
+
+    const angle = (360 / 8) * i;
+    const distance = 60;
+    const x = Math.cos((angle * Math.PI) / 180) * distance;
+    const y = Math.sin((angle * Math.PI) / 180) * distance;
+
+    setTimeout(() => {
+      particle.style.transition = "all 1.5s ease-out";
+      particle.style.transform = `translate(${x}px, ${y}px)`;
+      particle.style.opacity = "1";
+
+      setTimeout(() => {
+        particle.style.opacity = "0";
+        setTimeout(() => particle.remove(), 500);
+      }, 1000);
+    }, 50);
+  }
+}
+
+/**
+ * Exemplo de como chamar o modal programaticamente
+ * (para testes ou integrações futuras)
+ */
+function testLevelUpModal() {
+  const exampleLevel = {
+    icon: "🏆",
+    color: "#F59E0B",
+    name: "Benfeitor",
+    level: 4,
+    totalPoints: 1500,
+    min: 1000,
+    max: 4999,
+  };
+
+  showLevelUpModal(exampleLevel);
+}
+
+// Exportar funções para uso global
+window.LevelUpModal = {
+  show: showLevelUpModal,
+  close: closeLevelUpModal,
+  test: testLevelUpModal,
+};
+
+console.log("✅ Sistema de Modal Level Up carregado");
