@@ -18,7 +18,7 @@ body {
   overflow-y: auto;
 }
 
-/* Container principal (substitui .phone-container e .screen) */
+/* Container principal */
 .main-container {
   width: 100%;
   max-width: 450px;
@@ -352,6 +352,28 @@ body {
   font-weight: 500;
   color: #ffffff;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.readonly-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.readonly-badge i {
+  font-size: 10px;
 }
 
 .form-group input,
@@ -377,6 +399,25 @@ body {
 .form-group textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+/* Campo Somente Leitura - CPF */
+.readonly-field {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 193, 7, 0.2) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  cursor: not-allowed !important;
+  font-style: italic;
+}
+
+.readonly-field:hover {
+  border-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+.readonly-field:focus {
+  outline: none !important;
+  border-color: rgba(255, 193, 7, 0.3) !important;
+  box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1) !important;
 }
 
 /* Card de Foto de Perfil */
@@ -490,7 +531,7 @@ body {
   box-shadow: 0 12px 40px rgba(0, 212, 255, 0.5);
 }
 
-/* Mensagem de sucesso (opcional) */
+/* Mensagem de sucesso */
 .success-message {
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
   color: white;
@@ -686,7 +727,7 @@ body {
   }
 }
 
-/* ========== POPUP DE DOAÇÃO RECEBIDA - DARK MODERN ========== */
+/* POPUP DE DOAÇÃO RECEBIDA - DARK MODERN */
 
 .donation-received-popup {
   position: fixed;
@@ -769,7 +810,6 @@ body {
   );
 }
 
-/* Ícone de celebração */
 .donation-received-icon {
   width: 90px;
   height: 90px;
@@ -811,7 +851,6 @@ body {
   z-index: -1;
 }
 
-/* Título */
 .donation-received-title {
   color: #ffffff;
   font-size: 26px;
@@ -822,7 +861,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Mensagem */
 .donation-received-message {
   color: rgba(255, 255, 255, 0.85);
   font-size: 15px;
@@ -832,7 +870,6 @@ body {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Detalhes da doação */
 .donation-received-details {
   background: linear-gradient(
     135deg,
@@ -867,7 +904,6 @@ body {
   animation: donationDetailsSweep 3s ease-in-out infinite;
 }
 
-/* Valor recebido */
 .donation-received-amount {
   color: #00d4ff;
   font-size: 36px;
@@ -888,7 +924,6 @@ body {
   animation: coinRotate 3s linear infinite;
 }
 
-/* Texto do saldo atual */
 .donation-received-new-balance {
   color: rgba(255, 255, 255, 0.75);
   font-size: 16px;
@@ -903,7 +938,6 @@ body {
   text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
 }
 
-/* Informação do doador */
 .donation-received-donor {
   color: rgba(255, 255, 255, 0.65);
   font-size: 13px;
@@ -919,7 +953,6 @@ body {
   font-style: normal;
 }
 
-/* Botão de fechar */
 .donation-received-close {
   background: linear-gradient(
     135deg,
@@ -980,7 +1013,6 @@ body {
   transform: translateY(-1px) scale(1.01);
 }
 
-/* Efeito de confete (partículas) */
 .donation-confetti {
   position: absolute;
   width: 100%;
@@ -1037,7 +1069,7 @@ body {
   animation-delay: 0.4s;
 }
 
-/* Animações */
+/* Animações de Doação */
 @keyframes donationPopupFadeIn {
   from {
     opacity: 0;
@@ -1139,7 +1171,6 @@ body {
   }
 }
 
-/* Animação de saída */
 .donation-received-popup.closing {
   animation: donationPopupFadeOut 0.4s ease-in;
 }
@@ -1168,7 +1199,7 @@ body {
   }
 }
 
-/* Responsividade */
+/* Responsividade Adicional */
 @media (max-width: 480px) {
   .donation-received-content {
     width: 92%;

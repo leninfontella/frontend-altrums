@@ -237,6 +237,7 @@ const Auth = {
           updatedAt: user.updatedAt,
           profilePhotoUrl: profilePhotoUrl, // 🔧 URL válida ou null
           phone: user.phone || "",
+          cpf: user.cpf || user.document || "",
         };
 
         console.log("📦 Dados processados:", {

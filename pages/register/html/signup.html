@@ -31,7 +31,7 @@
             <div class="progress-fill" id="progressFill"></div>
           </div>
           <div class="progress-text">
-            <span id="currentStep">1</span> de <span id="totalSteps">6</span>
+            <span id="currentStep">1</span> de <span id="totalSteps">7</span>
           </div>
         </div>
 
@@ -89,8 +89,28 @@
             </div>
           </div>
 
-          <!-- Step 3: Telefone -->
+          <!-- Step 3: CPF -->
           <div class="step-container" data-step="3">
+            <div class="step-content">
+              <h2 class="step-title">Qual é o seu CPF?</h2>
+              <p class="step-description">
+                Necessário para identificação e segurança
+              </p>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  class="input-field"
+                  placeholder="000.000.000-00"
+                  id="cpf"
+                  maxlength="14"
+                />
+                <i class="fas fa-id-card input-icon"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Telefone -->
+          <div class="step-container" data-step="4">
             <div class="step-content">
               <h2 class="step-title">Qual é o seu telefone?</h2>
               <p class="step-description">Para maior segurança da sua conta</p>
@@ -106,8 +126,8 @@
             </div>
           </div>
 
-          <!-- Step 4: Senha -->
-          <div class="step-container" data-step="4">
+          <!-- Step 5: Senha -->
+          <div class="step-container" data-step="5">
             <div class="step-content">
               <h2 class="step-title">Crie uma senha segura</h2>
               <p class="step-description">
@@ -144,8 +164,8 @@
             </div>
           </div>
 
-          <!-- Step 5: Confirmar Senha -->
-          <div class="step-container" data-step="5">
+          <!-- Step 6: Confirmar Senha -->
+          <div class="step-container" data-step="6">
             <div class="step-content">
               <h2 class="step-title">Confirme sua senha</h2>
               <p class="step-description">Digite a senha novamente</p>
@@ -165,8 +185,8 @@
             </div>
           </div>
 
-          <!-- Step 6: Termos -->
-          <div class="step-container" data-step="6">
+          <!-- Step 7: Termos -->
+          <div class="step-container" data-step="7">
             <div class="step-content">
               <h2 class="step-title">Quase lá!</h2>
               <p class="step-description">Aceite os termos para continuar</p>
@@ -198,6 +218,10 @@
                 <div class="summary-item">
                   <i class="fas fa-envelope"></i>
                   <span id="summaryEmail"></span>
+                </div>
+                <div class="summary-item">
+                  <i class="fas fa-id-card"></i>
+                  <span id="summaryCpf"></span>
                 </div>
                 <div class="summary-item">
                   <i class="fas fa-phone"></i>

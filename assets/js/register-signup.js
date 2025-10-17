@@ -12,10 +12,11 @@ function saveUserData(userData) {
 
 // ========== CONTROLE DE STEPS ==========
 let currentStep = 1;
-const totalSteps = 6;
+const totalSteps = 7;
 const formData = {
   name: "",
   email: "",
+  cpf: "",
   phone: "",
   password: "",
   confirmPassword: "",
@@ -110,16 +111,19 @@ function saveStepData() {
       formData.email = document.getElementById("email").value.trim();
       break;
     case 3:
-      formData.phone = document.getElementById("phone").value.trim();
+      formData.cpf = document.getElementById("cpf").value.trim();
       break;
     case 4:
-      formData.password = document.getElementById("password").value;
+      formData.phone = document.getElementById("phone").value.trim();
       break;
     case 5:
+      formData.password = document.getElementById("password").value;
+      break;
+    case 6:
       formData.confirmPassword =
         document.getElementById("confirmPassword").value;
       break;
-    case 6:
+    case 7:
       formData.terms = document.getElementById("terms").checked;
       break;
   }
@@ -128,6 +132,7 @@ function saveStepData() {
 function updateSummary() {
   document.getElementById("summaryName").textContent = formData.name;
   document.getElementById("summaryEmail").textContent = formData.email;
+  document.getElementById("summaryCpf").textContent = formData.cpf;
   document.getElementById("summaryPhone").textContent = formData.phone;
 }
 
@@ -144,16 +149,22 @@ function validateStep2() {
 }
 
 function validateStep3() {
+  const cpfInput = document.getElementById("cpf");
+  const cpfClean = cpfInput.value.replace(/\D/g, "");
+  return cpfClean.length === 11 && validateCPF(cpfClean);
+}
+
+function validateStep4() {
   const phoneInput = document.getElementById("phone");
   return phoneInput.value.replace(/\D/g, "").length >= 10;
 }
 
-function validateStep4() {
+function validateStep5() {
   const passwordInput = document.getElementById("password");
   return passwordInput.value.length >= 6;
 }
 
-function validateStep5() {
+function validateStep6() {
   const passwordInput = document.getElementById("password");
   const confirmPasswordInput = document.getElementById("confirmPassword");
 
@@ -171,7 +182,7 @@ function validateStep5() {
   return true;
 }
 
-function validateStep6() {
+function validateStep7() {
   const termsCheckbox = document.getElementById("terms");
   return termsCheckbox.checked;
 }
@@ -200,6 +211,9 @@ function validateCurrentStep() {
     case 6:
       isValid = validateStep6();
       break;
+    case 7:
+      isValid = validateStep7();
+      break;
   }
 
   if (currentStep < totalSteps) {
@@ -212,6 +226,48 @@ function validateCurrentStep() {
 }
 
 // ========== FUNÇÕES AUXILIARES ==========
+function validateCPF(cpf) {
+  // Remove caracteres não numéricos
+  cpf = cpf.replace(/\D/g, "");
+
+  // Verifica se tem 11 dígitos
+  if (cpf.length !== 11) return false;
+
+  // Verifica se todos os dígitos são iguais
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+  // Validação do primeiro dígito verificador
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let digit1 = 11 - (sum % 11);
+  if (digit1 >= 10) digit1 = 0;
+
+  if (digit1 !== parseInt(cpf.charAt(9))) return false;
+
+  // Validação do segundo dígito verificador
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  let digit2 = 11 - (sum % 11);
+  if (digit2 >= 10) digit2 = 0;
+
+  if (digit2 !== parseInt(cpf.charAt(10))) return false;
+
+  return true;
+}
+
+function cpfMask(value) {
+  return value
+    .replace(/\D/g, "")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+    .replace(/(-\d{2})\d+?$/, "$1");
+}
+
 function togglePassword(fieldId) {
   const passwordField = document.getElementById(fieldId);
   const toggleIcon =
@@ -381,14 +437,14 @@ async function submitForm(e) {
   saveStepData();
 
   // 2. Mudar o estado do botão
-  // CORREÇÃO: Usar innerHTML para salvar todo o conteúdo (texto + ícone HTML)
   const originalContent = submitBtn.innerHTML;
-  submitBtn.innerHTML = "Criando..."; // Altera para o novo texto sem o ícone
-  submitBtn.disabled = true; // Desabilita o botão para evitar cliques duplicados
+  submitBtn.innerHTML = "Criando...";
+  submitBtn.disabled = true;
 
   const userData = {
     name: formData.name,
     email: formData.email,
+    cpf: formData.cpf,
     phone: formData.phone,
     registeredAt: new Date().toISOString(),
   };
@@ -404,6 +460,7 @@ async function submitForm(e) {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
+          cpf: formData.cpf,
           phone: formData.phone,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
@@ -431,7 +488,6 @@ async function submitForm(e) {
         window.location.href = "/index.html";
       }, 1500);
 
-      // Retorna para evitar a restauração do botão no 'finally', já que a página será trocada
       return;
     } else {
       const errorMessage = data.errors
@@ -444,10 +500,8 @@ async function submitForm(e) {
     showNotification("Erro de conexão com o servidor", "error");
   } finally {
     // 4. Restaurar o estado do botão em caso de erro
-    // CORREÇÃO: Usar innerHTML para restaurar o conteúdo original (Texto + Ícone)
     submitBtn.innerHTML = originalContent;
     submitBtn.disabled = false;
-    // Força a revalidação/habilitação do botão caso a API retorne um erro.
     validateCurrentStep();
   }
 }
@@ -456,6 +510,7 @@ async function submitForm(e) {
 document.addEventListener("DOMContentLoaded", function () {
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
+  const cpfInput = document.getElementById("cpf");
   const phoneInput = document.getElementById("phone");
   const passwordInput = document.getElementById("password");
   const confirmPasswordInput = document.getElementById("confirmPassword");
@@ -469,6 +524,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (
     !nameInput ||
     !emailInput ||
+    !cpfInput ||
     !phoneInput ||
     !passwordInput ||
     !confirmPasswordInput ||
@@ -488,6 +544,11 @@ document.addEventListener("DOMContentLoaded", function () {
   nameInput.addEventListener("input", validateCurrentStep);
 
   emailInput.addEventListener("input", validateCurrentStep);
+
+  cpfInput.addEventListener("input", function (e) {
+    e.target.value = cpfMask(e.target.value);
+    validateCurrentStep();
+  });
 
   phoneInput.addEventListener("input", function (e) {
     e.target.value = phoneMask(e.target.value);

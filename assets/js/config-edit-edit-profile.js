@@ -1,4 +1,4 @@
-// edit-profile.js - VERSÃO CORRIGIDA COMPLETA
+// edit-profile.js - VERSÃO COM CAMPO CPF
 
 // Função para mostrar mensagens
 function showMessage(message, type = "success") {
@@ -21,7 +21,6 @@ function showMessage(message, type = "success") {
 // 🔧 FUNÇÃO: Limpar máscara do telefone
 function cleanPhoneNumber(phone) {
   if (!phone) return "";
-  // Remove tudo exceto números
   return phone.replace(/\D/g, "");
 }
 
@@ -32,10 +31,8 @@ function applyPhoneMask(phone) {
   const cleaned = cleanPhoneNumber(phone);
 
   if (cleaned.length > 10) {
-    // Celular: (99) 99999-9999
     return cleaned.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
   } else if (cleaned.length > 6) {
-    // Telefone fixo: (99) 9999-9999
     return cleaned.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
   } else if (cleaned.length > 2) {
     return cleaned.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
@@ -44,6 +41,23 @@ function applyPhoneMask(phone) {
   }
 
   return "";
+}
+
+// 🔧 FUNÇÃO: Aplicar máscara ao CPF
+function applyCpfMask(cpf) {
+  if (!cpf) return "";
+
+  const cleaned = cpf.replace(/\D/g, "");
+
+  if (cleaned.length > 9) {
+    return cleaned.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, "$1.$2.$3-$4");
+  } else if (cleaned.length > 6) {
+    return cleaned.replace(/^(\d{3})(\d{3})(\d{0,3})/, "$1.$2.$3");
+  } else if (cleaned.length > 3) {
+    return cleaned.replace(/^(\d{3})(\d{0,3})/, "$1.$2");
+  }
+
+  return cleaned;
 }
 
 // Função para gerar URL do placeholder com iniciais
@@ -61,12 +75,11 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
 
   console.log("🖼️  Atualizando foto de perfil:", photoUrl);
 
-  // 🔧 VALIDAÇÃO RIGOROSA: Detectar URLs inválidas
   const isInvalidUrl =
     !photoUrl ||
     typeof photoUrl !== "string" ||
     photoUrl.includes("👤") ||
-    photoUrl.includes("�") || // Caracteres inválidos
+    photoUrl.includes("�") ||
     photoUrl === "null" ||
     photoUrl === "undefined" ||
     photoUrl.trim() === "";
@@ -79,11 +92,9 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
     return;
   }
 
-  // 🔧 VALIDAÇÃO: URL deve começar com http:// ou https://
   if (!photoUrl.startsWith("http://") && !photoUrl.startsWith("https://")) {
     console.warn("⚠️  URL sem protocolo detectada:", photoUrl);
 
-    // Se for path relativo, construir URL completa
     if (window.apiConfig && window.apiConfig.baseURL) {
       photoUrl = window.apiConfig.baseURL + photoUrl;
       console.log("🔧 URL construída:", photoUrl);
@@ -96,7 +107,6 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
     }
   }
 
-  // 🔧 CACHE BUSTING APENAS SE FORÇADO
   let imageUrl = photoUrl;
   if (forceRefresh) {
     const separator = imageUrl.includes("?") ? "&" : "?";
@@ -104,18 +114,15 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
     console.log("🔄 Cache busting aplicado:", imageUrl);
   }
 
-  // Aplicar a imagem
   profileImage.src = imageUrl;
   profileImage.style.opacity = "0.7";
   setTimeout(() => {
     profileImage.style.opacity = "1";
   }, 300);
 
-  // Handler de erro
   profileImage.onerror = function () {
     console.error("❌ Erro ao carregar imagem:", imageUrl);
 
-    // Se tinha cache bust, tentar sem
     if (forceRefresh && imageUrl.includes("?t=")) {
       const cleanUrl = imageUrl.split("?t=")[0];
       console.log("🔄 Tentando sem cache bust:", cleanUrl);
@@ -123,7 +130,6 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
       return;
     }
 
-    // Fallback: placeholder com iniciais
     const userData = JSON.parse(localStorage.getItem("userData")) || {};
     const userName = userData.name || userData.fullName || "";
     this.src = getInitialsPlaceholderUrl(userName);
@@ -134,13 +140,11 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
 function forceRefreshAllProfileImages(photoUrl) {
   console.log("🔄 Forçando refresh de imagens de perfil");
 
-  // 🔧 VALIDAÇÃO RIGOROSA
   if (!photoUrl || typeof photoUrl !== "string" || photoUrl.includes("👤")) {
     console.warn("⚠️  URL inválida, não atualizando imagens");
     return;
   }
 
-  // 🔧 GARANTIR QUE É UMA URL COMPLETA
   let fullUrl = photoUrl;
   if (!photoUrl.startsWith("http")) {
     if (window.apiConfig && window.apiConfig.baseURL) {
@@ -195,11 +199,13 @@ function clearUserData() {
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
+  const cpfInput = document.getElementById("cpf");
   const phoneInput = document.getElementById("phone");
   const profileImage = document.getElementById("profile-image");
 
   if (nameInput) nameInput.value = "";
   if (emailInput) emailInput.value = "";
+  if (cpfInput) cpfInput.value = "";
   if (phoneInput) phoneInput.value = "";
   if (profileImage) {
     profileImage.src = getInitialsPlaceholderUrl("");
@@ -230,11 +236,10 @@ async function loadUserDataFromAPI() {
 
       populateFormWithData(userData);
 
-      // 🔧 CORREÇÃO: Salvar telefone LIMPO no originalFormData
       setOriginalFormData({
         name: userData.name || userData.fullName || "",
         email: userData.email || "",
-        phone: cleanPhoneNumber(userData.phone || ""), // ✅ Limpar máscara
+        phone: cleanPhoneNumber(userData.phone || ""),
         hasNewPhoto: false,
       });
 
@@ -267,13 +272,19 @@ function populateFormWithData(userData) {
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
+  const cpfInput = document.getElementById("cpf");
   const phoneInput = document.getElementById("phone");
   const profileImage = document.getElementById("profile-image");
 
   if (nameInput) nameInput.value = userData.name || userData.fullName || "";
   if (emailInput) emailInput.value = userData.email || "";
 
-  // 🔧 CORREÇÃO: Aplicar máscara ao preencher
+  // Preencher CPF com máscara
+  if (cpfInput) {
+    const cpfValue = userData.cpf || userData.document || "";
+    cpfInput.value = cpfValue ? applyCpfMask(cpfValue) : "CPF não cadastrado";
+  }
+
   if (phoneInput) {
     const cleanPhone = cleanPhoneNumber(userData.phone || "");
     phoneInput.value = applyPhoneMask(cleanPhone);
@@ -282,7 +293,6 @@ function populateFormWithData(userData) {
   if (profileImage) {
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
 
-    // 🔧 VALIDAÇÃO: Só usar se for URL válida
     if (
       photoUrl &&
       typeof photoUrl === "string" &&
@@ -304,11 +314,10 @@ function loadUserProfileFromLocalStorage() {
     console.log("📦 Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
 
-    // 🔧 CORREÇÃO: Salvar telefone LIMPO
     setOriginalFormData({
       name: userData.name || userData.fullName || "",
       email: userData.email || "",
-      phone: cleanPhoneNumber(userData.phone || ""), // ✅ Limpar máscara
+      phone: cleanPhoneNumber(userData.phone || ""),
       hasNewPhoto: false,
     });
   } else {
@@ -346,8 +355,6 @@ async function saveProfile() {
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
     const phoneRaw = document.getElementById("phone").value.trim();
-
-    // 🔧 CORREÇÃO CRÍTICA: Limpar máscara antes de enviar
     const phone = cleanPhoneNumber(phoneRaw);
 
     console.log("📞 Telefone capturado:", {
@@ -371,28 +378,24 @@ async function saveProfile() {
       return;
     }
 
-    // 🔧 CORREÇÃO: Validar telefone apenas se preenchido
     if (phone && phone.length > 0 && (phone.length < 10 || phone.length > 11)) {
       showMessage("Telefone deve ter 10 ou 11 dígitos", "error");
       return;
     }
 
-    // 🔧 Prepara os dados de texto (JSON) para o PUT /api/users/profile
     const profileData = {
       name,
       email,
-      phone, // ✅ Telefone limpo
+      phone,
     };
 
     console.log("💾 Dados de texto a serem salvos:", profileData);
 
     const photoInput = document.getElementById("photo-input");
 
-    // 🔧 ESTRUTURA CORRIGIDA: SEPARAÇÃO DE REQUISIÇÃO DE FOTO E DADOS
     if (photoInput && photoInput.files && photoInput.files[0]) {
       const file = photoInput.files[0];
 
-      // Validações de arquivo
       if (!file.type.startsWith("image/")) {
         showMessage("Por favor, selecione apenas arquivos de imagem", "error");
         return;
@@ -403,7 +406,6 @@ async function saveProfile() {
         return;
       }
 
-      // PASSO 1: FAZER O UPLOAD DA FOTO (POST /api/profile/upload-photo)
       const photoFormData = new FormData();
       photoFormData.append("profilePhoto", file);
 
@@ -427,16 +429,14 @@ async function saveProfile() {
         uploadResult.message
       );
 
-      // PASSO 2: ATUALIZAR DADOS DO PERFIL (PUT /api/users/profile)
       const updateResult = await Auth.updateProfile(profileData);
 
       if (updateResult.success) {
-        photoInput.value = ""; // Limpa a entrada de arquivo
+        photoInput.value = "";
         await handleSuccessfulUpdate(
           uploadResult.user || updateResult.user || updateResult.data
         );
 
-        // Atualizar o estado local (OriginalFormData)
         setOriginalFormData({
           name: name,
           email: email,
@@ -449,7 +449,6 @@ async function saveProfile() {
         );
       }
     } else {
-      // Salvar APENAS dados de texto (SEM foto nova)
       console.log(
         "💾 Salvando perfil SEM foto nova. ProfileData:",
         profileData
@@ -460,7 +459,6 @@ async function saveProfile() {
       if (result.success) {
         await handleSuccessfulUpdate(result.user || result.data);
 
-        // Atualizar o estado local (OriginalFormData)
         setOriginalFormData({
           name: name,
           email: email,
@@ -476,7 +474,6 @@ async function saveProfile() {
   } catch (error) {
     console.error("❌ Erro ao salvar perfil:", error);
 
-    // Tratamento de erros
     if (error.message.includes("upload para o servidor de armazenamento")) {
       showMessage(
         "Erro ao fazer upload para o servidor de armazenamento. Verifique os logs do Backend.",
@@ -515,16 +512,13 @@ async function saveProfile() {
   }
 }
 
-// 🔧 FUNÇÃO CORRIGIDA: handleSuccessfulUpdate
 async function handleSuccessfulUpdate(updatedUserData) {
   try {
     console.log("✅ Processando atualização bem-sucedida");
     console.log("📦 Dados recebidos:", updatedUserData);
 
-    // Salvar no localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-    // 🔧 VALIDAÇÃO RIGOROSA DA URL DA FOTO
     const newPhotoUrl = updatedUserData.profilePhotoUrl || null;
 
     console.log("🔍 Nova foto URL:", {
@@ -536,7 +530,6 @@ async function handleSuccessfulUpdate(updatedUserData) {
         newPhotoUrl.startsWith("http"),
     });
 
-    // Atualizar apenas se for URL válida
     if (
       newPhotoUrl &&
       typeof newPhotoUrl === "string" &&
@@ -549,12 +542,10 @@ async function handleSuccessfulUpdate(updatedUserData) {
         forceRefreshAllProfileImages(newPhotoUrl);
       }, 100);
 
-      // Atualizar Auth
       if (typeof Auth !== "undefined" && Auth.updateProfilePhoto) {
         Auth.updateProfilePhoto(newPhotoUrl);
       }
 
-      // Disparar eventos
       window.dispatchEvent(
         new CustomEvent("profilePhotoUpdated", {
           detail: {
@@ -565,7 +556,6 @@ async function handleSuccessfulUpdate(updatedUserData) {
         })
       );
 
-      // BroadcastChannel
       if (typeof BroadcastChannel !== "undefined") {
         try {
           const channel = new BroadcastChannel("profile_updates");
@@ -736,7 +726,6 @@ function navigateBack() {
   }
 }
 
-// 🔧 CORREÇÃO CRÍTICA: Comparar telefones SEM máscara
 function hasUnsavedChanges() {
   const currentData = getCurrentFormData();
   const originalData = getOriginalFormData();
@@ -746,7 +735,6 @@ function hasUnsavedChanges() {
     original: originalData,
   });
 
-  // Comparar telefones sem máscara
   const hasChanges =
     currentData.name !== originalData.name ||
     currentData.email !== originalData.email ||
@@ -759,14 +747,13 @@ function hasUnsavedChanges() {
   return hasChanges;
 }
 
-// 🔧 CORREÇÃO: Retornar telefone LIMPO
 function getCurrentFormData() {
   return {
     name: document.getElementById("name")?.value.trim() || "",
     email: document.getElementById("email")?.value.trim() || "",
     phone: cleanPhoneNumber(
       document.getElementById("phone")?.value.trim() || ""
-    ), // ✅ Limpar máscara
+    ),
     hasNewPhoto: document.getElementById("photo-input")?.files.length > 0,
   };
 }
@@ -1010,7 +997,6 @@ function validateForm() {
     errors.push("Email inválido");
   }
 
-  // 🔧 CORREÇÃO: Validar telefone limpo
   if (phone && phone.length > 0) {
     if (phone.length < 10 || phone.length > 11) {
       errors.push("Telefone deve ter 10 ou 11 dígitos");
@@ -1067,24 +1053,19 @@ window.addEventListener("storage", function (e) {
   }
 });
 
-// ============================
 // Máscara dinâmica de telefone
-// ============================
 document.addEventListener("DOMContentLoaded", () => {
   const phoneInput = document.getElementById("phone");
 
   if (phoneInput) {
     phoneInput.addEventListener("input", (e) => {
-      let value = e.target.value.replace(/\D/g, ""); // remove tudo que não for número
+      let value = e.target.value.replace(/\D/g, "");
 
-      if (value.length > 11) value = value.slice(0, 11); // limita a 11 dígitos
+      if (value.length > 11) value = value.slice(0, 11);
 
-      // Formata conforme o tamanho
       if (value.length > 10) {
-        // Celular: (99) 99999-9999
         value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
       } else if (value.length > 6) {
-        // Telefone fixo: (99) 9999-9999
         value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
       } else if (value.length > 2) {
         value = value.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
@@ -1095,7 +1076,6 @@ document.addEventListener("DOMContentLoaded", () => {
       e.target.value = value;
     });
 
-    // Evita caracteres não numéricos no input
     phoneInput.addEventListener("keypress", (e) => {
       if (!/[0-9]/.test(e.key)) e.preventDefault();
     });
@@ -1115,6 +1095,7 @@ window.editProfileFunctions = {
   forceRefreshAllProfileImages,
   cleanPhoneNumber,
   applyPhoneMask,
+  applyCpfMask,
   updateProfilePhotoDisplayFixed,
   handleSuccessfulUpdate,
   populateFormWithData,
