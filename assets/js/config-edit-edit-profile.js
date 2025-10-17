@@ -286,8 +286,15 @@ function populateFormWithData(userData) {
   }
 
   if (phoneInput) {
-    const cleanPhone = cleanPhoneNumber(userData.phone || "");
-    phoneInput.value = applyPhoneMask(cleanPhone);
+    // 🔧 CORREÇÃO: Normalizar antes de aplicar máscara
+    const normalizedPhone = normalizePhoneFromAPI(userData.phone || "");
+    phoneInput.value = applyPhoneMask(normalizedPhone);
+
+    console.log("📞 Telefone aplicado:", {
+      recebido: userData.phone,
+      normalizado: normalizedPhone,
+      comMascara: phoneInput.value,
+    });
   }
 
   if (profileImage) {
@@ -730,21 +737,52 @@ function hasUnsavedChanges() {
   const currentData = getCurrentFormData();
   const originalData = getOriginalFormData();
 
+  // 🔧 CORREÇÃO: Comparar telefones SEM máscara
+  const currentPhone = cleanPhoneNumber(currentData.phone);
+  const originalPhone = cleanPhoneNumber(originalData.phone);
+
   console.log("🔍 Verificando mudanças:", {
     current: currentData,
     original: originalData,
+    phonesClean: {
+      current: currentPhone,
+      original: originalPhone,
+      areEqual: currentPhone === originalPhone,
+    },
   });
 
   const hasChanges =
     currentData.name !== originalData.name ||
     currentData.email !== originalData.email ||
-    cleanPhoneNumber(currentData.phone) !==
-      cleanPhoneNumber(originalData.phone) ||
+    currentPhone !== originalPhone || // 🔧 Usar versões limpas
     currentData.hasNewPhoto !== originalData.hasNewPhoto;
 
   console.log("📊 Tem mudanças?", hasChanges);
 
   return hasChanges;
+}
+
+// 🔧 ADICIONAR função para normalizar telefone ao receber da API
+function normalizePhoneFromAPI(phone) {
+  if (!phone) return "";
+
+  // Remove máscara e retorna apenas dígitos
+  const cleaned = phone.replace(/\D/g, "");
+
+  console.log("📞 Normalizando telefone:", {
+    original: phone,
+    normalizado: cleaned,
+  });
+
+  return cleaned;
+}
+
+function setOriginalFormData(data) {
+  originalFormData = {
+    ...data,
+    phone: normalizePhoneFromAPI(data.phone), // 🔧 Normalizar aqui
+  };
+  console.log("📝 OriginalFormData atualizado:", originalFormData);
 }
 
 function getCurrentFormData() {
