@@ -504,6 +504,811 @@ const LevelSystem = {
   },
 };
 
+// ========== SISTEMA DE NOTIFICAÇÃO DE LEVEL UP ==========
+
+const LevelUpNotification = {
+  currentLevel: null,
+  lastCheckedDonated: 0,
+
+  // Inicializar o sistema
+  async init() {
+    try {
+      const stats = await Auth.getStats();
+      if (stats && stats.totalDonated !== undefined) {
+        const levelInfo = LevelSystem.calculateLevel(stats.totalDonated);
+        this.currentLevel = levelInfo.level;
+        this.lastCheckedDonated = stats.totalDonated;
+
+        // Salvar no localStorage
+        localStorage.setItem("userCurrentLevel", this.currentLevel);
+        localStorage.setItem("lastCheckedDonated", this.lastCheckedDonated);
+
+        console.log("🎯 Sistema de Level Up inicializado:", {
+          level: this.currentLevel,
+          donated: this.lastCheckedDonated,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Erro ao inicializar sistema de Level Up:", error);
+
+      // Tentar recuperar do localStorage
+      const savedLevel = localStorage.getItem("userCurrentLevel");
+      const savedDonated = localStorage.getItem("lastCheckedDonated");
+
+      if (savedLevel && savedDonated) {
+        this.currentLevel = parseInt(savedLevel);
+        this.lastCheckedDonated = parseInt(savedDonated);
+        console.log("⚠️ Recuperado do localStorage:", {
+          level: this.currentLevel,
+          donated: this.lastCheckedDonated,
+        });
+      }
+    }
+  },
+
+  // Verificar se houve mudança de nível
+  async checkLevelChange(newTotalDonated) {
+    if (newTotalDonated === undefined || newTotalDonated === null) {
+      return false;
+    }
+
+    const newLevelInfo = LevelSystem.calculateLevel(newTotalDonated);
+    const oldLevel = this.currentLevel;
+    const newLevel = newLevelInfo.level;
+
+    // Verificar se realmente subiu de nível
+    if (newLevel > oldLevel && oldLevel !== null) {
+      console.log("🎉 LEVEL UP detectado!", {
+        oldLevel,
+        newLevel,
+        oldDonated: this.lastCheckedDonated,
+        newDonated: newTotalDonated,
+      });
+
+      // Atualizar estado
+      this.currentLevel = newLevel;
+      this.lastCheckedDonated = newTotalDonated;
+
+      // Salvar no localStorage
+      localStorage.setItem("userCurrentLevel", newLevel);
+      localStorage.setItem("lastCheckedDonated", newTotalDonated);
+
+      // Mostrar modal de level up
+      this.showLevelUpModal(oldLevel, newLevelInfo, newTotalDonated);
+
+      return true;
+    }
+
+    // Atualizar valores mesmo sem mudança de nível
+    if (newTotalDonated !== this.lastCheckedDonated) {
+      this.lastCheckedDonated = newTotalDonated;
+      localStorage.setItem("lastCheckedDonated", newTotalDonated);
+    }
+
+    return false;
+  },
+
+  // Mostrar modal de level up
+  showLevelUpModal(oldLevel, newLevelInfo, totalDonated) {
+    // Remover modal existente se houver
+    const existingModal = document.getElementById("level-up-modal");
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    const { level, name, color, icon, progress } = newLevelInfo;
+    const nextLevel = LevelSystem.getNextLevel(level);
+    const coinsToNext = nextLevel
+      ? LevelSystem.getCoinsToNextLevel(totalDonated)
+      : 0;
+
+    const modalHTML = `
+      <div id="level-up-modal" class="level-up-modal">
+        <div class="level-up-backdrop" onclick="closeLevelUpModal()"></div>
+        <div class="level-up-content">
+          
+          <!-- Confetes animados -->
+          <div class="level-up-confetti">
+            ${this.generateConfetti(20)}
+          </div>
+          
+          <!-- Raios de luz -->
+          <div class="level-up-rays"></div>
+          
+          <!-- Ícone principal -->
+          <div class="level-up-icon-wrapper">
+            <div class="level-up-pulse-ring"></div>
+            <div class="level-up-pulse-ring delay-1"></div>
+            <div class="level-up-pulse-ring delay-2"></div>
+            <div class="level-up-icon" style="background: linear-gradient(135deg, ${color}30, ${color}50);">
+              <span style="font-size: 54px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
+                ${icon}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Título -->
+          <h1 class="level-up-title" style="
+            background: linear-gradient(135deg, ${color}, ${color}cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          ">
+            LEVEL UP!
+          </h1>
+          
+          <p class="level-up-subtitle">Você alcançou um novo nível!</p>
+          
+          <!-- Informação do nível -->
+          <div class="level-up-level-info">
+            <div class="level-up-old-level">
+              <span class="level-number">${oldLevel}</span>
+              <span class="level-label">Nível Anterior</span>
+            </div>
+            
+            <div class="level-up-arrow" style="color: ${color};">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            
+            <div class="level-up-new-level" style="border-color: ${color}50;">
+              <span class="level-number" style="color: ${color};">${level}</span>
+              <span class="level-label" style="color: ${color};">${name}</span>
+            </div>
+          </div>
+          
+          <!-- Estatísticas -->
+          <div class="level-up-stats">
+            <div class="level-up-stat">
+              <span class="stat-icon">🪙</span>
+              <span class="stat-value">${totalDonated.toLocaleString()}</span>
+              <span class="stat-label">Moedas Doadas</span>
+            </div>
+            
+            ${
+              nextLevel
+                ? `
+              <div class="level-up-stat">
+                <span class="stat-icon">🎯</span>
+                <span class="stat-value">${coinsToNext.toLocaleString()}</span>
+                <span class="stat-label">Para Próximo Nível</span>
+              </div>
+            `
+                : `
+              <div class="level-up-stat">
+                <span class="stat-icon">👑</span>
+                <span class="stat-value">MÁXIMO</span>
+                <span class="stat-label">Nível Conquistado</span>
+              </div>
+            `
+            }
+          </div>
+          
+          <!-- Barra de progresso para o próximo nível -->
+          ${
+            nextLevel
+              ? `
+            <div class="level-up-progress-section">
+              <div class="progress-label">
+                Progresso para <strong>${nextLevel.name}</strong>
+              </div>
+              <div class="level-up-progress-bar">
+                <div class="level-up-progress-fill" style="
+                  width: ${progress}%;
+                  background: linear-gradient(90deg, ${color}, ${color}dd);
+                "></div>
+              </div>
+              <div class="progress-percentage">${Math.round(progress)}%</div>
+            </div>
+          `
+              : ""
+          }
+          
+          <!-- Mensagem motivacional -->
+          <div class="level-up-message" style="background: ${color}15; border-color: ${color}30;">
+            <i class="fas fa-trophy" style="color: ${color};"></i>
+            ${this.getMotivationalMessage(level)}
+          </div>
+          
+          <!-- Botões de ação -->
+          <div class="level-up-actions">
+            <button class="level-up-share-btn" style="
+              background: linear-gradient(135deg, ${color}25, ${color}35);
+              border-color: ${color}50;
+              color: ${color};
+            " onclick="shareLevelUp(${level}, '${name}')">
+              <i class="fas fa-share-alt"></i>
+              Compartilhar
+            </button>
+            
+            <button class="level-up-continue-btn" style="
+              background: linear-gradient(135deg, ${color}, ${color}dd);
+            " onclick="closeLevelUpModal()">
+              Continuar
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    // Tocar som de celebração
+    this.playLevelUpSound();
+
+    // Adicionar estilos CSS se ainda não existirem
+    if (!document.getElementById("level-up-styles")) {
+      this.addStyles();
+    }
+
+    // Auto-fechar após 15 segundos
+    setTimeout(() => {
+      closeLevelUpModal();
+    }, 15000);
+  },
+
+  // Gerar confetes aleatórios
+  generateConfetti(count) {
+    const colors = [
+      "#FFD700",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#F7B731",
+      "#5F27CD",
+    ];
+    let confettiHTML = "";
+
+    for (let i = 0; i < count; i++) {
+      const left = Math.random() * 100;
+      const delay = Math.random() * 3;
+      const duration = 3 + Math.random() * 2;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      confettiHTML += `
+        <div class="confetti-piece" style="
+          left: ${left}%;
+          animation-delay: ${delay}s;
+          animation-duration: ${duration}s;
+          background: ${color};
+        "></div>
+      `;
+    }
+
+    return confettiHTML;
+  },
+
+  // Mensagens motivacionais por nível
+  getMotivationalMessage(level) {
+    const messages = {
+      2: "Você está apenas começando! Continue doando e fazendo a diferença! 🚀",
+      3: "Sua generosidade está crescendo! Que jornada incrível! 🎒",
+      4: "Você está ajudando muitas pessoas! Continue esse trabalho maravilhoso! 🤝",
+      5: "Sua generosidade não tem limites! Você é inspirador! ❤️",
+      6: "Um verdadeiro filantropo! Seu impacto é extraordinário! 🏆",
+      7: "Magnata da generosidade! Você está mudando vidas! 💎",
+      8: "Você é uma lenda viva! Seu legado é eterno! ⭐",
+      9: "Mítico! Poucos alcançam esse patamar de generosidade! 🔥",
+      10: "DIVINO! Você atingiu o ápice da generosidade! 👑",
+    };
+
+    return (
+      messages[level] ||
+      "Parabéns por esse marco incrível! Continue brilhando! ✨"
+    );
+  },
+
+  // Tocar som de level up
+  playLevelUpSound() {
+    try {
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+
+      // Sequência de notas para melodia de level up
+      const notes = [
+        { freq: 523.25, start: 0, duration: 0.15 }, // C5
+        { freq: 659.25, start: 0.15, duration: 0.15 }, // E5
+        { freq: 783.99, start: 0.3, duration: 0.15 }, // G5
+        { freq: 1046.5, start: 0.45, duration: 0.4 }, // C6
+      ];
+
+      notes.forEach((note) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = note.freq;
+        oscillator.type = "sine";
+
+        gainNode.gain.setValueAtTime(
+          0.3,
+          audioContext.currentTime + note.start
+        );
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + note.start + note.duration
+        );
+
+        oscillator.start(audioContext.currentTime + note.start);
+        oscillator.stop(audioContext.currentTime + note.start + note.duration);
+      });
+    } catch (error) {
+      console.log("⚠️ Não foi possível tocar som de level up");
+    }
+  },
+
+  // Adicionar estilos CSS
+  addStyles() {
+    const styles = `
+      <style id="level-up-styles">
+        .level-up-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .level-up-backdrop {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(8px);
+        }
+
+        .level-up-content {
+          position: relative;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+          border-radius: 20px;
+          padding: 24px 20px;
+          max-width: 360px;
+          width: 90%;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .level-up-confetti {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          overflow: hidden;
+          border-radius: 20px;
+        }
+
+        .confetti-piece {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          top: -10px;
+          animation: confettiFall 3s linear infinite;
+        }
+
+        .level-up-rays {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 225px;
+          height: 225px;
+          background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+          animation: rotate 20s linear infinite;
+          pointer-events: none;
+        }
+
+        .level-up-icon-wrapper {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+
+        .level-up-pulse-ring {
+          position: absolute;
+          width: 105px;
+          height: 105px;
+          border: 2px solid rgba(255, 215, 0, 0.6);
+          border-radius: 50%;
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .level-up-pulse-ring.delay-1 {
+          animation-delay: 0.3s;
+        }
+
+        .level-up-pulse-ring.delay-2 {
+          animation-delay: 0.6s;
+        }
+
+        .level-up-icon {
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid rgba(255, 255, 255, 0.2);
+          animation: bounce 1s ease infinite;
+          z-index: 1;
+        }
+
+        .level-up-title {
+          font-size: 36px;
+          font-weight: 900;
+          text-align: center;
+          margin: 0 0 8px 0;
+          letter-spacing: 1.5px;
+          text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          animation: glow 2s ease-in-out infinite;
+        }
+
+        .level-up-subtitle {
+          text-align: center;
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.7);
+          margin: 0 0 20px 0;
+        }
+
+        .level-up-level-info {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+
+        .level-up-old-level,
+        .level-up-new-level {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .level-up-new-level {
+          border: 2px solid;
+          border-radius: 12px;
+          padding: 10px 16px;
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        .level-number {
+          font-size: 28px;
+          font-weight: 900;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .level-up-new-level .level-number {
+          color: inherit;
+        }
+
+        .level-label {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .level-up-new-level .level-label {
+          color: inherit;
+        }
+
+        .level-up-arrow {
+          font-size: 20px;
+          animation: bounceHorizontal 1s ease infinite;
+        }
+
+        .level-up-stats {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .level-up-stat {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          padding: 12px 8px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .stat-icon {
+          font-size: 20px;
+        }
+
+        .stat-value {
+          font-size: 16px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .stat-label {
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.6);
+          text-align: center;
+        }
+
+        .level-up-progress-section {
+          margin-bottom: 16px;
+        }
+
+        .progress-label {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.7);
+          margin-bottom: 6px;
+          text-align: center;
+        }
+
+        .level-up-progress-bar {
+          height: 10px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          overflow: hidden;
+          margin-bottom: 6px;
+        }
+
+        .level-up-progress-fill {
+          height: 100%;
+          border-radius: 10px;
+          transition: width 1s ease;
+          box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-percentage {
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.6);
+          text-align: center;
+        }
+
+        .level-up-message {
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 12px;
+          line-height: 1.4;
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        .level-up-message i {
+          font-size: 16px;
+          flex-shrink: 0;
+        }
+
+        .level-up-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .level-up-share-btn,
+        .level-up-continue-btn {
+          flex: 1;
+          padding: 11px 18px;
+          border-radius: 10px;
+          border: 2px solid;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .level-up-share-btn {
+          background: transparent;
+        }
+
+        .level-up-continue-btn {
+          color: white;
+          border: none;
+        }
+
+        .level-up-share-btn:hover,
+        .level-up-continue-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(50px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes confettiFall {
+          to {
+            transform: translateY(100vh) rotate(360deg);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0;
+            transform: scale(1.3);
+          }
+        }
+
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
+        @keyframes bounceHorizontal {
+          0%, 100% {
+            transform: translateX(0);
+          }
+          50% {
+            transform: translateX(5px);
+          }
+        }
+
+        @keyframes rotate {
+          from {
+            transform: translate(-50%, -50%) rotate(0deg);
+          }
+          to {
+            transform: translate(-50%, -50%) rotate(360deg);
+          }
+        }
+
+        @keyframes glow {
+          0%, 100% {
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          }
+          50% {
+            text-shadow: 0 4px 20px rgba(255, 215, 0, 0.6);
+          }
+        }
+
+        .level-up-modal.closing {
+          animation: fadeOut 0.3s ease;
+        }
+
+        @keyframes fadeOut {
+          to { opacity: 0; }
+        }
+
+        @media (max-width: 480px) {
+          .level-up-content {
+            padding: 20px 16px;
+          }
+
+          .level-up-title {
+            font-size: 30px;
+          }
+
+          .level-up-stats {
+            flex-direction: column;
+          }
+
+          .level-up-actions {
+            flex-direction: column;
+          }
+        }
+      </style>
+    `;
+
+    document.head.insertAdjacentHTML("beforeend", styles);
+  },
+};
+
+// Funções globais
+function closeLevelUpModal() {
+  const modal = document.getElementById("level-up-modal");
+  if (modal) {
+    modal.classList.add("closing");
+    setTimeout(() => modal.remove(), 300);
+  }
+}
+
+function shareLevelUp(level, levelName) {
+  const message = `🎉 Acabei de alcançar o nível ${level} (${levelName}) no sistema de doações! 🏆`;
+
+  if (navigator.share) {
+    navigator
+      .share({
+        title: "Level Up!",
+        text: message,
+      })
+      .catch((err) => console.log("Erro ao compartilhar:", err));
+  } else {
+    // Copiar para clipboard
+    navigator.clipboard.writeText(message).then(() => {
+      showNotification(
+        "Mensagem copiada para área de transferência!",
+        "success"
+      );
+    });
+  }
+}
+
+// Integrar com o sistema existente
+// Modificar a função confirmDonation para verificar level up
+const originalConfirmDonation = window.confirmDonation;
+window.confirmDonation = async function (recipientId, recipientName) {
+  // Pegar total doado ANTES da doação
+  const statsBefore = await Auth.getStats();
+  const totalDonatedBefore = statsBefore?.totalDonated || 0;
+
+  // Executar doação original
+  await originalConfirmDonation(recipientId, recipientName);
+
+  // Verificar level up após 2 segundos (tempo para API processar)
+  setTimeout(async () => {
+    const statsAfter = await Auth.getStats();
+    const totalDonatedAfter = statsAfter?.totalDonated || 0;
+
+    if (totalDonatedAfter > totalDonatedBefore) {
+      await LevelUpNotification.checkLevelChange(totalDonatedAfter);
+    }
+  }, 2000);
+};
+
+// Integrar com WebSocket para doações recebidas
+if (typeof wsClient !== "undefined") {
+  wsClient.on("donation_received", async (data) => {
+    // Aguardar um pouco para garantir que stats foram atualizadas
+    setTimeout(async () => {
+      const stats = await Auth.getStats();
+      if (stats?.totalDonated) {
+        await LevelUpNotification.checkLevelChange(stats.totalDonated);
+      }
+    }, 1500);
+  });
+}
+
+// Inicializar quando a página carregar
+document.addEventListener("DOMContentLoaded", () => {
+  LevelUpNotification.init();
+});
+
+// Exportar globalmente
+window.LevelUpNotification = LevelUpNotification;
+window.closeLevelUpModal = closeLevelUpModal;
+window.shareLevelUp = shareLevelUp;
+
+console.log("✅ Sistema de notificação de Level Up carregado!");
+
 // Sistema de busca e doação - integração com API
 const UserSearchAPI = {
   baseUrl: "https://api-backend-coins.onrender.com/api",
