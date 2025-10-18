@@ -418,7 +418,7 @@ class TimelineManager {
         mainName = recipientName;
         displayActionText =
           isDonorDeleted || isRecipientDeleted
-            ? `Transação entre usuários`
+            ? `Recebeu de <i><b>Usuário excluído</i></b>`
             : `Recebeu de <b><i>${donorName}</b></i>`;
       }
     }
