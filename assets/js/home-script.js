@@ -1708,9 +1708,9 @@ function createDonationModal(user) {
           <div class="recipient-info">
             ${recipientAvatarHTML}
             <div class="recipient-details">
-              <h4>${user.name}🤑</h4>
+              <h4>${user.name}</h4>
    
-              
+              <span class="recipient-nivel" >Nível atual:</span>
               <div class="level-badge ${(user.level || "iniciante")
                 .toLowerCase()
                 .replace(" ", "-")}">${user.level || "Iniciante"}</div>
@@ -1743,7 +1743,7 @@ function createDonationModal(user) {
           </div>
           
           <div class="donation-message-section">
-            <label for="donation-message">Mensagem (opcional): 💬</label>
+            <label for="donation-message">Mensagem 💬 (opcional):</label>
             <textarea 
               id="donation-message" 
               placeholder="Escreva uma mensagem..."
@@ -1896,13 +1896,13 @@ function renderSearchResults(users) {
                 user.coins ||
                 user.balance ||
                 0
-              ).toLocaleString()} 🪙</span>
+              ).toLocaleString()}🪙</span>
               <span class="level-badge ${(user.level || "iniciante")
                 .toLowerCase()
                 .replace(" ", "-")}">${user.level || "Iniciante"}</span>
             </div>
           </div>
-          <div class="donate-icon">💸</div>
+     
         </div>
       `;
     })

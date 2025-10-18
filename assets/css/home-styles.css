@@ -1216,6 +1216,15 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.recipient-nivel {
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 400;
+  margin: 0 0 6px 0;
+  display: flex;
+  justify-content: center;
+}
+
 .recipient-details .username {
   color: rgba(0, 212, 255, 0.9);
   font-size: 15px;
