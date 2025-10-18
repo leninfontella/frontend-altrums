@@ -738,7 +738,7 @@ const LevelUpNotification = {
                 ? `
               <div class="global-level-up-stat-divider"></div>
               <div class="global-level-up-stat">
-                <div class="global-level-up-stat-label">Próximo Nível</div>
+                <div class="global-level-up-stat-label">Doe mais</div>
                 <div class="global-level-up-stat-value">${coinsToNext.toLocaleString()}</div>
               </div>
             `
