@@ -603,126 +603,198 @@ const LevelUpNotification = {
       : 0;
 
     const modalHTML = `
-      <div id="level-up-modal" class="level-up-modal">
-        <div class="level-up-backdrop" onclick="closeLevelUpModal()"></div>
-        <div class="level-up-content">
+      <div id="level-up-modal" class="global-level-up-modal">
+        <div class="global-level-up-backdrop" onclick="closeLevelUpModal()"></div>
+        <div class="global-level-up-content" style="
+          border-color: ${color}80;
+          box-shadow: 
+            0 50px 150px ${color}70,
+            0 25px 80px rgba(0, 0, 0, 0.9),
+            0 0 0 1px ${color}50,
+            inset 0 3px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.6);
+        ">
+          
+          <!-- Borda animada superior -->
+          <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              ${color},
+              ${color}dd,
+              ${color},
+              transparent
+            );
+            background-size: 200% 100%;
+            animation: globalLevelUpBorderShimmer 3s linear infinite;
+          "></div>
           
           <!-- Confetes animados -->
-          <div class="level-up-confetti">
-            ${this.generateConfetti(20)}
+          <div class="global-level-up-confetti">
+            ${this.generateConfetti(10, color)}
           </div>
           
-          <!-- Raios de luz -->
-          <div class="level-up-rays"></div>
-          
-          <!-- Ícone principal -->
-          <div class="level-up-icon-wrapper">
-            <div class="level-up-pulse-ring"></div>
-            <div class="level-up-pulse-ring delay-1"></div>
-            <div class="level-up-pulse-ring delay-2"></div>
-            <div class="level-up-icon" style="background: linear-gradient(135deg, ${color}30, ${color}50);">
-              <span style="font-size: 54px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
-                ${icon}
-              </span>
+          <!-- Container do ícone principal -->
+          <div class="global-level-up-icon-container">
+            <div class="global-level-up-glow" style="
+              background: radial-gradient(
+                circle,
+                ${color}60 0%,
+                ${color}40 50%,
+                transparent 100%
+              );
+            "></div>
+            <div class="global-level-up-icon" style="
+              background: linear-gradient(135deg, ${color}50, ${color}30);
+              border-color: ${color}80;
+              box-shadow: 
+                0 20px 60px ${color}80,
+                inset 0 3px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.4);
+            ">
+              ${icon}
             </div>
           </div>
           
           <!-- Título -->
-          <h1 class="level-up-title" style="
-            background: linear-gradient(135deg, ${color}, ${color}cc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          ">
-            LEVEL UP!
-          </h1>
+          <div class="global-level-up-title">
+            <span class="global-level-up-title-line">PARABÉNS!</span>
+            <span class="global-level-up-title-line">Você subiu de nível</span>
+          </div>
           
-          <p class="level-up-subtitle">Você alcançou um novo nível!</p>
-          
-          <!-- Informação do nível -->
-          <div class="level-up-level-info">
-            <div class="level-up-old-level">
-              <span class="level-number">${oldLevel}</span>
-              <span class="level-label">Nível Anterior</span>
-            </div>
-            
-            <div class="level-up-arrow" style="color: ${color};">
-              <i class="fas fa-arrow-right"></i>
-            </div>
-            
-            <div class="level-up-new-level" style="border-color: ${color}50;">
-              <span class="level-number" style="color: ${color};">${level}</span>
-              <span class="level-label" style="color: ${color};">${name}</span>
+          <!-- Badge do novo nível -->
+          <div class="global-level-up-badge">
+            <div class="global-level-up-badge-icon" style="
+              background: linear-gradient(135deg, ${color}, ${color}cc);
+              border-color: ${color}90;
+              box-shadow: 
+                0 15px 50px ${color}90,
+                inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+            ">
+              ${icon}
+              <div style="
+                position: absolute;
+                top: -5px;
+                left: -5px;
+                right: -5px;
+                bottom: -5px;
+                border-radius: 20px;
+                background: linear-gradient(135deg, ${color}80, ${color}60);
+                animation: globalLevelUpBadgeGlow 2s ease-in-out infinite;
+                z-index: -1;
+              "></div>
             </div>
           </div>
           
+          <!-- Nome do nível -->
+          <div class="global-level-up-name" style="
+            color: ${color};
+            text-shadow: 
+              0 0 20px ${color}cc,
+              0 3px 10px ${color}99;
+          ">
+            Nível ${level} - ${name}
+          </div>
+          
+          <!-- Descrição -->
+          <div class="global-level-up-description">
+            ${this.getMotivationalMessage(level)}
+          </div>
+          
+          <!-- Linha divisória -->
+          <div class="global-level-up-divider" style="
+            background: linear-gradient(90deg, transparent, ${color}60, transparent);
+          "></div>
+          
           <!-- Estatísticas -->
-          <div class="level-up-stats">
-            <div class="level-up-stat">
-              <span class="stat-icon">🪙</span>
-              <span class="stat-value">${totalDonated.toLocaleString()}</span>
-              <span class="stat-label">Moedas Doadas</span>
+          <div class="global-level-up-stats" style="
+            background: linear-gradient(135deg, ${color}15, ${color}10);
+            border-color: ${color}40;
+            box-shadow: 
+              0 10px 40px ${color}30,
+              inset 0 2px 0 rgba(255, 255, 255, 0.15),
+              inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+          ">
+            <div class="global-level-up-stat">
+              <div class="global-level-up-stat-label">Nível Anterior</div>
+              <div class="global-level-up-stat-value">${oldLevel}</div>
+            </div>
+            
+            <div class="global-level-up-stat-divider"></div>
+            
+            <div class="global-level-up-stat">
+              <div class="global-level-up-stat-label">Moedas Doadas</div>
+              <div class="global-level-up-stat-value">${totalDonated.toLocaleString()}</div>
             </div>
             
             ${
               nextLevel
                 ? `
-              <div class="level-up-stat">
-                <span class="stat-icon">🎯</span>
-                <span class="stat-value">${coinsToNext.toLocaleString()}</span>
-                <span class="stat-label">Para Próximo Nível</span>
+              <div class="global-level-up-stat-divider"></div>
+              <div class="global-level-up-stat">
+                <div class="global-level-up-stat-label">Próximo Nível</div>
+                <div class="global-level-up-stat-value">${coinsToNext.toLocaleString()}</div>
               </div>
             `
-                : `
-              <div class="level-up-stat">
-                <span class="stat-icon">👑</span>
-                <span class="stat-value">MÁXIMO</span>
-                <span class="stat-label">Nível Conquistado</span>
-              </div>
-            `
+                : ""
             }
           </div>
           
-          <!-- Barra de progresso para o próximo nível -->
-          ${
-            nextLevel
-              ? `
-            <div class="level-up-progress-section">
-              <div class="progress-label">
-                Progresso para <strong>${nextLevel.name}</strong>
-              </div>
-              <div class="level-up-progress-bar">
-                <div class="level-up-progress-fill" style="
-                  width: ${progress}%;
-                  background: linear-gradient(90deg, ${color}, ${color}dd);
-                "></div>
-              </div>
-              <div class="progress-percentage">${Math.round(progress)}%</div>
-            </div>
-          `
-              : ""
-          }
-          
-          <!-- Mensagem motivacional -->
-          <div class="level-up-message" style="background: ${color}15; border-color: ${color}30;">
-            <i class="fas fa-trophy" style="color: ${color};"></i>
-            ${this.getMotivationalMessage(level)}
-          </div>
-          
           <!-- Botões de ação -->
-          <div class="level-up-actions">
-            <button class="level-up-share-btn" style="
-              background: linear-gradient(135deg, ${color}25, ${color}35);
-              border-color: ${color}50;
-              color: ${color};
-            " onclick="shareLevelUp(${level}, '${name}')">
+          <div style="
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+          ">
+            <button class="global-level-up-share" onclick="shareLevelUp(${level}, '${name}')" style="
+              flex: 1;
+              background: linear-gradient(135deg, ${color}30, ${color}20);
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
+              border: 2px solid ${color}60;
+              border-radius: 15px;
+              padding: 14px 20px;
+              color: #ffffff;
+              font-size: 13px;
+              font-weight: 700;
+              cursor: pointer;
+              transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              box-shadow: 
+                0 8px 30px ${color}40,
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+              position: relative;
+              overflow: hidden;
+              text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+              letter-spacing: 0.03em;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              height: 48px;
+              min-width: 0;
+            ">
               <i class="fas fa-share-alt"></i>
               Compartilhar
             </button>
             
-            <button class="level-up-continue-btn" style="
-              background: linear-gradient(135deg, ${color}, ${color}dd);
-            " onclick="closeLevelUpModal()">
+            <button class="global-level-up-close" onclick="closeLevelUpModal()" style="
+              flex: 1;
+              background: linear-gradient(135deg, ${color}50, ${color}30);
+              border-color: ${color}80;
+              box-shadow: 
+                0 8px 30px ${color}60,
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+              height: 48px;
+              min-width: 0;
+            ">
               Continuar
               <i class="fas fa-arrow-right"></i>
             </button>
@@ -748,29 +820,18 @@ const LevelUpNotification = {
   },
 
   // Gerar confetes aleatórios
-  generateConfetti(count) {
-    const colors = [
-      "#FFD700",
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#F7B731",
-      "#5F27CD",
-    ];
+  generateConfetti(count, levelColor) {
     let confettiHTML = "";
 
     for (let i = 0; i < count; i++) {
-      const left = Math.random() * 100;
-      const delay = Math.random() * 3;
-      const duration = 3 + Math.random() * 2;
-      const color = colors[Math.floor(Math.random() * colors.length)];
+      const left = (i + 1) * (100 / (count + 1));
+      const delay = Math.random() * 0.5;
 
       confettiHTML += `
-        <div class="confetti-piece" style="
+        <div class="global-confetti-particle" style="
           left: ${left}%;
-          animation-delay: ${delay}s;
-          animation-duration: ${duration}s;
-          background: ${color};
+          background: linear-gradient(135deg, ${levelColor}, ${levelColor}cc);
+          animation: globalLevelUpConfettiFall 3s ease-in-out ${delay}s;
         "></div>
       `;
     }
@@ -781,20 +842,20 @@ const LevelUpNotification = {
   // Mensagens motivacionais por nível
   getMotivationalMessage(level) {
     const messages = {
-      2: "Você está apenas começando! Continue doando e fazendo a diferença! 🚀",
-      3: "Sua generosidade está crescendo! Que jornada incrível! 🎒",
-      4: "Você está ajudando muitas pessoas! Continue esse trabalho maravilhoso! 🤝",
-      5: "Sua generosidade não tem limites! Você é inspirador! ❤️",
-      6: "Um verdadeiro filantropo! Seu impacto é extraordinário! 🏆",
-      7: "Magnata da generosidade! Você está mudando vidas! 💎",
-      8: "Você é uma lenda viva! Seu legado é eterno! ⭐",
-      9: "Mítico! Poucos alcançam esse patamar de generosidade! 🔥",
-      10: "DIVINO! Você atingiu o ápice da generosidade! 👑",
+      2: "Você está apenas <strong>começando</strong>! Continue doando e fazendo a diferença! 🚀",
+      3: "Sua <strong>generosidade</strong> está crescendo! Que jornada incrível! 🎒",
+      4: "Você está <strong>ajudando</strong> muitas pessoas! Continue esse trabalho maravilhoso! 🤝",
+      5: "Sua generosidade <strong>não tem limites</strong>! Você é inspirador! ❤️",
+      6: "Um verdadeiro <strong>filantropo</strong>! Seu impacto é extraordinário! 🏆",
+      7: "<strong>Magnata</strong> da generosidade! Você está mudando vidas! 💎",
+      8: "Você é uma <strong>lenda viva</strong>! Seu legado é eterno! ⭐",
+      9: "<strong>Mítico</strong>! Poucos alcançam esse patamar de generosidade! 🔥",
+      10: "<strong>DIVINO</strong>! Você atingiu o ápice da generosidade! 👑",
     };
 
     return (
       messages[level] ||
-      "Parabéns por esse marco incrível! Continue brilhando! ✨"
+      "Parabéns por esse <strong>marco incrível</strong>! Continue brilhando! ✨"
     );
   },
 
@@ -843,386 +904,512 @@ const LevelUpNotification = {
   addStyles() {
     const styles = `
       <style id="level-up-styles">
-        .level-up-modal {
+        .global-level-up-modal {
           position: fixed;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          z-index: 10000;
+          z-index: 10003;
           display: flex;
           align-items: center;
           justify-content: center;
-          animation: fadeIn 0.3s ease;
+          animation: globalLevelUpModalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .level-up-backdrop {
+        .global-level-up-backdrop {
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(8px);
+          background: rgba(0, 0, 0, 0.95);
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
         }
 
-        .level-up-content {
+        .global-level-up-content {
           position: relative;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-          border-radius: 20px;
-          padding: 24px 20px;
-          max-width: 360px;
-          width: 90%;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          background: linear-gradient(
+            145deg,
+            rgba(30, 30, 30, 0.98) 0%,
+            rgba(20, 20, 20, 0.98) 50%,
+            rgba(15, 15, 15, 0.98) 100%
+          );
+          backdrop-filter: blur(50px);
+          -webkit-backdrop-filter: blur(50px);
+          border: 3px solid;
+          border-radius: 24px;
+          width: 67.5%;
+          max-width: 315px;
+          padding: 36px 27px;
+          text-align: center;
+          animation: globalLevelUpContentSlideScale 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          overflow: hidden;
         }
 
-        .level-up-confetti {
+        .global-level-up-confetti {
           position: absolute;
-          top: 0;
-          left: 0;
           width: 100%;
           height: 100%;
+          top: 0;
+          left: 0;
           pointer-events: none;
           overflow: hidden;
-          border-radius: 20px;
         }
 
-        .confetti-piece {
+        .global-confetti-particle {
           position: absolute;
           width: 10px;
           height: 10px;
-          top: -10px;
-          animation: confettiFall 3s linear infinite;
+          border-radius: 50%;
+          opacity: 0;
         }
 
-        .level-up-rays {
+        .global-level-up-icon-container {
+          position: relative;
+          width: 75px;
+          height: 75px;
+          margin: 0 auto 21px;
+        }
+
+        .global-level-up-icon {
+          width: 75px;
+          height: 75px;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 39px;
+          border: 3px solid;
+          animation: globalLevelUpIconBounce 2s ease-in-out infinite;
+          position: relative;
+          z-index: 2;
+        }
+
+        .global-level-up-glow {
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 225px;
-          height: 225px;
-          background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-          animation: rotate 20s linear infinite;
-          pointer-events: none;
-        }
-
-        .level-up-icon-wrapper {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          margin-bottom: 16px;
-        }
-
-        .level-up-pulse-ring {
-          position: absolute;
           width: 105px;
           height: 105px;
-          border: 2px solid rgba(255, 215, 0, 0.6);
           border-radius: 50%;
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .level-up-pulse-ring.delay-1 {
-          animation-delay: 0.3s;
-        }
-
-        .level-up-pulse-ring.delay-2 {
-          animation-delay: 0.6s;
-        }
-
-        .level-up-icon {
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 3px solid rgba(255, 255, 255, 0.2);
-          animation: bounce 1s ease infinite;
+          animation: globalLevelUpGlowPulse 2s ease-in-out infinite;
           z-index: 1;
         }
 
-        .level-up-title {
-          font-size: 36px;
+        .global-level-up-title {
+          color: #ffffff;
+          font-size: 21px;
           font-weight: 900;
-          text-align: center;
-          margin: 0 0 8px 0;
-          letter-spacing: 1.5px;
-          text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-          animation: glow 2s ease-in-out infinite;
+          margin-bottom: 18px;
+          text-shadow: 
+            0 3px 10px rgba(0, 0, 0, 0.7),
+            0 5px 20px rgba(0, 0, 0, 0.6);
+          line-height: 1.3;
+          letter-spacing: -0.02em;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
         }
 
-        .level-up-subtitle {
-          text-align: center;
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.7);
-          margin: 0 0 20px 0;
+        .global-level-up-title-line {
+          display: block;
+          animation: globalLevelUpTitleSlide 0.8s ease-out;
         }
 
-        .level-up-level-info {
+        .global-level-up-title-line:nth-child(2) {
+          animation-delay: 0.1s;
+        }
+
+        .global-level-up-badge {
+          width: 68px;
+          height: 68px;
+          margin: 0 auto 15px;
+          position: relative;
+          animation: globalLevelUpBadgeRotate 4s linear infinite;
+        }
+
+        .global-level-up-badge-icon {
+          width: 68px;
+          height: 68px;
+          border-radius: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 16px;
-          margin-bottom: 20px;
+          font-size: 36px;
+          border: 2px solid;
+          position: relative;
         }
 
-        .level-up-old-level,
-        .level-up-new-level {
+        .global-level-up-name {
+          font-size: 24px;
+          font-weight: 900;
+          margin-bottom: 9px;
+          letter-spacing: -0.02em;
+          animation: globalLevelUpNamePulse 1.5s ease-in-out infinite;
+        }
+
+        .global-level-up-description {
+          color: rgba(255, 255, 255, 0.85);
+          font-size: 12px;
+          font-weight: 600;
+          margin-bottom: 21px;
+          line-height: 1.5;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .global-level-up-description strong {
+          color: #fff;
+          font-weight: 800;
+        }
+
+        .global-level-up-divider {
+          width: 100%;
+          height: 2px;
+          margin-bottom: 18px;
+        }
+
+        .global-level-up-stats {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 24px;
+          padding: 15px;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: 15px;
+          border: 2px solid;
+        }
+
+        .global-level-up-stat {
+          flex: 1;
           display: flex;
           flex-direction: column;
+          gap: 6px;
+        }
+
+        .global-level-up-stat-label {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .global-level-up-stat-value {
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 800;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .global-level-up-stat-divider {
+          width: 2px;
+          height: 30px;
+          background: linear-gradient(
+            180deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+          );
+        }
+
+        .global-level-up-share {
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 2px solid;
+          border-radius: 15px;
+          padding: 14px 20px;
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+          letter-spacing: 0.03em;
+          display: flex;
           align-items: center;
+          justify-content: center;
           gap: 8px;
         }
 
-        .level-up-new-level {
-          border: 2px solid;
-          border-radius: 12px;
-          padding: 10px 16px;
-          background: rgba(255, 255, 255, 0.05);
-        }
-
-        .level-number {
-          font-size: 28px;
-          font-weight: 900;
-          color: rgba(255, 255, 255, 0.5);
-        }
-
-        .level-up-new-level .level-number {
-          color: inherit;
-        }
-
-        .level-label {
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.5);
-        }
-
-        .level-up-new-level .level-label {
-          color: inherit;
-        }
-
-        .level-up-arrow {
-          font-size: 20px;
-          animation: bounceHorizontal 1s ease infinite;
-        }
-
-        .level-up-stats {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-
-        .level-up-stat {
-          flex: 1;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-          padding: 12px 8px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .stat-icon {
-          font-size: 20px;
-        }
-
-        .stat-value {
-          font-size: 16px;
-          font-weight: 700;
-          color: #fff;
-        }
-
-        .stat-label {
-          font-size: 10px;
-          color: rgba(255, 255, 255, 0.6);
-          text-align: center;
-        }
-
-        .level-up-progress-section {
-          margin-bottom: 16px;
-        }
-
-        .progress-label {
-          font-size: 11px;
-          color: rgba(255, 255, 255, 0.7);
-          margin-bottom: 6px;
-          text-align: center;
-        }
-
-        .level-up-progress-bar {
-          height: 10px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-          overflow: hidden;
-          margin-bottom: 6px;
-        }
-
-        .level-up-progress-fill {
+        .global-level-up-share::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
           height: 100%;
-          border-radius: 10px;
-          transition: width 1s ease;
-          box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+          );
+          transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .progress-percentage {
-          font-size: 10px;
-          color: rgba(255, 255, 255, 0.6);
-          text-align: center;
+        .global-level-up-share:hover {
+          transform: translateY(-3px) scale(1.02);
         }
 
-        .level-up-message {
-          padding: 12px;
-          border-radius: 10px;
-          border: 1px solid;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
+        .global-level-up-share:hover::before {
+          left: 100%;
+        }
+
+        .global-level-up-share:active {
+          transform: translateY(-1px) scale(1.01);
+        }
+
+        .global-level-up-share i {
           font-size: 12px;
-          line-height: 1.4;
-          color: rgba(255, 255, 255, 0.9);
+          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .level-up-message i {
-          font-size: 16px;
-          flex-shrink: 0;
+        .global-level-up-share:hover i {
+          transform: scale(1.2) rotate(15deg);
         }
 
-        .level-up-actions {
-          display: flex;
-          gap: 10px;
-        }
-
-        .level-up-share-btn,
-        .level-up-continue-btn {
-          flex: 1;
-          padding: 11px 18px;
-          border-radius: 10px;
+        .global-level-up-close {
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border: 2px solid;
+          border-radius: 15px;
+          padding: 14px 20px;
+          color: #ffffff;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+          letter-spacing: 0.03em;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 9px;
+          height: 48px;
         }
 
-        .level-up-share-btn {
-          background: transparent;
+        .global-level-up-close::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent
+          );
+          transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .level-up-continue-btn {
-          color: white;
-          border: none;
+        .global-level-up-close:hover {
+          transform: translateY(-3px) scale(1.02);
         }
 
-        .level-up-share-btn:hover,
-        .level-up-continue-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        .global-level-up-close:hover::before {
+          left: 100%;
         }
 
-        @keyframes fadeIn {
+        .global-level-up-close:active {
+          transform: translateY(-1px) scale(1.01);
+        }
+
+        .global-level-up-close i {
+          font-size: 12px;
+          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .global-level-up-close:hover i {
+          transform: translateX(5px);
+        }
+
+        @keyframes globalLevelUpModalFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
 
-        @keyframes slideUp {
-          from {
-            transform: translateY(50px);
+        @keyframes globalLevelUpContentSlideScale {
+          0% {
             opacity: 0;
+            transform: translateY(80px) scale(0.8);
           }
-          to {
-            transform: translateY(0);
+          60% {
+            transform: translateY(-12px) scale(1.03);
+          }
+          100% {
             opacity: 1;
+            transform: translateY(0) scale(1);
           }
         }
 
-        @keyframes confettiFall {
-          to {
-            transform: translateY(100vh) rotate(360deg);
+        @keyframes globalLevelUpBorderShimmer {
+          0% { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+
+        @keyframes globalLevelUpConfettiFall {
+          0% {
+            top: -10%;
+            opacity: 1;
+            transform: translateX(0) rotate(0deg) scale(1);
+          }
+          100% {
+            top: 110%;
+            opacity: 0;
+            transform: translateX(80px) rotate(720deg) scale(0.3);
           }
         }
 
-        @keyframes pulse {
+        @keyframes globalLevelUpIconBounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-12px) scale(1.08); }
+        }
+
+        @keyframes globalLevelUpGlowPulse {
           0%, 100% {
+            opacity: 0.5;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
             opacity: 1;
+            transform: translate(-50%, -50%) scale(1.15);
+          }
+        }
+
+        @keyframes globalLevelUpTitleSlide {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes globalLevelUpBadgeRotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes globalLevelUpBadgeGlow {
+          0%, 100% {
+            opacity: 0.5;
             transform: scale(1);
           }
           50% {
-            opacity: 0;
-            transform: scale(1.3);
+            opacity: 1;
+            transform: scale(1.12);
           }
         }
 
-        @keyframes bounce {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
+        @keyframes globalLevelUpNamePulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
         }
 
-        @keyframes bounceHorizontal {
-          0%, 100% {
-            transform: translateX(0);
-          }
-          50% {
-            transform: translateX(5px);
-          }
+        .global-level-up-modal.closing {
+          animation: globalLevelUpModalFadeOut 0.4s ease-in;
         }
 
-        @keyframes rotate {
-          from {
-            transform: translate(-50%, -50%) rotate(0deg);
-          }
-          to {
-            transform: translate(-50%, -50%) rotate(360deg);
-          }
+        .global-level-up-modal.closing .global-level-up-content {
+          animation: globalLevelUpContentSlideOut 0.4s ease-in;
         }
 
-        @keyframes glow {
-          0%, 100% {
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-          }
-          50% {
-            text-shadow: 0 4px 20px rgba(255, 215, 0, 0.6);
-          }
-        }
-
-        .level-up-modal.closing {
-          animation: fadeOut 0.3s ease;
-        }
-
-        @keyframes fadeOut {
+        @keyframes globalLevelUpModalFadeOut {
+          from { opacity: 1; }
           to { opacity: 0; }
         }
 
+        @keyframes globalLevelUpContentSlideOut {
+          from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(50px) scale(0.85);
+          }
+        }
+
         @media (max-width: 480px) {
-          .level-up-content {
-            padding: 20px 16px;
+          .global-level-up-content {
+            width: 71%;
+            padding: 30px 21px;
           }
 
-          .level-up-title {
-            font-size: 30px;
+          .global-level-up-icon-container {
+            width: 64px;
+            height: 64px;
           }
 
-          .level-up-stats {
+          .global-level-up-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 33px;
+          }
+
+          .global-level-up-glow {
+            width: 90px;
+            height: 90px;
+          }
+
+          .global-level-up-title {
+            font-size: 18px;
+          }
+
+          .global-level-up-badge {
+            width: 60px;
+            height: 60px;
+          }
+
+          .global-level-up-badge-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 32px;
+          }
+
+          .global-level-up-name {
+            font-size: 21px;
+          }
+
+          .global-level-up-description {
+            font-size: 11px;
+          }
+
+          .global-level-up-stats {
             flex-direction: column;
+            gap: 9px;
+            padding: 12px;
           }
 
-          .level-up-actions {
+          .global-level-up-stat-divider {
+            width: 60%;
+            height: 2px;
+          }
+
+          .global-level-up-share {
             flex-direction: column;
+            padding: 12px 20px;
+          }
+
+          .global-level-up-close {
+            padding: 12px 27px;
+            font-size: 12px;
           }
         }
       </style>
@@ -1237,7 +1424,7 @@ function closeLevelUpModal() {
   const modal = document.getElementById("level-up-modal");
   if (modal) {
     modal.classList.add("closing");
-    setTimeout(() => modal.remove(), 300);
+    setTimeout(() => modal.remove(), 400);
   }
 }
 
@@ -1252,7 +1439,6 @@ function shareLevelUp(level, levelName) {
       })
       .catch((err) => console.log("Erro ao compartilhar:", err));
   } else {
-    // Copiar para clipboard
     navigator.clipboard.writeText(message).then(() => {
       showNotification(
         "Mensagem copiada para área de transferência!",
@@ -1263,17 +1449,13 @@ function shareLevelUp(level, levelName) {
 }
 
 // Integrar com o sistema existente
-// Modificar a função confirmDonation para verificar level up
 const originalConfirmDonation = window.confirmDonation;
 window.confirmDonation = async function (recipientId, recipientName) {
-  // Pegar total doado ANTES da doação
   const statsBefore = await Auth.getStats();
   const totalDonatedBefore = statsBefore?.totalDonated || 0;
 
-  // Executar doação original
   await originalConfirmDonation(recipientId, recipientName);
 
-  // Verificar level up após 2 segundos (tempo para API processar)
   setTimeout(async () => {
     const statsAfter = await Auth.getStats();
     const totalDonatedAfter = statsAfter?.totalDonated || 0;
@@ -1292,7 +1474,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     if (typeof wsClient !== "undefined" && wsClient) {
       wsClient.on("donation_received", async (data) => {
-        // Aguardar um pouco para garantir que stats foram atualizadas
         setTimeout(async () => {
           const stats = await Auth.getStats();
           if (stats?.totalDonated) {
