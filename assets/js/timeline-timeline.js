@@ -393,12 +393,12 @@ class TimelineManager {
       mainName = recipientName;
       displayActionText = isRecipientDeleted
         ? `Enviou para <i><b>${recipientName}</b></i>`
-        : `Recebeu de <i><b>${donorName}</b></i> (você)`;
+        : `Recebeu de você!`;
     } else if (currentFilter === "received") {
       mainName = donorName;
       displayActionText = isDonorDeleted
         ? `Recebeu de <i><b>${donorName}</b></i>`
-        : `Enviou para <i><b>${recipientName}</b></i> (você)`;
+        : `Enviou para você!`;
     } else {
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
       const isReceived =
