@@ -1284,22 +1284,25 @@ window.confirmDonation = async function (recipientId, recipientName) {
   }, 2000);
 };
 
-// Integrar com WebSocket para doações recebidas
-if (typeof wsClient !== "undefined") {
-  wsClient.on("donation_received", async (data) => {
-    // Aguardar um pouco para garantir que stats foram atualizadas
-    setTimeout(async () => {
-      const stats = await Auth.getStats();
-      if (stats?.totalDonated) {
-        await LevelUpNotification.checkLevelChange(stats.totalDonated);
-      }
-    }, 1500);
-  });
-}
-
 // Inicializar quando a página carregar
 document.addEventListener("DOMContentLoaded", () => {
   LevelUpNotification.init();
+
+  // Integrar com WebSocket para doações recebidas (após inicialização)
+  setTimeout(() => {
+    if (typeof wsClient !== "undefined" && wsClient) {
+      wsClient.on("donation_received", async (data) => {
+        // Aguardar um pouco para garantir que stats foram atualizadas
+        setTimeout(async () => {
+          const stats = await Auth.getStats();
+          if (stats?.totalDonated) {
+            await LevelUpNotification.checkLevelChange(stats.totalDonated);
+          }
+        }, 1500);
+      });
+      console.log("✅ WebSocket integrado com Level Up System");
+    }
+  }, 1000);
 });
 
 // Exportar globalmente
