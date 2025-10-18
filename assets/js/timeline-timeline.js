@@ -348,6 +348,7 @@ class TimelineManager {
     });
   }
 
+  //Corrigida:
   static createTimelineItem(donation, index) {
     const item = document.createElement("div");
     item.className = "timeline-item";
@@ -364,26 +365,40 @@ class TimelineManager {
 
     const timeAgo = this.getTimeAgo(donation.createdAt);
 
-    // Obter nomes do receptor e doador
-    const recipientName =
-      donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
-    const donorName =
-      donation.donorInfo?.name || donation.donor?.name || "Usuário";
+    // 🔧 CORREÇÃO: Verificar se usuários foram excluídos
+    const isDonorDeleted =
+      donation.donorDeleted ||
+      donation.donor?._id === "deleted" ||
+      !donation.donor;
 
-    // 🔧 CORREÇÃO: Determinar nome principal e secundário baseado no filtro
+    const isRecipientDeleted =
+      donation.recipientDeleted ||
+      donation.recipient?._id === "deleted" ||
+      !donation.recipient;
+
+    // Obter nomes com fallback para usuários excluídos
+    const recipientName = isRecipientDeleted
+      ? "Usuário Excluído"
+      : donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
+
+    const donorName = isDonorDeleted
+      ? "Usuário Excluído"
+      : donation.donorInfo?.name || donation.donor?.name || "Usuário";
+
+    // Determinar nome principal e texto da ação
     let mainName = userData.name;
     let displayActionText = actionText;
 
     if (currentFilter === "sent") {
-      // 🔧 NOVO: Mostrar "Nome do Usuário (você)" ao invés de só "Você"
-      const userName = currentUser?.name || "Você";
-      mainName = `${recipientName}`;
-      displayActionText = `Recebeu de <i><b>${donorName} </i></b> (você)`;
+      mainName = recipientName;
+      displayActionText = isRecipientDeleted
+        ? `Enviou para <i><b>${recipientName}</b></i>`
+        : `Recebeu de <i><b>${donorName}</b></i> (você)`;
     } else if (currentFilter === "received") {
-      // 🔧 NOVO: Mostrar "Nome do Usuário (você)" ao invés de só "Você"
-      const userName = currentUser?.name || "Você";
-      mainName = `${donorName}`;
-      displayActionText = `Enviou para <i><b>${recipientName}</b></i> (você)`;
+      mainName = donorName;
+      displayActionText = isDonorDeleted
+        ? `Recebeu de <i><b>${donorName}</b></i>`
+        : `Enviou para <i><b>${recipientName}</b></i> (você)`;
     } else {
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
       const isReceived =
@@ -391,51 +406,77 @@ class TimelineManager {
 
       if (isSent) {
         mainName = recipientName;
-        displayActionText = `Recebeu de ${currentUser?.name || "Você"}`;
+        displayActionText = isRecipientDeleted
+          ? `Enviou para <i><b>${recipientName}</b></i>`
+          : `Recebeu de ${currentUser?.name || "Você"}`;
       } else if (isReceived) {
         mainName = donorName;
-        displayActionText = `Enviou para ${currentUser?.name || "Você"}`;
+        displayActionText = isDonorDeleted
+          ? `Recebeu de <i><b>${donorName}</b></i>`
+          : `Enviou para ${currentUser?.name || "Você"}`;
       } else {
         mainName = recipientName;
-        displayActionText = `Recebeu de <b><i>${donorName}</b></i>`;
+        displayActionText =
+          isDonorDeleted || isRecipientDeleted
+            ? `Transação entre usuários`
+            : `Recebeu de <b><i>${donorName}</b></i>`;
       }
     }
 
-    // 🔧 CORREÇÃO: Obter profilePhotoUrl baseado no filtro e tipo de transação
+    // Obter profilePhotoUrl
     let profilePhotoUrl = null;
 
     if (currentFilter === "sent") {
-      // No filtro "sent", mostrar foto do RECEPTOR (para quem você enviou)
-      profilePhotoUrl =
-        donation.recipientInfo?.profilePhotoUrl ||
-        donation.recipient?.profilePhotoUrl;
+      profilePhotoUrl = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl;
     } else if (currentFilter === "received") {
-      // No filtro "received", mostrar foto do DOADOR (quem enviou para você)
-      profilePhotoUrl =
-        donation.donorInfo?.profilePhotoUrl || donation.donor?.profilePhotoUrl;
+      profilePhotoUrl = isDonorDeleted
+        ? null
+        : donation.donorInfo?.profilePhotoUrl ||
+          donation.donor?.profilePhotoUrl;
     } else {
-      // No filtro "all", determinar baseado em quem é o usuário logado
       const isSent = donation.donor && donation.donor._id === currentUser?.id;
       const isReceived =
         donation.recipient && donation.recipient._id === currentUser?.id;
 
       if (isSent) {
-        // Você enviou, mostrar foto do receptor
-        profilePhotoUrl =
-          donation.recipientInfo?.profilePhotoUrl ||
-          donation.recipient?.profilePhotoUrl;
+        profilePhotoUrl = isRecipientDeleted
+          ? null
+          : donation.recipientInfo?.profilePhotoUrl ||
+            donation.recipient?.profilePhotoUrl;
       } else if (isReceived) {
-        // Você recebeu, mostrar foto do doador
-        profilePhotoUrl =
-          donation.donorInfo?.profilePhotoUrl ||
-          donation.donor?.profilePhotoUrl;
+        profilePhotoUrl = isDonorDeleted
+          ? null
+          : donation.donorInfo?.profilePhotoUrl ||
+            donation.donor?.profilePhotoUrl;
       } else {
-        // Transação entre outros usuários, mostrar receptor
-        profilePhotoUrl =
-          donation.recipientInfo?.profilePhotoUrl ||
-          donation.recipient?.profilePhotoUrl;
+        profilePhotoUrl = isRecipientDeleted
+          ? null
+          : donation.recipientInfo?.profilePhotoUrl ||
+            donation.recipient?.profilePhotoUrl;
       }
     }
+
+    // 🆕 Badge especial para usuários excluídos
+    const deletedBadge = userData.isDeleted
+      ? `<span class="deleted-user-badge" style="
+         display: inline-flex;
+         align-items: center;
+         gap: 4px;
+         padding: 2px 8px;
+         background: rgba(239, 68, 68, 0.1);
+         border: 1px solid rgba(239, 68, 68, 0.3);
+         border-radius: 12px;
+         font-size: 11px;
+         color: #ef4444;
+         margin-left: 8px;
+       ">
+         <i class="fas fa-user-slash" style="font-size: 10px;"></i>
+         Conta Excluída
+       </span>`
+      : "";
 
     item.innerHTML = `
     <div class="timeline-dot ${dotClass}">
@@ -454,7 +495,7 @@ class TimelineManager {
             )}
           </div>
           <div class="user-details">
-            <h4>${mainName}</h4>
+            <h4>${mainName}${deletedBadge}</h4>
             <p class="transaction-type">${displayActionText}</p>
             <p class="timestamp">${timeAgo}</p>
           </div>
@@ -481,7 +522,7 @@ class TimelineManager {
           donation.status
         }">${this.getStatusText(donation.status)}</span>
         ${
-          userData.username
+          userData.username && !userData.isDeleted
             ? `<span class="username">@${userData.username}</span>`
             : ""
         }
@@ -494,115 +535,214 @@ class TimelineManager {
     return item;
   }
 
+  // Corrigida:
   static getTransactionDetails(donation) {
-    const isSent = donation.donor && donation.donor._id === currentUser?.id;
+    // 🆕 VERIFICAR SE USUÁRIO FOI EXCLUÍDO
+    const isDonorDeleted =
+      donation.donorDeleted ||
+      donation.donor?._id === "deleted" ||
+      !donation.donor;
+
+    const isRecipientDeleted =
+      donation.recipientDeleted ||
+      donation.recipient?._id === "deleted" ||
+      !donation.recipient;
+
+    const isSent =
+      donation.donor &&
+      donation.donor._id === currentUser?.id &&
+      !isDonorDeleted;
+
     const isReceived =
-      donation.recipient && donation.recipient._id === currentUser?.id;
+      donation.recipient &&
+      donation.recipient._id === currentUser?.id &&
+      !isRecipientDeleted;
+
     const isSystem =
       donation.type === "system" || donation.category === "bonus";
 
     let userData, dotClass, dotIcon, amountClass, amountPrefix, actionText;
 
+    // Sistema
     if (isSystem) {
       userData = {
         name: "Sistema Neural",
         avatar: "🤖",
         gradient: "#7877c6, #5b5a9f",
-        profilePhotoUrl: null, // Sistema não tem foto
+        profilePhotoUrl: null,
       };
       dotClass = "system";
       dotIcon = "fas fa-robot";
       amountClass = "positive";
       amountPrefix = "+";
       actionText = "Bônus do sistema";
-    } else if (currentFilter === "sent") {
-      // 🔧 CORREÇÃO: No filtro "sent", mostrar foto do RECEPTOR (para quem enviou)
-      userData = {
-        name:
-          donation.recipientInfo?.name || donation.recipient?.name || "Usuário",
-        avatar:
-          donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤",
-        username:
-          donation.recipientInfo?.username ||
+    }
+    // Filtro: Sent (enviadas)
+    else if (currentFilter === "sent") {
+      // 🔧 CORREÇÃO: Verificar se recipient foi excluído
+      const recipientName = isRecipientDeleted
+        ? "Usuário Excluído"
+        : donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
+
+      const recipientAvatar = isRecipientDeleted
+        ? "🔒"
+        : donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤";
+
+      const recipientUsername = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.username ||
           donation.recipient?.username ||
-          "",
-        gradient: "#ef4444, #dc2626",
-        profilePhotoUrl:
-          donation.recipientInfo?.profilePhotoUrl ||
-          donation.recipient?.profilePhotoUrl, // 🔧 Foto do RECEPTOR
+          "";
+
+      const recipientPhotoUrl = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl;
+
+      userData = {
+        name: recipientName,
+        avatar: recipientAvatar,
+        username: recipientUsername,
+        gradient: isRecipientDeleted ? "#6b7280, #4b5563" : "#ef4444, #dc2626",
+        profilePhotoUrl: recipientPhotoUrl,
+        isDeleted: isRecipientDeleted,
       };
       dotClass = "sent";
       dotIcon = "fas fa-arrow-up";
       amountClass = "negative";
       amountPrefix = "-";
       actionText = "Enviou para";
-    } else if (currentFilter === "received") {
-      // 🔧 CORREÇÃO: No filtro "received", mostrar foto do DOADOR (quem enviou para você)
+    }
+    // Filtro: Received (recebidas)
+    else if (currentFilter === "received") {
+      // 🔧 CORREÇÃO: Verificar se donor foi excluído
+      const donorName = isDonorDeleted
+        ? "Usuário Excluído"
+        : donation.donorInfo?.name || donation.donor?.name || "Usuário";
+
+      const donorAvatar = isDonorDeleted
+        ? "🔒"
+        : donation.donorInfo?.avatar || donation.donor?.avatar || "👤";
+
+      const donorUsername = isDonorDeleted
+        ? null
+        : donation.donorInfo?.username || donation.donor?.username || "";
+
+      const donorPhotoUrl = isDonorDeleted
+        ? null
+        : donation.donorInfo?.profilePhotoUrl ||
+          donation.donor?.profilePhotoUrl;
+
       userData = {
-        name: donation.donorInfo?.name || donation.donor?.name || "Usuário",
-        avatar: donation.donorInfo?.avatar || donation.donor?.avatar || "👤",
-        username:
-          donation.donorInfo?.username || donation.donor?.username || "",
-        gradient: "#22c55e, #16a34a",
-        profilePhotoUrl:
-          donation.donorInfo?.profilePhotoUrl ||
-          donation.donor?.profilePhotoUrl, // 🔧 Foto do DOADOR
+        name: donorName,
+        avatar: donorAvatar,
+        username: donorUsername,
+        gradient: isDonorDeleted ? "#6b7280, #4b5563" : "#22c55e, #16a34a",
+        profilePhotoUrl: donorPhotoUrl,
+        isDeleted: isDonorDeleted,
       };
       dotClass = "received";
       dotIcon = "fas fa-arrow-down";
       amountClass = "positive";
       amountPrefix = "+";
       actionText = "Recebeu de";
-    } else if (isSent) {
-      userData = {
-        name:
-          donation.recipientInfo?.name || donation.recipient?.name || "Usuário",
-        avatar:
-          donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤",
-        username:
-          donation.recipientInfo?.username ||
+    }
+    // Você enviou
+    else if (isSent) {
+      const recipientName = isRecipientDeleted
+        ? "Usuário Excluído"
+        : donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
+
+      const recipientAvatar = isRecipientDeleted
+        ? "🔒"
+        : donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤";
+
+      const recipientUsername = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.username ||
           donation.recipient?.username ||
-          "",
-        gradient: "#ef4444, #dc2626",
-        profilePhotoUrl:
-          donation.recipientInfo?.profilePhotoUrl ||
-          donation.recipient?.profilePhotoUrl, // 🔧 NOVO
+          "";
+
+      const recipientPhotoUrl = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl;
+
+      userData = {
+        name: recipientName,
+        avatar: recipientAvatar,
+        username: recipientUsername,
+        gradient: isRecipientDeleted ? "#6b7280, #4b5563" : "#ef4444, #dc2626",
+        profilePhotoUrl: recipientPhotoUrl,
+        isDeleted: isRecipientDeleted,
       };
       dotClass = "sent";
       dotIcon = "fas fa-arrow-up";
       amountClass = "negative";
       amountPrefix = "-";
       actionText = "Enviou para";
-    } else if (isReceived) {
+    }
+    // Você recebeu
+    else if (isReceived) {
+      const donorName = isDonorDeleted
+        ? "Usuário Excluído"
+        : donation.donorInfo?.name || donation.donor?.name || "Usuário";
+
+      const donorAvatar = isDonorDeleted
+        ? "🔒"
+        : donation.donorInfo?.avatar || donation.donor?.avatar || "👤";
+
+      const donorUsername = isDonorDeleted
+        ? null
+        : donation.donorInfo?.username || donation.donor?.username || "";
+
+      const donorPhotoUrl = isDonorDeleted
+        ? null
+        : donation.donorInfo?.profilePhotoUrl ||
+          donation.donor?.profilePhotoUrl;
+
       userData = {
-        name: donation.donorInfo?.name || donation.donor?.name || "Usuário",
-        avatar: donation.donorInfo?.avatar || donation.donor?.avatar || "👤",
-        username:
-          donation.donorInfo?.username || donation.donor?.username || "",
-        gradient: "#22c55e, #16a34a",
-        profilePhotoUrl:
-          donation.donorInfo?.profilePhotoUrl ||
-          donation.donor?.profilePhotoUrl, // 🔧 NOVO
+        name: donorName,
+        avatar: donorAvatar,
+        username: donorUsername,
+        gradient: isDonorDeleted ? "#6b7280, #4b5563" : "#22c55e, #16a34a",
+        profilePhotoUrl: donorPhotoUrl,
+        isDeleted: isDonorDeleted,
       };
       dotClass = "received";
       dotIcon = "fas fa-arrow-down";
       amountClass = "positive";
       amountPrefix = "+";
       actionText = "Recebeu de";
-    } else {
-      userData = {
-        name:
-          donation.recipientInfo?.name || donation.recipient?.name || "Usuário",
-        avatar:
-          donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤",
-        username:
-          donation.recipientInfo?.username ||
+    }
+    // Transação entre outros usuários
+    else {
+      const recipientName = isRecipientDeleted
+        ? "Usuário Excluído"
+        : donation.recipientInfo?.name || donation.recipient?.name || "Usuário";
+
+      const recipientAvatar = isRecipientDeleted
+        ? "🔒"
+        : donation.recipientInfo?.avatar || donation.recipient?.avatar || "👤";
+
+      const recipientUsername = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.username ||
           donation.recipient?.username ||
-          "",
-        gradient: "#6366f1, #4f46e5",
-        profilePhotoUrl:
-          donation.recipientInfo?.profilePhotoUrl ||
-          donation.recipient?.profilePhotoUrl, // 🔧 NOVO
+          "";
+
+      const recipientPhotoUrl = isRecipientDeleted
+        ? null
+        : donation.recipientInfo?.profilePhotoUrl ||
+          donation.recipient?.profilePhotoUrl;
+
+      userData = {
+        name: recipientName,
+        avatar: recipientAvatar,
+        username: recipientUsername,
+        gradient: isRecipientDeleted ? "#6b7280, #4b5563" : "#6366f1, #4f46e5",
+        profilePhotoUrl: recipientPhotoUrl,
+        isDeleted: isRecipientDeleted,
       };
       dotClass = "neutral";
       dotIcon = "fas fa-exchange-alt";
@@ -621,39 +761,55 @@ class TimelineManager {
     };
   }
 
+  //Corrigida:
   static renderAvatar(avatar, name, profilePhotoUrl = null) {
     const DEFAULT_AVATAR = "👤";
+    const DELETED_AVATAR = "🔒";
     const GCS_BASE_URL =
       "https://storage.googleapis.com/altrum-storage-uploader/profiles/";
 
-    // 🔧 PRIORIDADE 1: Usar profilePhotoUrl (vindo do backend)
-    if (profilePhotoUrl && profilePhotoUrl.startsWith("http")) {
-      return `<img src="${profilePhotoUrl}" 
-                 alt="${name}" 
-                 style="width: 100%; height: 100%; object-fit: cover; display: block;"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
-              ${DEFAULT_AVATAR}
-            </span>`;
+    // 🆕 Se for usuário excluído, usar ícone especial
+    if (name === "Usuário Excluído" || avatar === DELETED_AVATAR) {
+      return `<span style="
+      font-size: 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      width: 100%; 
+      height: 100%;
+      opacity: 0.6;
+    ">
+      ${DELETED_AVATAR}
+    </span>`;
     }
 
-    // 🔧 PRIORIDADE 2: Usar avatar (pode ser filename ou URL)
-    if (avatar && avatar !== DEFAULT_AVATAR) {
-      // Se for apenas o filename, construir URL completa
+    // Usar profilePhotoUrl se disponível
+    if (profilePhotoUrl && profilePhotoUrl.startsWith("http")) {
+      return `<img src="${profilePhotoUrl}" 
+               alt="${name}" 
+               style="width: 100%; height: 100%; object-fit: cover; display: block;"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            ${DEFAULT_AVATAR}
+          </span>`;
+    }
+
+    // Usar avatar se disponível
+    if (avatar && avatar !== DEFAULT_AVATAR && avatar !== DELETED_AVATAR) {
       const imageUrl = avatar.startsWith("http")
         ? avatar
         : `${GCS_BASE_URL}${avatar}`;
 
       return `<img src="${imageUrl}" 
-                 alt="${name}" 
-                 style="width: 100%; height: 100%; object-fit: cover; display: block;"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
-              ${DEFAULT_AVATAR}
-            </span>`;
+               alt="${name}" 
+               style="width: 100%; height: 100%; object-fit: cover; display: block;"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <span style="display: none; font-size: 16px; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            ${DEFAULT_AVATAR}
+          </span>`;
     }
 
-    // 🔧 FALLBACK: Avatar padrão
+    // Fallback: Avatar padrão
     return `<span style="font-size: 16px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
     ${DEFAULT_AVATAR}
   </span>`;

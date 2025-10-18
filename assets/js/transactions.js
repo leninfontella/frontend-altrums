@@ -116,37 +116,136 @@ class TransactionsService {
   }
 
   // Formatar doações do backend para o formato esperado pelo frontend
+  //Corrigida:
   static formatDonations(data, filterType) {
     const { donations, pagination } = data;
 
     // Transformar doações do backend para formato do frontend
     const formattedTransactions = donations.map((donation) => {
-      // Determinar o tipo baseado no filtro
       const type = filterType;
 
+      // 🔧 CRÍTICO: Verificar se usuários foram excluídos
+      const isDonorDeleted =
+        donation.donorDeleted ||
+        !donation.donor ||
+        donation.donor._id === "deleted";
+
+      const isRecipientDeleted =
+        donation.recipientDeleted ||
+        !donation.recipient ||
+        donation.recipient._id === "deleted";
+
       // Determinar qual usuário mostrar baseado no tipo
-      const otherUser = type === "sent" ? donation.recipient : donation.donor;
+      let otherUser, otherUserData;
+
+      if (type === "sent") {
+        // Mostrar receptor
+        if (isRecipientDeleted) {
+          otherUserData = {
+            fullName: "Usuário Excluído",
+            name: "Usuário Excluído",
+            avatar: "🔒",
+            profilePhotoUrl: null,
+            _id: "deleted",
+          };
+        } else {
+          otherUserData = {
+            fullName:
+              donation.recipient?.fullName ||
+              donation.recipient?.name ||
+              donation.recipientInfo?.name ||
+              "Usuário Desconhecido",
+            name:
+              donation.recipient?.name ||
+              donation.recipientInfo?.name ||
+              "Usuário Desconhecido",
+            avatar:
+              donation.recipient?.avatar ||
+              donation.recipientInfo?.avatar ||
+              "👤",
+            profilePhotoUrl:
+              donation.recipient?.profilePhotoUrl ||
+              donation.recipientInfo?.profilePhotoUrl ||
+              null,
+            _id: donation.recipient?._id || null,
+          };
+        }
+      } else {
+        // Mostrar doador
+        if (isDonorDeleted) {
+          otherUserData = {
+            fullName: "Usuário Excluído",
+            name: "Usuário Excluído",
+            avatar: "🔒",
+            profilePhotoUrl: null,
+            _id: "deleted",
+          };
+        } else {
+          otherUserData = {
+            fullName:
+              donation.donor?.fullName ||
+              donation.donor?.name ||
+              donation.donorInfo?.name ||
+              "Usuário Desconhecido",
+            name:
+              donation.donor?.name ||
+              donation.donorInfo?.name ||
+              "Usuário Desconhecido",
+            avatar:
+              donation.donor?.avatar || donation.donorInfo?.avatar || "👤",
+            profilePhotoUrl:
+              donation.donor?.profilePhotoUrl ||
+              donation.donorInfo?.profilePhotoUrl ||
+              null,
+            _id: donation.donor?._id || null,
+          };
+        }
+      }
+
+      // Descrição com tratamento de usuário excluído
+      const description =
+        type === "sent"
+          ? `Doação para ${otherUserData.fullName}`
+          : `Doação de ${otherUserData.fullName}`;
 
       return {
         id: donation._id,
         type: type,
         amount: donation.amount,
-        user: otherUser?.fullName || otherUser?.name || "Usuário Desconhecido",
-        userAvatar: otherUser?.avatar || "👤",
-        userPhoto: otherUser?.profilePhotoUrl || null,
+        user: otherUserData.fullName,
+        userAvatar: otherUserData.avatar,
+        userPhoto: otherUserData.profilePhotoUrl,
         date: donation.createdAt,
         status: donation.status || "completed",
         message: donation.message || "",
-        description:
-          type === "sent"
-            ? `Doação para ${otherUser?.fullName || otherUser?.name}`
-            : `Doação de ${otherUser?.fullName || otherUser?.name}`,
+        description: description,
+        isDeleted: isDonorDeleted || isRecipientDeleted,
 
-        // Dados completos para detalhes
-        donor: donation.donor,
-        recipient: donation.recipient,
-        donorInfo: donation.donorInfo,
-        recipientInfo: donation.recipientInfo,
+        // Dados completos para detalhes (com fallback)
+        donor: donation.donor || {
+          _id: "deleted",
+          name: "Usuário Excluído",
+          fullName: "Usuário Excluído",
+          avatar: "🔒",
+          profilePhotoUrl: null,
+        },
+        recipient: donation.recipient || {
+          _id: "deleted",
+          name: "Usuário Excluído",
+          fullName: "Usuário Excluído",
+          avatar: "🔒",
+          profilePhotoUrl: null,
+        },
+        donorInfo: donation.donorInfo || {
+          name: "Usuário Excluído",
+          avatar: "🔒",
+          profilePhotoUrl: null,
+        },
+        recipientInfo: donation.recipientInfo || {
+          name: "Usuário Excluído",
+          avatar: "🔒",
+          profilePhotoUrl: null,
+        },
       };
     });
 
@@ -284,16 +383,34 @@ class TransactionsUI {
     });
   }
 
+  //Corrigida:
   static createTransactionItem(transaction) {
     const item = document.createElement("div");
     item.className = `transaction-item ${transaction.type}`;
     item.dataset.transactionId = transaction.id;
 
-    // Avatar/Foto do usuário
+    // 🔧 CORREÇÃO: Tratar usuário excluído no avatar
     const iconContainer = document.createElement("div");
     iconContainer.className = "transaction-icon";
 
-    if (transaction.userPhoto) {
+    // 🆕 Se usuário foi excluído, mostrar ícone especial
+    if (transaction.isDeleted) {
+      iconContainer.innerHTML = `
+        <div style="
+          width: 100%; 
+          height: 100%; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 24px;
+          opacity: 0.5;
+          background: rgba(239, 68, 68, 0.1);
+          border-radius: 25%;
+        ">
+          🔒
+        </div>
+      `;
+    } else if (transaction.userPhoto) {
       // Usar foto real do GCS
       iconContainer.innerHTML = `
         <img src="${transaction.userPhoto}" 
@@ -315,10 +432,26 @@ class TransactionsUI {
 
     const user = document.createElement("div");
     user.className = "transaction-user";
-    user.textContent =
+
+    // 🆕 Adicionar badge para usuário excluído
+    const userText =
       transaction.type === "sent"
         ? `Para ${transaction.user}`
         : `De ${transaction.user}`;
+
+    const deletedBadge = transaction.isDeleted
+      ? ` <span style="
+          font-size: 10px;
+          padding: 2px 6px;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          border-radius: 8px;
+          color: #ef4444;
+          margin-left: 6px;
+        ">Excluído</span>`
+      : "";
+
+    user.innerHTML = userText + deletedBadge;
 
     const date = document.createElement("div");
     date.className = "transaction-date";
@@ -375,6 +508,7 @@ class TransactionsUI {
     });
   }
 
+  //Corrigida:
   static showTransactionDetails(transaction) {
     const modal = document.getElementById("transaction-modal");
     const modalBody = document.getElementById("modal-body");
@@ -385,12 +519,72 @@ class TransactionsUI {
     const userLabel = transaction.type === "sent" ? "Para" : "De";
     const amountClass = transaction.type === "sent" ? "sent" : "received";
 
-    // Foto do usuário no modal
+    // 🔧 CORREÇÃO: Tratar usuário excluído no modal
     const otherUser =
       transaction.type === "sent" ? transaction.recipient : transaction.donor;
-    const photoHtml = otherUser?.profilePhotoUrl
-      ? `<img src="${otherUser.profilePhotoUrl}" alt="${transaction.user}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px;" onerror="this.style.display='none';">`
-      : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">${transaction.userAvatar}</div>`;
+
+    let photoHtml;
+
+    if (transaction.isDeleted) {
+      // Usuário excluído - mostrar ícone especial
+      photoHtml = `
+        <div style="
+          width: 60px; 
+          height: 60px; 
+          border-radius: 50%; 
+          background: rgba(239, 68, 68, 0.1);
+          border: 2px solid rgba(239, 68, 68, 0.3);
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 32px; 
+          margin: 0 auto 16px;
+          opacity: 0.6;
+        ">
+          🔒
+        </div>
+        <p style="
+          text-align: center;
+          font-size: 12px;
+          color: #ef4444;
+          margin-bottom: 16px;
+          font-weight: 500;
+        ">
+          <i class="fas fa-user-slash"></i> Conta Excluída
+        </p>
+      `;
+    } else if (otherUser?.profilePhotoUrl) {
+      // Foto real
+      photoHtml = `
+        <img src="${otherUser.profilePhotoUrl}" 
+             alt="${transaction.user}" 
+             style="
+               width: 60px; 
+               height: 60px; 
+               border-radius: 50%; 
+               object-fit: cover; 
+               margin: 0 auto 16px;
+             " 
+             onerror="this.style.display='none';">
+      `;
+    } else {
+      // Avatar emoji
+      photoHtml = `
+        <div style="
+          width: 60px; 
+          height: 60px; 
+          border-radius: 50%; 
+          background: #f0f0f0; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 32px; 
+          margin: 0 auto 16px;
+        ">
+          ${transaction.userAvatar}
+        </div>
+      `;
+    }
 
     modalBody.innerHTML = `
       <div style="text-align: center; margin-bottom: 24px;">
@@ -436,6 +630,25 @@ class TransactionsUI {
         <div class="detail-row">
           <span class="detail-label">Mensagem</span>
           <span class="detail-value" style="font-style: italic; color: #666;">"${transaction.message}"</span>
+        </div>
+      `
+          : ""
+      }
+      ${
+        transaction.isDeleted
+          ? `
+        <div style="
+          margin-top: 16px;
+          padding: 12px;
+          background: rgba(239, 68, 68, 0.05);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          border-radius: 8px;
+          text-align: center;
+        ">
+          <i class="fas fa-info-circle" style="color: #ef4444; margin-right: 6px;"></i>
+          <span style="font-size: 13px; color: #666;">
+            Esta transação foi mantida no histórico, mas a conta do usuário foi excluída.
+          </span>
         </div>
       `
           : ""
