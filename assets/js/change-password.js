@@ -191,6 +191,9 @@ function clearAllErrors() {
 }
 
 // Processar alteração de senha
+
+const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
+
 async function handlePasswordChange() {
   const submitBtn = document.getElementById("submit-btn");
   const btnText = submitBtn.querySelector(".btn-text");
