@@ -176,16 +176,16 @@ function detectBrowser() {
   const ua = navigator.userAgent;
   let browser = "Navegador Desconhecido";
 
-  if (ua.includes("Firefox")) {
-    browser = "Firefox";
+  if (ua.includes("Opera") || ua.includes("OPR")) {
+    browser = "Opera";
   } else if (ua.includes("Edg")) {
     browser = "Microsoft Edge";
-  } else if (ua.includes("Chrome")) {
-    browser = "Chrome";
+  } else if (ua.includes("Firefox")) {
+    browser = "Firefox";
   } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
     browser = "Safari";
-  } else if (ua.includes("Opera") || ua.includes("OPR")) {
-    browser = "Opera";
+  } else if (ua.includes("Chrome")) {
+    browser = "Chrome";
   }
 
   return browser;
