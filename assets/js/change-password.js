@@ -12,6 +12,68 @@ document.addEventListener("DOMContentLoaded", function () {
   loadLastPasswordChange();
 });
 
+const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
+
+async function apiRequest(endpoint, options = {}) {
+  let token =
+    localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+
+  // ⚠️ Se o token expirou, tentar renovar automaticamente
+  if (response.status === 401) {
+    const data = await response.json().catch(() => ({}));
+    if (data.message?.toLowerCase().includes("expirado")) {
+      console.warn("🔁 Token expirado — tentando renovar...");
+      const refreshed = await refreshAccessToken();
+
+      if (refreshed) {
+        token = localStorage.getItem("token");
+        // refaz a requisição original com novo token
+        return fetch(`${API_BASE_URL}${endpoint}`, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            ...(options.headers || {}),
+          },
+        });
+      }
+    }
+  }
+
+  return response;
+}
+
+async function refreshAccessToken() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      credentials: "include", // Importante: o refresh usa cookie httpOnly
+    });
+
+    if (!res.ok) return false;
+
+    const data = await res.json();
+
+    if (data.success && data.data?.accessToken) {
+      localStorage.setItem("token", data.data.accessToken);
+      console.log("🔐 Novo accessToken obtido com sucesso");
+      return true;
+    }
+  } catch (err) {
+    console.error("❌ Erro ao renovar token:", err);
+  }
+  return false;
+}
+
 // Inicializar botões de mostrar/ocultar senha
 function initializePasswordToggles() {
   const toggleButtons = document.querySelectorAll(".toggle-password");
@@ -192,8 +254,6 @@ function clearAllErrors() {
 
 // Processar alteração de senha
 
-const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
-
 async function handlePasswordChange() {
   const submitBtn = document.getElementById("submit-btn");
   const btnText = submitBtn.querySelector(".btn-text");
@@ -212,12 +272,8 @@ async function handlePasswordChange() {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token") || "";
 
-    const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+    const response = await apiRequest("/auth/change-password", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         currentPassword,
         newPassword,
