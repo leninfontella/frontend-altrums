@@ -138,6 +138,7 @@ function calculateSecurityScore() {
 
 // ========== GERENCIAMENTO DE SESSÕES ==========
 function setupSessions() {
+  loadCurrentSession();
   loadOtherSessions();
 
   const logoutAllBtn = document.getElementById("logout-all");
@@ -146,7 +147,73 @@ function setupSessions() {
   }
 }
 
+function loadCurrentSession() {
+  const currentDevice = detectDevice();
+  const currentBrowser = detectBrowser();
+  const currentLocation = getUserLocation();
+  const currentIcon = getDeviceIcon(currentDevice);
+
+  const currentSessionHtml = `
+    <div class="session-card current-session">
+      <div class="session-icon">
+        <i class="fas ${currentIcon}"></i>
+      </div>
+      <div class="session-info">
+        <h4 class="session-device">${currentBrowser} - ${currentDevice}</h4>
+        <p class="session-location">${currentLocation}</p>
+        <p class="session-time">Agora (Sessão atual)</p>
+      </div>
+      <span class="current-badge">Atual</span>
+    </div>
+  `;
+
+  const container = document.getElementById("current-session-container");
+  if (container) {
+    container.innerHTML = currentSessionHtml;
+  }
+
+  console.log("📱 Sessão atual carregada:", {
+    device: currentDevice,
+    browser: currentBrowser,
+    location: currentLocation,
+  });
+}
+
+function loadCurrentSession() {
+  const currentDevice = detectDevice();
+  const currentBrowser = detectBrowser();
+  const currentLocation = getUserLocation();
+  const currentIcon = getDeviceIcon(currentDevice);
+
+  const currentSessionHtml = `
+    <div class="session-card current-session">
+      <div class="session-icon">
+        <i class="fas ${currentIcon}"></i>
+      </div>
+      <div class="session-info">
+        <h4 class="session-device">${currentBrowser} - ${currentDevice}</h4>
+        <p class="session-location">${currentLocation}</p>
+        <p class="session-time">Agora (Sessão atual)</p>
+      </div>
+      <span class="current-badge">Atual</span>
+    </div>
+  `;
+
+  const container = document.getElementById("current-session-container");
+  if (container) {
+    container.innerHTML = currentSessionHtml;
+  }
+
+  console.log("📱 Sessão atual carregada:", {
+    device: currentDevice,
+    browser: currentBrowser,
+    location: currentLocation,
+  });
+}
+
 function loadOtherSessions() {
+  // Aqui você pode buscar as sessões da API
+  // Por enquanto, vou deixar mock data como exemplo
   const sessions = [
     {
       device: "iPhone 13",

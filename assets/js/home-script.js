@@ -504,7 +504,7 @@ const LevelSystem = {
   },
 };
 
-// ========== SISTEMA DE NOTIFICAÇÃO DE LEVEL UP ==========
+// ========== SISTEMA DE NOTIFICAÇÃO DE LEVEL UP ==========///////////////////////////////
 
 const LevelUpNotification = {
   currentLevel: null,
@@ -519,9 +519,9 @@ const LevelUpNotification = {
         this.currentLevel = levelInfo.level;
         this.lastCheckedDonated = stats.totalDonated;
 
-        // Salvar no localStorage
-        localStorage.setItem("userCurrentLevel", this.currentLevel);
-        localStorage.setItem("lastCheckedDonated", this.lastCheckedDonated);
+        // Salvar estado
+        sessionStorage.setItem("userCurrentLevel", this.currentLevel);
+        sessionStorage.setItem("lastCheckedDonated", this.lastCheckedDonated);
 
         console.log("🎯 Sistema de Level Up inicializado:", {
           level: this.currentLevel,
@@ -531,14 +531,14 @@ const LevelUpNotification = {
     } catch (error) {
       console.error("❌ Erro ao inicializar sistema de Level Up:", error);
 
-      // Tentar recuperar do localStorage
-      const savedLevel = localStorage.getItem("userCurrentLevel");
-      const savedDonated = localStorage.getItem("lastCheckedDonated");
+      // Tentar recuperar do sessionStorage
+      const savedLevel = sessionStorage.getItem("userCurrentLevel");
+      const savedDonated = sessionStorage.getItem("lastCheckedDonated");
 
       if (savedLevel && savedDonated) {
         this.currentLevel = parseInt(savedLevel);
         this.lastCheckedDonated = parseInt(savedDonated);
-        console.log("⚠️ Recuperado do localStorage:", {
+        console.log("⚠️ Recuperado do sessionStorage:", {
           level: this.currentLevel,
           donated: this.lastCheckedDonated,
         });
@@ -569,9 +569,9 @@ const LevelUpNotification = {
       this.currentLevel = newLevel;
       this.lastCheckedDonated = newTotalDonated;
 
-      // Salvar no localStorage
-      localStorage.setItem("userCurrentLevel", newLevel);
-      localStorage.setItem("lastCheckedDonated", newTotalDonated);
+      // Salvar no sessionStorage
+      sessionStorage.setItem("userCurrentLevel", newLevel);
+      sessionStorage.setItem("lastCheckedDonated", newTotalDonated);
 
       // Mostrar modal de level up
       this.showLevelUpModal(oldLevel, newLevelInfo, newTotalDonated);
@@ -582,7 +582,7 @@ const LevelUpNotification = {
     // Atualizar valores mesmo sem mudança de nível
     if (newTotalDonated !== this.lastCheckedDonated) {
       this.lastCheckedDonated = newTotalDonated;
-      localStorage.setItem("lastCheckedDonated", newTotalDonated);
+      sessionStorage.setItem("lastCheckedDonated", newTotalDonated);
     }
 
     return false;
@@ -1346,15 +1346,96 @@ const LevelUpNotification = {
           }
         }
 
+        @media (max-width: 768px) {
+          .global-level-up-content {
+            width: 92%;
+            max-width: none;
+            padding: 32px 24px;
+            margin: 0 16px;
+          }
+
+          .global-level-up-icon-container {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 18px;
+          }
+
+          .global-level-up-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 36px;
+          }
+
+          .global-level-up-glow {
+            width: 100px;
+            height: 100px;
+          }
+
+          .global-level-up-title {
+            font-size: 20px;
+            margin-bottom: 16px;
+          }
+
+          .global-level-up-badge {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 14px;
+          }
+
+          .global-level-up-badge-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 34px;
+            border-radius: 16px;
+          }
+
+          .global-level-up-name {
+            font-size: 22px;
+            margin-bottom: 8px;
+          }
+
+          .global-level-up-description {
+            font-size: 12px;
+            margin-bottom: 18px;
+          }
+
+          .global-level-up-divider {
+            margin-bottom: 16px;
+          }
+
+          .global-level-up-stats {
+            gap: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+          }
+
+          .global-level-up-stat-label {
+            font-size: 9px;
+          }
+
+          .global-level-up-stat-value {
+            font-size: 13px;
+          }
+
+          .global-level-up-share,
+          .global-level-up-close {
+            font-size: 12px;
+            padding: 13px 18px;
+            height: 46px;
+          }
+        }
+
         @media (max-width: 480px) {
           .global-level-up-content {
-            width: 71%;
-            padding: 30px 21px;
+            width: 94%;
+            padding: 28px 20px;
+            margin: 0 12px;
           }
 
           .global-level-up-icon-container {
             width: 64px;
             height: 64px;
+            margin-bottom: 16px;
           }
 
           .global-level-up-icon {
@@ -1370,46 +1451,96 @@ const LevelUpNotification = {
 
           .global-level-up-title {
             font-size: 18px;
+            margin-bottom: 14px;
           }
 
           .global-level-up-badge {
             width: 60px;
             height: 60px;
+            margin-bottom: 12px;
           }
 
           .global-level-up-badge-icon {
             width: 60px;
             height: 60px;
             font-size: 32px;
+            border-radius: 15px;
           }
 
           .global-level-up-name {
-            font-size: 21px;
+            font-size: 20px;
+            margin-bottom: 7px;
           }
 
           .global-level-up-description {
             font-size: 11px;
+            margin-bottom: 16px;
+          }
+
+          .global-level-up-divider {
+            margin-bottom: 14px;
           }
 
           .global-level-up-stats {
             flex-direction: column;
-            gap: 9px;
+            gap: 8px;
             padding: 12px;
+            margin-bottom: 18px;
+          }
+
+          .global-level-up-stat {
+            width: 100%;
           }
 
           .global-level-up-stat-divider {
-            width: 60%;
+            width: 70%;
             height: 2px;
+            margin: 0 auto;
+          }
+
+          .global-level-up-stat-label {
+            font-size: 9px;
+          }
+
+          .global-level-up-stat-value {
+            font-size: 14px;
           }
 
           .global-level-up-share {
-            flex-direction: column;
-            padding: 12px 20px;
+            font-size: 11px;
+            padding: 12px 16px;
+            height: 44px;
           }
 
           .global-level-up-close {
-            padding: 12px 27px;
-            font-size: 12px;
+            font-size: 11px;
+            padding: 12px 16px;
+            height: 44px;
+          }
+
+          .global-level-up-share i,
+          .global-level-up-close i {
+            font-size: 11px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .global-level-up-content {
+            width: 96%;
+            padding: 24px 18px;
+            margin: 0 8px;
+          }
+
+          .global-level-up-title {
+            font-size: 17px;
+          }
+
+          .global-level-up-name {
+            font-size: 19px;
+          }
+
+          .global-level-up-description {
+            font-size: 10px;
           }
         }
       </style>
@@ -1418,6 +1549,8 @@ const LevelUpNotification = {
     document.head.insertAdjacentHTML("beforeend", styles);
   },
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Funções globais
 function closeLevelUpModal() {
