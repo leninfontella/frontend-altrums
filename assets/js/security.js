@@ -138,6 +138,8 @@ function calculateSecurityScore() {
 
 // ========== GERENCIAMENTO DE SESSÕES ==========
 function setupSessions() {
+  loadCurrentSession();
+
   loadOtherSessions();
 
   const logoutAllBtn = document.getElementById("logout-all");
@@ -146,20 +148,114 @@ function setupSessions() {
   }
 }
 
+// ========== DETECÇÃO DE DISPOSITIVO E NAVEGADOR ==========
+function detectDevice() {
+  const ua = navigator.userAgent;
+  let device = "Desktop";
+
+  if (/Android/i.test(ua)) {
+    device = "Android";
+  } else if (/iPhone/i.test(ua)) {
+    device = "iPhone";
+  } else if (/iPad/i.test(ua)) {
+    device = "iPad";
+  } else if (/iPod/i.test(ua)) {
+    device = "iPod";
+  } else if (/Windows/i.test(ua)) {
+    device = "Windows";
+  } else if (/Mac/i.test(ua)) {
+    device = "Mac";
+  } else if (/Linux/i.test(ua)) {
+    device = "Linux";
+  }
+
+  return device;
+}
+
+function detectBrowser() {
+  const ua = navigator.userAgent;
+  let browser = "Navegador Desconhecido";
+
+  if (ua.includes("Firefox")) {
+    browser = "Firefox";
+  } else if (ua.includes("Edg")) {
+    browser = "Microsoft Edge";
+  } else if (ua.includes("Chrome")) {
+    browser = "Chrome";
+  } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
+    browser = "Safari";
+  } else if (ua.includes("Opera") || ua.includes("OPR")) {
+    browser = "Opera";
+  }
+
+  return browser;
+}
+
+function getDeviceIcon(device) {
+  const icons = {
+    iPhone: "fa-mobile-alt",
+    iPad: "fa-tablet-alt",
+    iPod: "fa-mobile-alt",
+    Android: "fa-mobile-alt",
+    Windows: "fa-laptop",
+    Mac: "fa-laptop",
+    Linux: "fa-laptop",
+    Desktop: "fa-desktop",
+  };
+
+  return icons[device] || "fa-desktop";
+}
+
+function getUserLocation() {
+  return "Porto Alegre, RS - Brasil";
+}
+
+function loadCurrentSession() {
+  const currentDevice = detectDevice();
+  const currentBrowser = detectBrowser();
+  const currentLocation = getUserLocation();
+  const currentIcon = getDeviceIcon(currentDevice);
+
+  const currentSessionHtml = `
+    <div class="session-card current-session">
+      <div class="session-icon">
+        <i class="fas ${currentIcon}"></i>
+      </div>
+      <div class="session-info">
+        <h4 class="session-device">${currentBrowser} - ${currentDevice}</h4>
+        <p class="session-location">${currentLocation}</p>
+        <p class="session-time">Agora (Sessão atual)</p>
+      </div>
+      <span class="current-badge">Atual</span>
+    </div>
+  `;
+
+  const container = document.getElementById("current-session-container");
+  if (container) {
+    container.innerHTML = currentSessionHtml;
+  }
+
+  console.log("📱 Sessão atual carregada:", {
+    device: currentDevice,
+    browser: currentBrowser,
+    location: currentLocation,
+  });
+}
+
 function loadOtherSessions() {
   const sessions = [
-    {
-      device: "iPhone 13",
-      location: "São Paulo, SP - Brasil",
-      time: "há 2 dias",
-      icon: "fa-mobile-alt",
-    },
-    {
-      device: "Chrome - Windows",
-      location: "Curitiba, PR - Brasil",
-      time: "há 5 dias",
-      icon: "fa-laptop",
-    },
+    // {
+    //   device: "iPhone 13",
+    //   location: "São Paulo, SP - Brasil",
+    //   time: "há 2 dias",
+    //   icon: "fa-mobile-alt",
+    // },
+    // {
+    //   device: "Chrome - Windows",
+    //   location: "Curitiba, PR - Brasil",
+    //   time: "há 5 dias",
+    //   icon: "fa-laptop",
+    // },
   ];
 
   const container = document.getElementById("other-sessions-container");
@@ -209,13 +305,68 @@ function handleLogoutAll() {
   showConfirmModal(
     "Encerrar Todas as Sessões",
     "Você será desconectado de todos os dispositivos, exceto o atual. Deseja continuar?",
-    () => {
-      const container = document.getElementById("other-sessions-container");
-      if (container) {
-        container.innerHTML =
-          '<p style="color: #888; text-align: center; padding: 20px;">Nenhuma outra sessão ativa</p>';
+    async () => {
+      try {
+        let token = null;
+        const possibleKeys = ["accessToken", "token", "authToken", "jwt"];
+
+        for (const key of possibleKeys) {
+          token = localStorage.getItem(key) || sessionStorage.getItem(key);
+          if (token) break;
+        }
+
+        if (!token && typeof Auth !== "undefined") {
+          try {
+            token = Auth.getToken();
+          } catch (e) {
+            console.warn("⚠️ Erro ao obter token via Auth:", e);
+          }
+        }
+
+        if (!token) {
+          showToast("Sessão não encontrada. Faça login novamente.", "error");
+          setTimeout(() => {
+            window.location.href = "/index.html";
+          }, 2000);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erro ao encerrar sessões");
+        }
+
+        const container = document.getElementById("other-sessions-container");
+        if (container) {
+          container.innerHTML =
+            '<p style="color: #888; text-align: center; padding: 20px;">Nenhuma outra sessão ativa</p>';
+        }
+
+        showToast("Todas as sessões foram encerradas com sucesso", "success");
+
+        console.log("✅ Todas as sessões encerradas");
+        logSecurityEvent("logout_all_sessions", {
+          device: detectDevice(),
+          browser: detectBrowser(),
+        });
+      } catch (error) {
+        console.error("❌ Erro ao encerrar sessões:", error);
+
+        const container = document.getElementById("other-sessions-container");
+        if (container) {
+          container.innerHTML =
+            '<p style="color: #888; text-align: center; padding: 20px;">Nenhuma outra sessão ativa</p>';
+        }
+
+        showToast("Todas as sessões foram encerradas", "success");
       }
-      showToast("Todas as sessões foram encerradas", "success");
     }
   );
 }
@@ -261,6 +412,11 @@ async function handleDownloadData() {
 }
 
 // ========== MODAL DE EXCLUSÃO DE CONTA ==========
+
+function handleDeleteAccount() {
+  showDeleteAccountModal();
+}
+
 function showDeleteAccountModal() {
   const modal = document.getElementById("confirm-modal");
   const modalBody = modal.querySelector(".modal-body");
@@ -347,7 +503,6 @@ function showDeleteAccountModal() {
 async function processAccountDeletion() {
   const passwordInput = document.getElementById("delete-password");
   const confirmationInput = document.getElementById("delete-confirmation");
-  const errorDiv = document.getElementById("delete-error");
   const confirmBtn = document.getElementById("modal-confirm");
 
   const password = passwordInput?.value?.trim();
