@@ -220,6 +220,7 @@ const API_BASE_URL =
   window.API_BASE_URL || "https://api-backend-coins.onrender.com/api";
 
 // Processar alteração de senha
+// Processar alteração de senha - VERSÃO COMPLETA COM SEGURANÇA
 async function handlePasswordChange() {
   const submitBtn = document.getElementById("submit-btn");
   const btnText = submitBtn?.querySelector(".btn-text");
@@ -240,7 +241,7 @@ async function handlePasswordChange() {
 
     console.log("🔄 Iniciando alteração de senha...");
 
-    // 🔧 CORREÇÃO: Buscar token na ordem correta (authToken é o padrão)
+    // 🔧 Buscar token na ordem correta (authToken é o padrão)
     const token =
       sessionStorage.getItem("authToken") ||
       localStorage.getItem("authToken") ||
@@ -254,7 +255,7 @@ async function handlePasswordChange() {
       showError("current-password", "Sessão expirada. Faça login novamente.");
 
       setTimeout(() => {
-        window.location.href = "/pages/login/html/login.html";
+        window.location.href = "/index.html";
       }, 2000);
       return;
     }
@@ -279,17 +280,19 @@ async function handlePasswordChange() {
       status: response.status,
       success: data.success,
       message: data.message,
+      requiresLogin: data.requiresLogin,
     });
 
     if (response.ok && data.success) {
       console.log("✅ Senha alterada com sucesso");
 
-      // Atualizar timestamp da última alteração
-      const now = new Date().toISOString();
-      sessionStorage.setItem("lastPasswordChange", now);
-      localStorage.setItem("lastPasswordChange", now);
+      // 🔧 LIMPAR TODOS OS TOKENS (forçar re-login por segurança)
+      sessionStorage.clear();
+      localStorage.clear();
 
-      // Limpar formulário
+      console.log("🧹 Tokens limpos - sessão encerrada");
+
+      // Resetar formulário
       const form = document.getElementById("change-password-form");
       if (form) form.reset();
 
@@ -299,42 +302,183 @@ async function handlePasswordChange() {
       if (strengthFill) strengthFill.style.width = "0%";
       if (strengthText) strengthText.textContent = "";
 
-      // Mostrar modal de sucesso
-      showSuccessModal();
+      // 🔧 Mostrar modal informando sobre re-login obrigatório
+      showSuccessModalWithRelogin();
     } else {
       console.error("❌ Erro ao alterar senha:", data.message);
 
-      // Tratamento específico de erros
-      if (response.status === 401) {
+      // 🔧 TRATAMENTO ESPECÍFICO DE ERROS
+
+      // Rate limit (429)
+      if (response.status === 429) {
+        const retryAfter = data.retryAfter || 900; // 15 minutos default
+        const minutes = Math.ceil(retryAfter / 60);
+        showError(
+          "current-password",
+          `Muitas tentativas. Por segurança, aguarde ${minutes} minuto${
+            minutes > 1 ? "s" : ""
+          }.`
+        );
+      }
+      // Sessão expirada (401)
+      else if (response.status === 401) {
         showError("current-password", "Sessão expirada. Faça login novamente.");
         setTimeout(() => {
-          window.location.href = "/pages/login/html/login.html";
+          sessionStorage.clear();
+          localStorage.clear();
+          window.location.href = "/index.html";
         }, 2000);
-      } else if (
+      }
+      // Senha atual incorreta
+      else if (
         data.message &&
-        data.message.toLowerCase().includes("senha atual")
+        data.message.toLowerCase().includes("senha atual incorreta")
       ) {
         showError("current-password", "Senha atual incorreta");
-      } else if (
+      }
+      // Senha igual à atual
+      else if (
         data.message &&
         data.message.toLowerCase().includes("diferente")
       ) {
         showError("new-password", "A nova senha deve ser diferente da atual");
-      } else {
+      }
+      // Senha fraca
+      else if (
+        data.message &&
+        (data.message.toLowerCase().includes("fraca") ||
+          data.message.toLowerCase().includes("complexidade"))
+      ) {
+        showError("new-password", data.message);
+      }
+      // Erro genérico
+      else {
         showError("current-password", data.message || "Erro ao alterar senha");
       }
     }
   } catch (error) {
     console.error("❌ Erro na requisição:", error);
-    showError(
-      "current-password",
-      "Erro ao conectar com o servidor. Verifique sua conexão e tente novamente."
-    );
+
+    // Verificar se é erro de rede
+    if (
+      error.message === "Failed to fetch" ||
+      error.message.includes("NetworkError")
+    ) {
+      showError(
+        "current-password",
+        "Sem conexão com o servidor. Verifique sua internet e tente novamente."
+      );
+    } else {
+      showError(
+        "current-password",
+        "Erro inesperado. Tente novamente em alguns instantes."
+      );
+    }
   } finally {
     if (submitBtn) submitBtn.disabled = false;
     if (btnText) btnText.style.display = "flex";
     if (btnLoading) btnLoading.style.display = "none";
   }
+}
+
+// 🔧 NOVA FUNÇÃO: Modal com informação de re-login obrigatório
+function showSuccessModalWithRelogin() {
+  const modal = document.getElementById("success-modal");
+
+  if (!modal) {
+    console.error("❌ Modal de sucesso não encontrado");
+    // Fallback: usar alert e redirecionar
+    alert(
+      "✅ Senha alterada com sucesso!\n\nPor segurança, todos os seus dispositivos foram desconectados.\n\nVocê será redirecionado para fazer login novamente."
+    );
+    setTimeout(() => {
+      window.location.href = "/index.html";
+    }, 1000);
+    return;
+  }
+
+  modal.classList.remove("hidden");
+
+  // Atualizar conteúdo do modal (se houver um elemento específico)
+  const modalTitle = modal.querySelector(".modal-title");
+  const modalMessage = modal.querySelector(".modal-message");
+
+  if (modalTitle) {
+    modalTitle.textContent = "✅ Senha Alterada!";
+  }
+
+  if (modalMessage) {
+    modalMessage.innerHTML = `
+      <strong>Sua senha foi alterada com sucesso!</strong><br><br>
+      Por segurança, todos os seus dispositivos foram desconectados.<br>
+      Você será redirecionado para fazer login novamente.
+    `;
+  }
+
+  // Configurar botão OK
+  const okBtn = document.getElementById("success-ok-btn");
+  if (okBtn) {
+    // Remover event listeners anteriores clonando o botão
+    const newBtn = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newBtn, okBtn);
+
+    newBtn.addEventListener("click", function () {
+      console.log("🚪 Redirecionando para login...");
+      window.location.href = "/index.html";
+    });
+  }
+
+  // Redirecionar automaticamente após 5 segundos
+  let countdown = 5;
+  const countdownElement = modal.querySelector(".countdown");
+
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    if (countdownElement) {
+      countdownElement.textContent = `Redirecionando em ${countdown}s...`;
+    }
+
+    if (countdown <= 0) {
+      clearInterval(countdownInterval);
+      console.log("⏱️ Tempo esgotado - redirecionando...");
+      window.location.href = "/index.html";
+    }
+  }, 1000);
+
+  // Fallback: garantir redirecionamento mesmo se modal fechar
+  setTimeout(() => {
+    console.log("⏱️ Redirecionamento automático após 5s");
+    window.location.href = "/index.html";
+  }, 5000);
+}
+
+// 🔧 FUNÇÃO ALTERNATIVA: Modal simples (se não houver .modal-message)
+function showSuccessModalSimple() {
+  const modal = document.getElementById("success-modal");
+
+  if (!modal) {
+    alert("Senha alterada! Redirecionando para login...");
+    setTimeout(() => {
+      window.location.href = "/index.html";
+    }, 1000);
+    return;
+  }
+
+  modal.classList.remove("hidden");
+
+  const okBtn = document.getElementById("success-ok-btn");
+  if (okBtn) {
+    const newBtn = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newBtn, okBtn);
+
+    newBtn.addEventListener("click", function () {
+      window.location.href = "/index.html";
+    });
+  }
+
+  setTimeout(() => {
+    window.location.href = "/index.html";
+  }, 5000);
 }
 
 // Mostrar modal de sucesso
