@@ -22,6 +22,11 @@ function initializePasswordToggles() {
       const input = document.getElementById(targetId);
       const icon = this.querySelector("i");
 
+      if (!input) {
+        console.error(`❌ Input ${targetId} não encontrado`);
+        return;
+      }
+
       if (input.type === "password") {
         input.type = "text";
         icon.classList.remove("fa-eye");
@@ -61,7 +66,7 @@ function initializePasswordStrength() {
       return;
     }
 
-    // 🔧 CORREÇÃO: Animar a barra de progresso
+    // Animar a barra de progresso
     strengthFill.style.width = `${(strength.score / 4) * 100}%`;
     strengthFill.classList.add(strength.class);
     strengthText.classList.add(strength.class);
@@ -210,10 +215,11 @@ function clearAllErrors() {
   });
 }
 
-// 🔧 CORREÇÃO CRÍTICA: Usar API_BASE_URL do config global ou definir localmente
+// 🔧 API_BASE_URL do config global ou fallback
 const API_BASE_URL =
   window.API_BASE_URL || "https://api-backend-coins.onrender.com/api";
 
+// Processar alteração de senha
 async function handlePasswordChange() {
   const submitBtn = document.getElementById("submit-btn");
   const btnText = submitBtn?.querySelector(".btn-text");
@@ -234,7 +240,7 @@ async function handlePasswordChange() {
 
     console.log("🔄 Iniciando alteração de senha...");
 
-    // 🔧 CORREÇÃO: Tentar múltiplas fontes de token
+    // 🔧 CORREÇÃO: Buscar token na ordem correta (authToken é o padrão)
     const token =
       sessionStorage.getItem("authToken") ||
       localStorage.getItem("authToken") ||
@@ -247,9 +253,8 @@ async function handlePasswordChange() {
       console.error("❌ Token não encontrado");
       showError("current-password", "Sessão expirada. Faça login novamente.");
 
-      // Redirecionar para login após 2 segundos
       setTimeout(() => {
-        window.location.href = "/login.html";
+        window.location.href = "/pages/login/html/login.html";
       }, 2000);
       return;
     }
@@ -299,7 +304,7 @@ async function handlePasswordChange() {
     } else {
       console.error("❌ Erro ao alterar senha:", data.message);
 
-      // 🔧 CORREÇÃO: Tratamento mais específico de erros
+      // Tratamento específico de erros
       if (response.status === 401) {
         showError("current-password", "Sessão expirada. Faça login novamente.");
         setTimeout(() => {
@@ -338,10 +343,13 @@ function showSuccessModal() {
 
   if (!modal) {
     console.error("❌ Modal de sucesso não encontrado");
-    // Fallback: redirecionar diretamente
     alert("Senha alterada com sucesso!");
     setTimeout(() => {
-      window.history.back();
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "/pages/configuracao/html/configuracao.html";
+      }
     }, 1000);
     return;
   }
