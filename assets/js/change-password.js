@@ -208,7 +208,7 @@ async function handlePasswordChange() {
 
     const token = sessionStorage.getItem("token") || "";
 
-    const response = await fetch(`${API_BASE}/auth/change-password`, {
+    const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
