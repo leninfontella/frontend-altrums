@@ -582,37 +582,40 @@ class RankingManager {
   }
 
   /**
-   * Dados mock para fallback
+   * Dados mock para fallback - ATUALIZADO
    */
   static getMockRankingData() {
     return {
       users: [
         {
-          name: "N/A",
-          displayName: "N/A",
+          name: "Aguardando",
+          displayName: "Aguardando",
           balance: 0,
           coins: 0,
           rank: 1,
-          level: "Lenda",
+          level: "---",
           profilePhotoUrl: null,
+          isEmpty: true,
         },
         {
-          name: "N/A",
-          displayName: "N/A",
+          name: "Aguardando",
+          displayName: "Aguardando",
           balance: 0,
           coins: 0,
           rank: 2,
-          level: "Magnata",
+          level: "---",
           profilePhotoUrl: null,
+          isEmpty: true,
         },
         {
-          name: "N/A",
-          displayName: "N/A",
+          name: "Aguardando",
+          displayName: "Aguardando",
           balance: 0,
           coins: 0,
           rank: 3,
-          level: "Filantropo",
+          level: "---",
           profilePhotoUrl: null,
+          isEmpty: true,
         },
       ],
       totalUsers: 0,
@@ -622,19 +625,33 @@ class RankingManager {
 
   /**
    * CORRIGIDO: Atualiza o pódium com dados reais e fotos com cores de medalhas
+   * Suporta 1, 2 ou 3 usuários com placeholders para posições vazias
    */
   static async updatePodium() {
     try {
       console.log("Atualizando pódium...");
       const top10 = await this.getTop10FromAPI();
-      const top3 = top10.slice(0, 3);
+      let top3 = top10.slice(0, 3);
 
-      if (top3.length < 3) {
-        console.warn("Menos de 3 usuários no ranking, usando dados mock");
-        const mockData = this.getMockRankingData();
-        this.updatePodiumWithData(mockData.users.slice(0, 3));
-        return;
+      // CORREÇÃO PRINCIPAL: Preencher posições vazias com placeholders
+      while (top3.length < 3) {
+        top3.push({
+          name: "Aguardando",
+          displayName: "Aguardando",
+          balance: 0,
+          coins: 0,
+          rank: top3.length + 1,
+          level: "---",
+          profilePhotoUrl: null,
+          isEmpty: true,
+        });
       }
+
+      console.log(
+        `✓ Pódium com ${top10.length} usuários reais e ${
+          3 - top10.length
+        } placeholders`
+      );
 
       // Ordem do pódium: [2º, 1º, 3º] com cores específicas
       const podiumOrder = [top3[1], top3[0], top3[2]];
@@ -653,17 +670,24 @@ class RankingManager {
         const balanceElement = podiumItem.querySelector(".podium-balance span");
         const avatarElement = podiumItem.querySelector(".podium-avatar");
 
+        const displayName = user.displayName || user.name || "Aguardando";
+        const balance = user.balance || user.coins || 0;
+        const isEmptySlot = user.isEmpty === true;
+
+        // Atualizar nome com opacidade reduzida se for placeholder
         if (nameElement) {
-          nameElement.textContent = user.displayName || user.name;
+          nameElement.textContent = displayName;
+          nameElement.style.opacity = isEmptySlot ? "0.5" : "1";
         }
+
+        // Atualizar saldo com opacidade reduzida se for placeholder
         if (balanceElement) {
-          const balance = user.balance || user.coins || 0;
           balanceElement.textContent = balance.toLocaleString();
+          balanceElement.style.opacity = isEmptySlot ? "0.5" : "1";
         }
 
         // CORREÇÃO: Avatar com cor de medalha específica
         if (avatarElement) {
-          const displayName = user.displayName || user.name || "Usuário";
           const userInitials = getUserInitials(displayName);
           const borderColor = medalColors[index];
           const sizeMap = {
@@ -673,7 +697,30 @@ class RankingManager {
           };
           const imageSize = sizeMap[index];
 
-          if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
+          // Se for posição vazia, mostrar avatar placeholder
+          if (isEmptySlot) {
+            avatarElement.innerHTML = `
+              <img
+                class="podium-profile-image"
+                src="https://placehold.co/${imageSize}/cccccc/999999?text=?"
+                alt="Aguardando"
+                style="
+                  width: ${imageSize.split("x")[0]}px;
+                  height: ${imageSize.split("x")[1]}px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                  border: 3px solid ${borderColor};
+                  display: block;
+                  margin: 0 auto;
+                  opacity: 0.4;
+                  box-shadow: 0 4px 12px rgba(128, 128, 128, 0.2);
+                "
+              />
+            `;
+          } else if (
+            user.profilePhotoUrl &&
+            isValidPhotoUrl(user.profilePhotoUrl)
+          ) {
             const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
             avatarElement.innerHTML = `
             <img
@@ -736,7 +783,9 @@ class RankingManager {
         }
       });
 
-      console.log("✓ Pódium atualizado com cores de medalhas");
+      console.log(
+        "✓ Pódium atualizado com cores de medalhas e suporte para 1-3 usuários"
+      );
     } catch (error) {
       console.error("Erro ao atualizar pódium:", error);
       const mockData = this.getMockRankingData();
@@ -746,8 +795,23 @@ class RankingManager {
 
   /**
    * CORREÇÃO: Atualiza pódium com dados fornecidos - versão com cores de medalhas
+   * Suporta 1, 2 ou 3 usuários
    */
   static updatePodiumWithData(top3) {
+    // Preencher posições vazias se necessário
+    while (top3.length < 3) {
+      top3.push({
+        name: "Aguardando",
+        displayName: "Aguardando",
+        balance: 0,
+        coins: 0,
+        rank: top3.length + 1,
+        level: "---",
+        profilePhotoUrl: null,
+        isEmpty: true,
+      });
+    }
+
     const podiumOrder = [top3[1], top3[0], top3[2]];
     const podiumPositions = ["second", "first", "third"];
     const medalColors = ["#C0C0C0", "#FFD700", "#CD7F32"]; // Prata, Ouro, Bronze
@@ -764,17 +828,21 @@ class RankingManager {
       const balanceElement = podiumItem.querySelector(".podium-balance span");
       const avatarElement = podiumItem.querySelector(".podium-avatar");
 
+      const displayName = user.displayName || user.name || "Aguardando";
+      const balance = user.balance || user.coins || 0;
+      const isEmptySlot = user.isEmpty === true;
+
       if (nameElement) {
-        nameElement.textContent = user.displayName || user.name;
+        nameElement.textContent = displayName;
+        nameElement.style.opacity = isEmptySlot ? "0.5" : "1";
       }
       if (balanceElement) {
-        const balance = user.balance || user.coins || 0;
         balanceElement.textContent = balance.toLocaleString();
+        balanceElement.style.opacity = isEmptySlot ? "0.5" : "1";
       }
 
       // Avatar com cor de medalha específica
       if (avatarElement) {
-        const displayName = user.displayName || user.name || "Usuário";
         const userInitials = getUserInitials(displayName);
         const borderColor = medalColors[index];
         const sizeMap = {
@@ -784,7 +852,29 @@ class RankingManager {
         };
         const imageSize = sizeMap[index];
 
-        if (user.profilePhotoUrl && isValidPhotoUrl(user.profilePhotoUrl)) {
+        if (isEmptySlot) {
+          avatarElement.innerHTML = `
+            <img
+              class="podium-profile-image"
+              src="https://placehold.co/${imageSize}/cccccc/999999?text=?"
+              alt="Aguardando"
+              style="
+                width: ${imageSize.split("x")[0]}px;
+                height: ${imageSize.split("x")[1]}px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid ${borderColor};
+                display: block;
+                margin: 0 auto;
+                opacity: 0.4;
+                box-shadow: 0 4px 12px rgba(128, 128, 128, 0.2);
+              "
+            />
+          `;
+        } else if (
+          user.profilePhotoUrl &&
+          isValidPhotoUrl(user.profilePhotoUrl)
+        ) {
           const fullPhotoUrl = getFullImageUrl(user.profilePhotoUrl);
           avatarElement.innerHTML = `
           <img
@@ -850,6 +940,7 @@ class RankingManager {
 
   /**
    * CORRIGIDO: Atualiza a lista de ranking com lógica de foto correta
+   * Exclui usuários do TOP 3 (pódio) da lista
    */
   static async updateRankingList(currentUser) {
     try {
@@ -870,10 +961,15 @@ class RankingManager {
 
       rankingList.innerHTML = "";
 
-      // CORREÇÃO: Obter foto do usuário atual antes do loop
-      const usersToShow = rankingData.users.filter((user) => user.rank >= 4);
+      // CORREÇÃO PRINCIPAL: Filtrar usuários que NÃO estão no pódio (rank > 3)
+      // Isso evita duplicação de usuários do TOP 3
+      const usersToShow = rankingData.users.filter((user) => user.rank > 3);
       const currentUserId = currentUser?.id;
-      const currentUserPhoto = getCurrentUserPhoto(); // NOVA FUNÇÃO
+      const currentUserPhoto = getCurrentUserPhoto();
+
+      console.log(
+        `✓ Exibindo ${usersToShow.length} usuários (excluindo TOP 3 do pódio)`
+      );
 
       usersToShow.forEach((user) => {
         // Identificar se é o usuário atual
@@ -911,7 +1007,7 @@ class RankingManager {
         }</div>
           </div>
           <div class="rank-balance">
-            <div class="coin-icon">₿</div>
+            <div class="coin-icon">$</div>
             <span>${balance.toLocaleString()}</span>
           </div>
         `;
@@ -919,7 +1015,7 @@ class RankingManager {
         rankingList.appendChild(rankItem);
       });
 
-      // Se não encontrou o usuário atual na lista, adiciona
+      // Se não encontrou o usuário atual na lista, verificar se ele está no TOP 3
       const userFoundInList = usersToShow.some(
         (u) =>
           currentUserId &&
@@ -928,11 +1024,24 @@ class RankingManager {
             (u.name === currentUser.fullName && u.coins === currentUser.coins))
       );
 
-      if (currentUser && !userFoundInList) {
+      // Verificar se o usuário está no TOP 3 (pódio)
+      const userInPodium = currentUser && currentUser.rank <= 3;
+
+      // Só adiciona o usuário atual na lista se:
+      // 1. Ele não foi encontrado na lista atual
+      // 2. Ele NÃO está no pódio (rank > 3)
+      if (currentUser && !userFoundInList && !userInPodium) {
         this.addCurrentUserToList(
           currentUser,
           rankingData.currentUserRank,
           currentUserPhoto
+        );
+        console.log(
+          `✓ Usuário atual adicionado na posição ${rankingData.currentUserRank}`
+        );
+      } else if (userInPodium) {
+        console.log(
+          `✓ Usuário atual está no TOP 3 (posição ${currentUser.rank}), não será duplicado na lista`
         );
       }
 
@@ -974,7 +1083,7 @@ class RankingManager {
         <div class="rank-name">${displayName} (Você)</div>
       </div>
       <div class="rank-balance">
-        <div class="coin-icon">₿</div>
+        <div class="coin-icon">$</div>
         <span>${balance.toLocaleString()}</span>
       </div>
     `;
@@ -984,6 +1093,7 @@ class RankingManager {
 
   /**
    * CORRIGIDO: Atualiza lista com dados fornecidos (fallback) COM CORREÇÃO DE FOTO
+   * Exclui usuários do TOP 3 da lista
    */
   static updateRankingListWithData(users, currentUser) {
     const rankingList = document.querySelector(".ranking-list");
@@ -991,9 +1101,12 @@ class RankingManager {
 
     rankingList.innerHTML = "";
     const currentUserId = currentUser?.id;
-    const currentUserPhoto = getCurrentUserPhoto(); // NOVA FUNÇÃO
+    const currentUserPhoto = getCurrentUserPhoto();
 
-    users.forEach((user) => {
+    // Filtrar apenas usuários com rank > 3 (fora do pódio)
+    const usersToShow = users.filter((user) => user.rank > 3);
+
+    usersToShow.forEach((user) => {
       // CORREÇÃO: Melhor identificação do usuário atual
       const isCurrentUser =
         currentUserId &&
@@ -1029,7 +1142,7 @@ class RankingManager {
       }</div>
         </div>
         <div class="rank-balance">
-          <div class="coin-icon">₿</div>
+          <div class="coin-icon">$</div>
           <span>${balance.toLocaleString()}</span>
         </div>
       `;
@@ -1162,7 +1275,6 @@ class UIManager {
       element.textContent = content;
       console.log(`✅ Elemento '${elementId}' atualizado: "${content}"`);
     }
-    // Não mostra warning se elemento não existir
   }
 
   /**
@@ -1524,7 +1636,6 @@ class RanksApp {
 document.addEventListener("DOMContentLoaded", function () {
   console.log("📄 DOM carregado, inicializando aplicação...");
 
-  // Corrigir codificação imediatamente
   const userNameElement = document.getElementById("user-name");
   if (
     userNameElement &&
@@ -1599,7 +1710,7 @@ function fadeOutAndRedirect(modal) {
   setTimeout(() => {
     modal.classList.remove("show", "fade-out");
     window.location.href = "/index.html";
-  }, 600); // espera o fade-out terminar antes de redirecionar
+  }, 600);
 }
 
 // ========= SUBSTITUI ALERTAS =========
