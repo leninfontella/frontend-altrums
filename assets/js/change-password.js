@@ -236,6 +236,8 @@ async function handlePasswordChange() {
 
     // 🔧 CORREÇÃO: Tentar múltiplas fontes de token
     const token =
+      sessionStorage.getItem("authToken") ||
+      localStorage.getItem("authToken") ||
       sessionStorage.getItem("token") ||
       localStorage.getItem("token") ||
       sessionStorage.getItem("accessToken") ||
