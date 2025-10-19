@@ -209,7 +209,8 @@ async function handlePasswordChange() {
 
     console.log("🔄 Iniciando alteração de senha...");
 
-    const token = sessionStorage.getItem("token") || "";
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token") || "";
 
     const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
       method: "POST",
