@@ -304,7 +304,7 @@ function handleLogoutSession(button) {
 function handleLogoutAll() {
   showConfirmModal(
     "Encerrar Todas as Sessões",
-    "Você será desconectado de todos os dispositivos, exceto o atual. Deseja continuar?",
+    "Você será desconectado de TODOS os dispositivos, incluindo o atual. Deseja continuar?",
     async () => {
       try {
         let token = null;
@@ -343,29 +343,56 @@ function handleLogoutAll() {
           throw new Error("Erro ao encerrar sessões");
         }
 
-        const container = document.getElementById("other-sessions-container");
-        if (container) {
-          container.innerHTML =
-            '<p style="color: #888; text-align: center; padding: 20px;">Nenhuma outra sessão ativa</p>';
-        }
-
-        showToast("Todas as sessões foram encerradas com sucesso", "success");
-
         console.log("✅ Todas as sessões encerradas");
         logSecurityEvent("logout_all_sessions", {
           device: detectDevice(),
           browser: detectBrowser(),
         });
+
+        // Limpar todos os dados locais
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Limpar cookies
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(
+              /=.*/,
+              "=;expires=" + new Date().toUTCString() + ";path=/"
+            );
+        });
+
+        showToast("Todas as sessões foram encerradas. Até logo! 👋", "success");
+
+        // Redirecionar para login após 1.5 segundos
+        setTimeout(() => {
+          window.location.href = "/index.html";
+        }, 1500);
       } catch (error) {
         console.error("❌ Erro ao encerrar sessões:", error);
 
-        const container = document.getElementById("other-sessions-container");
-        if (container) {
-          container.innerHTML =
-            '<p style="color: #888; text-align: center; padding: 20px;">Nenhuma outra sessão ativa</p>';
-        }
+        // Mesmo em caso de erro, fazer logout local e redirecionar
+        localStorage.clear();
+        sessionStorage.clear();
 
-        showToast("Todas as sessões foram encerradas", "success");
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(
+              /=.*/,
+              "=;expires=" + new Date().toUTCString() + ";path=/"
+            );
+        });
+
+        showToast(
+          "Sessões encerradas localmente. Redirecionando...",
+          "warning"
+        );
+
+        setTimeout(() => {
+          window.location.href = "/index.html";
+        }, 1500);
       }
     }
   );
