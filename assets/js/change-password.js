@@ -247,7 +247,7 @@ async function handlePasswordChange() {
 
       // Redirecionar para login após 2 segundos
       setTimeout(() => {
-        window.location.href = "/pages/login/html/login.html";
+        window.location.href = "/login.html";
       }, 2000);
       return;
     }
