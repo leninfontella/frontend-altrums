@@ -1,384 +1,562 @@
-// DOM Elements
-const backBtn = document.getElementById("back-btn");
-const recoveryForm = document.getElementById("recovery-form");
-const emailInput = document.getElementById("email-input");
-const submitBtn = document.getElementById("submit-btn");
-const methodOptions = document.querySelectorAll(".method-option");
-const loadingOverlay = document.getElementById("loading-overlay");
-const successModal = document.getElementById("success-modal");
-const modalClose = document.getElementById("modal-close");
-const floatingMessage = document.getElementById("floating-message");
-const contactSupport = document.getElementById("contact-support");
-const createAccount = document.getElementById("create-account");
-
-// State
-let selectedMethod = "email";
-let isProcessing = false;
+// State management
+let currentStep = 1;
+let userEmail = "";
+let verificationCode = "";
+let resendTimer = null;
+let resendCountdown = 0;
 
 // Initialize
-document.addEventListener("DOMContentLoaded", () => {
-  initializeAnimations();
-  updateTime();
-  setInterval(updateTime, 60000);
-
-  // Show welcome message
-  setTimeout(() => {
-    showFloatingMessage("🧠 Sistema neural inicializado");
-  }, 1000);
+document.addEventListener("DOMContentLoaded", function () {
+  initializeEventListeners();
+  updateProgress();
 });
 
-// Animation initialization
-function initializeAnimations() {
-  const animatedElements = document.querySelectorAll(
-    ".method-option, .submit-button, .link-option"
-  );
-  animatedElements.forEach((element, index) => {
-    element.style.opacity = "0";
-    element.style.transform = "translateY(20px)";
+// Event Listeners
+function initializeEventListeners() {
+  // Step 1: Email
+  const emailInput = document.getElementById("emailInput");
+  const sendCodeBtn = document.getElementById("sendCodeBtn");
 
-    setTimeout(() => {
-      element.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-      element.style.opacity = "1";
-      element.style.transform = "translateY(0)";
-    }, index * 100 + 500);
-  });
-}
-
-// Botão go login:
-
-const goLogin = document.getElementById("go-login");
-
-goLogin.addEventListener("click", () => {
-  if (document.referrer) {
-    // Se existe uma página anterior no histórico, volta para ela
-    window.history.back();
-  } else {
-    // Se não existe (ex: usuário entrou direto), vai para uma página padrão
-    window.location.href = "/index.html";
-  }
-});
-
-// Botão go support:
-
-const goSupport = document.getElementById("go-support");
-goSupport.onclick = () => {
-  window.location.href = "/pages/support/html/suporte.html";
-};
-
-// Method selection
-methodOptions.forEach((option) => {
-  option.addEventListener("click", () => {
-    // Remove active from all options
-    methodOptions.forEach((opt) => opt.classList.remove("active"));
-
-    // Add active to clicked option
-    option.classList.add("active");
-    selectedMethod = option.dataset.method;
-
-    // Update UI feedback
-    const methodName = option.querySelector(".method-name").textContent;
-    showFloatingMessage(`✅ ${methodName} selecionado`);
-
-    // Add visual feedback
-    option.style.transform = "scale(0.98)";
-    setTimeout(() => {
-      option.style.transform = "scale(1)";
-    }, 150);
-  });
-});
-
-// Email input validation
-emailInput.addEventListener("input", (e) => {
-  const email = e.target.value;
-  const isValid = validateEmail(email);
-
-  if (email.length > 0) {
-    if (isValid) {
-      emailInput.style.borderColor = "#00C851";
-      emailInput.style.boxShadow = "0 0 0 3px rgba(0,200,81,0.2)";
-    } else {
-      emailInput.style.borderColor = "#FF4444";
-      emailInput.style.boxShadow = "0 0 0 3px rgba(255,68,68,0.2)";
+  emailInput.addEventListener("input", validateEmailInput);
+  emailInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter" && isValidEmail(emailInput.value)) {
+      sendVerificationCode();
     }
-  } else {
-    emailInput.style.borderColor = "rgba(255,255,255,0.08)";
-    emailInput.style.boxShadow = "none";
-  }
-});
+  });
 
-// Form submission
-recoveryForm.addEventListener("submit", (e) => {
-  e.preventDefault();
+  sendCodeBtn.addEventListener("click", sendVerificationCode);
 
-  if (isProcessing) return;
+  // Step 2: Verification Code
+  const codeInputs = document.querySelectorAll(".code-input");
+  const verifyCodeBtn = document.getElementById("verifyCodeBtn");
+  const resendCodeBtn = document.getElementById("resendCodeBtn");
+  const backToEmailBtn = document.getElementById("backToEmailBtn");
 
-  const email = emailInput.value.trim();
+  codeInputs.forEach((input, index) => {
+    input.addEventListener("input", function (e) {
+      handleCodeInput(e, index);
+    });
 
-  if (!email) {
-    showFloatingMessage("❌ Por favor, insira seu email");
-    shakeElement(emailInput);
-    return;
-  }
+    input.addEventListener("keydown", function (e) {
+      handleCodeKeydown(e, index);
+    });
 
-  if (!validateEmail(email)) {
-    showFloatingMessage("❌ Email inválido");
-    shakeElement(emailInput);
-    return;
-  }
+    input.addEventListener("paste", function (e) {
+      handleCodePaste(e);
+    });
+  });
 
-  startRecoveryProcess();
-});
+  verifyCodeBtn.addEventListener("click", verifyCode);
+  resendCodeBtn.addEventListener("click", resendVerificationCode);
+  backToEmailBtn.addEventListener("click", () => goToStep(1));
 
-// Start recovery process
-function startRecoveryProcess() {
-  isProcessing = true;
+  // Step 3: New Password
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+  const toggleNewPassword = document.getElementById("toggleNewPassword");
+  const toggleConfirmPassword = document.getElementById(
+    "toggleConfirmPassword"
+  );
+  const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+  const backToCodeBtn = document.getElementById("backToCodeBtn");
 
-  // Show loading
-  loadingOverlay.classList.add("active");
-  submitBtn.disabled = true;
+  newPasswordInput.addEventListener("input", validatePassword);
+  confirmPasswordInput.addEventListener("input", validatePasswordMatch);
 
-  // Update loading text based on selected method
-  const loadingText = document.querySelector(".loading-text");
-  const methodTexts = {
-    email: "Enviando link por email...",
-    sms: "Preparando SMS...",
-    biometric: "Iniciando scan biométrico...",
-  };
+  toggleNewPassword.addEventListener("click", () =>
+    togglePasswordVisibility("newPasswordInput", "toggleNewPassword")
+  );
+  toggleConfirmPassword.addEventListener("click", () =>
+    togglePasswordVisibility("confirmPasswordInput", "toggleConfirmPassword")
+  );
 
-  loadingText.textContent = methodTexts[selectedMethod];
+  resetPasswordBtn.addEventListener("click", resetPassword);
+  backToCodeBtn.addEventListener("click", () => goToStep(2));
 
-  // Simulate processing time
-  setTimeout(() => {
-    // Hide loading
-    loadingOverlay.classList.remove("active");
-
-    // Show success modal
-    successModal.classList.add("active");
-
-    // Update success message based on method
-    const successMessages = {
-      email: "Um link de recuperação foi enviado para seu email.",
-      sms: "Um código de verificação foi enviado para seu celular.",
-      biometric: "Scan biométrico concluído. Verifique seu dispositivo.",
-    };
-
-    const modalText = successModal.querySelector("p");
-    modalText.textContent = successMessages[selectedMethod];
-
-    isProcessing = false;
-    submitBtn.disabled = false;
-  }, 3000);
+  // Success step
+  const goToLoginBtn = document.getElementById("goToLoginBtn");
+  goToLoginBtn.addEventListener("click", () => {
+    window.location.href = "./login.html";
+  });
 }
 
-// Modal close functionality
-modalClose.addEventListener("click", () => {
-  successModal.classList.remove("active");
-
-  // Reset form
-  emailInput.value = "";
-  emailInput.style.borderColor = "rgba(255,255,255,0.08)";
-  emailInput.style.boxShadow = "none";
-
-  showFloatingMessage("✨ Pronto para nova tentativa");
-});
-
-// Support and create account links
-contactSupport.addEventListener("click", (e) => {
-  e.preventDefault();
-  showFloatingMessage("📞 Conectando ao suporte...");
-
-  // Add click animation
-  contactSupport.style.transform = "translateX(8px)";
-  setTimeout(() => {
-    contactSupport.style.transform = "translateX(4px)";
-  }, 150);
-
-  console.log("Contact support clicked");
-});
-
-createAccount.addEventListener("click", (e) => {
-  e.preventDefault();
-  showFloatingMessage("👤 Redirecionando para cadastro...");
-
-  // Add click animation
-  createAccount.style.transform = "translateX(8px)";
-  setTimeout(() => {
-    createAccount.style.transform = "translateX(4px)";
-  }, 150);
-
-  console.log("Create account clicked");
-});
-
-// Utility functions
-function validateEmail(email) {
+// Email validation
+function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-function shakeElement(element) {
-  element.style.animation = "shake 0.5s ease-in-out";
+function validateEmailInput() {
+  const emailInput = document.getElementById("emailInput");
+  const sendCodeBtn = document.getElementById("sendCodeBtn");
+  const isValid = isValidEmail(emailInput.value);
 
+  sendCodeBtn.disabled = !isValid;
+}
+
+function sendVerificationCode() {
+  const emailInput = document.getElementById("emailInput");
+  userEmail = emailInput.value;
+
+  if (!isValidEmail(userEmail)) {
+    showNotification("Por favor, insira um e-mail válido", "error");
+    return;
+  }
+
+  // Simulate API call
+  showNotification("Código enviado para " + userEmail, "success");
+
+  // Generate a random 6-digit code (in production, this would be done on the server)
+  verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log("Código de verificação (para teste):", verificationCode);
+
+  // Update email display
+  document.getElementById("emailDisplay").textContent = userEmail;
+
+  // Move to next step
+  goToStep(2);
+
+  // Start resend timer
+  startResendTimer();
+}
+
+// Code input handling
+function handleCodeInput(e, index) {
+  const input = e.target;
+  const value = input.value;
+
+  // Only allow numbers
+  if (!/^\d*$/.test(value)) {
+    input.value = "";
+    return;
+  }
+
+  if (value.length === 1) {
+    input.classList.add("filled");
+    // Move to next input
+    if (index < 5) {
+      const nextInput = document.querySelector(
+        `.code-input[data-index="${index + 1}"]`
+      );
+      nextInput.focus();
+    }
+  } else {
+    input.classList.remove("filled");
+  }
+
+  validateCodeInputs();
+}
+
+function handleCodeKeydown(e, index) {
+  const input = e.target;
+
+  // Handle backspace
+  if (e.key === "Backspace" && input.value === "" && index > 0) {
+    const prevInput = document.querySelector(
+      `.code-input[data-index="${index - 1}"]`
+    );
+    prevInput.focus();
+    prevInput.value = "";
+    prevInput.classList.remove("filled");
+    validateCodeInputs();
+  }
+
+  // Handle arrow keys
+  if (e.key === "ArrowLeft" && index > 0) {
+    const prevInput = document.querySelector(
+      `.code-input[data-index="${index - 1}"]`
+    );
+    prevInput.focus();
+  }
+
+  if (e.key === "ArrowRight" && index < 5) {
+    const nextInput = document.querySelector(
+      `.code-input[data-index="${index + 1}"]`
+    );
+    nextInput.focus();
+  }
+}
+
+function handleCodePaste(e) {
+  e.preventDefault();
+  const pastedData = e.clipboardData.getData("text").trim();
+
+  if (/^\d{6}$/.test(pastedData)) {
+    const codeInputs = document.querySelectorAll(".code-input");
+    pastedData.split("").forEach((digit, index) => {
+      if (index < 6) {
+        codeInputs[index].value = digit;
+        codeInputs[index].classList.add("filled");
+      }
+    });
+    validateCodeInputs();
+    codeInputs[5].focus();
+  }
+}
+
+function validateCodeInputs() {
+  const codeInputs = document.querySelectorAll(".code-input");
+  const verifyCodeBtn = document.getElementById("verifyCodeBtn");
+
+  let allFilled = true;
+  codeInputs.forEach((input) => {
+    if (input.value === "") {
+      allFilled = false;
+    }
+  });
+
+  verifyCodeBtn.disabled = !allFilled;
+}
+
+function verifyCode() {
+  const codeInputs = document.querySelectorAll(".code-input");
+  let enteredCode = "";
+
+  codeInputs.forEach((input) => {
+    enteredCode += input.value;
+  });
+
+  // Simulate API verification
+  // In production, this would verify with the server
+  if (enteredCode === verificationCode) {
+    showNotification("Código verificado com sucesso!", "success");
+    goToStep(3);
+  } else {
+    showNotification("Código inválido. Tente novamente.", "error");
+    // Clear inputs
+    codeInputs.forEach((input) => {
+      input.value = "";
+      input.classList.remove("filled");
+    });
+    codeInputs[0].focus();
+    validateCodeInputs();
+  }
+}
+
+function resendVerificationCode() {
+  if (resendCountdown > 0) {
+    return;
+  }
+
+  // Generate new code
+  verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log("Novo código de verificação (para teste):", verificationCode);
+
+  showNotification("Código reenviado para " + userEmail, "success");
+
+  // Clear current inputs
+  const codeInputs = document.querySelectorAll(".code-input");
+  codeInputs.forEach((input) => {
+    input.value = "";
+    input.classList.remove("filled");
+  });
+  codeInputs[0].focus();
+  validateCodeInputs();
+
+  // Restart timer
+  startResendTimer();
+}
+
+function startResendTimer() {
+  const resendCodeBtn = document.getElementById("resendCodeBtn");
+  resendCountdown = 60;
+
+  resendCodeBtn.disabled = true;
+
+  if (resendTimer) {
+    clearInterval(resendTimer);
+  }
+
+  resendTimer = setInterval(() => {
+    resendCountdown--;
+
+    if (resendCountdown > 0) {
+      resendCodeBtn.textContent = `Reenviar em ${resendCountdown}s`;
+    } else {
+      resendCodeBtn.textContent = "Reenviar Código";
+      resendCodeBtn.disabled = false;
+      clearInterval(resendTimer);
+    }
+  }, 1000);
+}
+
+// Password validation
+function validatePassword() {
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const password = newPasswordInput.value;
+  const passwordStrength = document.getElementById("passwordStrength");
+
+  if (password.length === 0) {
+    passwordStrength.style.display = "none";
+    return;
+  }
+
+  passwordStrength.style.display = "block";
+
+  // Check requirements
+  const hasLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+
+  // Update requirement indicators
+  updateRequirement("req-length", hasLength);
+  updateRequirement("req-uppercase", hasUppercase);
+  updateRequirement("req-lowercase", hasLowercase);
+  updateRequirement("req-number", hasNumber);
+
+  // Calculate strength
+  let strength = 0;
+  if (hasLength) strength++;
+  if (hasUppercase) strength++;
+  if (hasLowercase) strength++;
+  if (hasNumber) strength++;
+
+  updateStrengthIndicator(strength);
+  validatePasswordMatch();
+}
+
+function updateRequirement(id, isValid) {
+  const element = document.getElementById(id);
+  if (isValid) {
+    element.classList.add("valid");
+  } else {
+    element.classList.remove("valid");
+  }
+}
+
+function updateStrengthIndicator(strength) {
+  const bars = ["strengthBar1", "strengthBar2", "strengthBar3", "strengthBar4"];
+  const strengthText = document.getElementById("strengthText");
+
+  // Reset all bars
+  bars.forEach((barId) => {
+    const bar = document.getElementById(barId);
+    bar.classList.remove("weak", "medium", "strong");
+  });
+
+  if (strength === 0) {
+    strengthText.textContent = "";
+  } else if (strength === 1 || strength === 2) {
+    strengthText.textContent = "Senha fraca";
+    for (let i = 0; i < strength; i++) {
+      document.getElementById(bars[i]).classList.add("weak");
+    }
+  } else if (strength === 3) {
+    strengthText.textContent = "Senha média";
+    for (let i = 0; i < strength; i++) {
+      document.getElementById(bars[i]).classList.add("medium");
+    }
+  } else {
+    strengthText.textContent = "Senha forte";
+    for (let i = 0; i < strength; i++) {
+      document.getElementById(bars[i]).classList.add("strong");
+    }
+  }
+}
+
+function validatePasswordMatch() {
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+  const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+
+  const password = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+
+  // Check all requirements
+  const hasLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const passwordsMatch = password === confirmPassword && confirmPassword !== "";
+
+  const isValid =
+    hasLength && hasUppercase && hasLowercase && hasNumber && passwordsMatch;
+
+  resetPasswordBtn.disabled = !isValid;
+}
+
+function togglePasswordVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+
+  if (input.type === "password") {
+    input.type = "text";
+    icon.classList.remove("fa-eye");
+    icon.classList.add("fa-eye-slash");
+  } else {
+    input.type = "password";
+    icon.classList.remove("fa-eye-slash");
+    icon.classList.add("fa-eye");
+  }
+}
+
+function resetPassword() {
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+
+  const password = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+
+  if (password !== confirmPassword) {
+    showNotification("As senhas não coincidem", "error");
+    return;
+  }
+
+  // Simulate API call to reset password
   setTimeout(() => {
-    element.style.animation = "";
+    showNotification("Senha redefinida com sucesso!", "success");
+    goToStep(4);
   }, 500);
 }
 
-// Add shake animation to CSS (via JavaScript)
-const shakeStyle = document.createElement("style");
-shakeStyle.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-        20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-`;
-document.head.appendChild(shakeStyle);
+// Navigation
+function goToStep(step) {
+  const currentStepEl = document.querySelector(".step-container.active");
 
-function showFloatingMessage(message) {
-  floatingMessage.textContent = message;
-  floatingMessage.classList.add("show");
+  if (currentStepEl) {
+    currentStepEl.classList.add("exiting");
+    currentStepEl.classList.remove("active");
 
-  // Hide after 3 seconds
-  setTimeout(() => {
-    floatingMessage.classList.remove("show");
-
-    // Reset to original message after animation
     setTimeout(() => {
-      floatingMessage.textContent = "⚡ Sistema neural ativo";
-    }, 500);
+      currentStepEl.classList.remove("exiting");
+      currentStepEl.style.display = "none";
+    }, 400);
+  }
+
+  setTimeout(() => {
+    const stepMap = {
+      1: "step1",
+      2: "step2",
+      3: "step3",
+      4: "successStep",
+    };
+
+    const nextStepEl = document.getElementById(stepMap[step]);
+    nextStepEl.style.display = "block";
+
+    setTimeout(() => {
+      nextStepEl.classList.add("active");
+    }, 10);
+
+    currentStep = step;
+    updateProgress();
+    updateHeaderSubtitle();
+
+    // Focus on first input of the new step
+    if (step === 1) {
+      document.getElementById("emailInput").focus();
+    } else if (step === 2) {
+      document.querySelector('.code-input[data-index="0"]').focus();
+    } else if (step === 3) {
+      document.getElementById("newPasswordInput").focus();
+    }
+  }, 200);
+}
+
+function updateProgress() {
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+
+  const progressValues = {
+    1: { width: "33.33%", text: "Etapa 1 de 3" },
+    2: { width: "66.66%", text: "Etapa 2 de 3" },
+    3: { width: "100%", text: "Etapa 3 de 3" },
+    4: { width: "100%", text: "Concluído" },
+  };
+
+  const progress = progressValues[currentStep];
+  progressFill.style.width = progress.width;
+  progressText.textContent = progress.text;
+}
+
+function updateHeaderSubtitle() {
+  const headerSubtitle = document.getElementById("headerSubtitle");
+
+  const subtitles = {
+    1: "Insira seu e-mail para iniciar o processo de recuperação",
+    2: "Verifique seu e-mail e insira o código recebido",
+    3: "Crie uma senha forte para proteger sua conta",
+    4: "Sua senha foi alterada com sucesso!",
+  };
+
+  headerSubtitle.textContent = subtitles[currentStep];
+}
+
+// Notifications
+function showNotification(message, type = "info") {
+  // Remove existing notification
+  const existingNotification = document.querySelector(".notification");
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  const notification = document.createElement("div");
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+
+  // Add styles
+  Object.assign(notification.style, {
+    position: "fixed",
+    top: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    padding: "16px 24px",
+    borderRadius: "12px",
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: "14px",
+    zIndex: "1000",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+    animation: "slideInDown 0.3s ease",
+    minWidth: "300px",
+    textAlign: "center",
+  });
+
+  if (type === "success") {
+    notification.style.background =
+      "linear-gradient(135deg, #00ff88 0%, #00cc66 100%)";
+  } else if (type === "error") {
+    notification.style.background =
+      "linear-gradient(135deg, #ff4444 0%, #cc0000 100%)";
+  } else {
+    notification.style.background =
+      "linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)";
+  }
+
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = "slideOutUp 0.3s ease";
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
   }, 3000);
 }
 
-function updateTime() {
-  const now = new Date();
-  const hours = now.getHours().toString().padStart(2, "0");
-  const minutes = now.getMinutes().toString().padStart(2, "0");
-  const statusBarTime = document.querySelector(".status-bar span");
-  if (statusBarTime) {
-    statusBarTime.textContent = `${hours}:${minutes}`;
-  }
-}
-
-// Add touch feedback for mobile devices
-function addTouchFeedback(element) {
-  element.addEventListener("touchstart", () => {
-    element.style.transform = "scale(0.98)";
-  });
-
-  element.addEventListener("touchend", () => {
-    element.style.transform = "scale(1)";
-  });
-}
-
-// Apply touch feedback to interactive elements
-[backBtn, submitBtn, modalClose, ...methodOptions].forEach(addTouchFeedback);
-
-// Add hover effects to input
-emailInput.addEventListener("focus", () => {
-  emailInput.parentElement.querySelector(".input-label").style.color =
-    "#7877C6";
-});
-
-emailInput.addEventListener("blur", () => {
-  emailInput.parentElement.querySelector(".input-label").style.color =
-    "#7877C6";
-});
-
-// Keyboard shortcuts
-document.addEventListener("keydown", (e) => {
-  // ESC to close modal
-  if (e.key === "Escape") {
-    if (successModal.classList.contains("active")) {
-      modalClose.click();
+// Add animation styles
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideInDown {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   }
-
-  // Enter to submit form (when not in processing)
-  if (
-    e.key === "Enter" &&
-    !isProcessing &&
-    !successModal.classList.contains("active")
-  ) {
-    if (document.activeElement !== emailInput) {
-      recoveryForm.dispatchEvent(new Event("submit"));
+  
+  @keyframes slideOutUp {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
     }
   }
-});
-
-// Add loading states to buttons
-submitBtn.addEventListener("click", () => {
-  if (!isProcessing) {
-    submitBtn.style.transform = "scale(0.98)";
-    setTimeout(() => {
-      submitBtn.style.transform = "scale(1)";
-    }, 150);
-  }
-});
-
-// Simulate network connectivity check
-function checkNetworkStatus() {
-  if (!navigator.onLine) {
-    showFloatingMessage("⚠️ Sem conexão neural");
-    submitBtn.disabled = true;
-    submitBtn.style.opacity = "0.5";
-  } else {
-    submitBtn.disabled = false;
-    submitBtn.style.opacity = "1";
-  }
-}
-
-// Check network status on load and when it changes
-window.addEventListener("load", checkNetworkStatus);
-window.addEventListener("online", () => {
-  checkNetworkStatus();
-  showFloatingMessage("🌐 Conexão neural restaurada");
-});
-window.addEventListener("offline", checkNetworkStatus);
-
-// Add progressive enhancement for modern browsers
-if ("serviceWorker" in navigator) {
-  console.log("Service Worker support detected");
-}
-
-// Add form auto-save (simulation)
-let autoSaveTimeout;
-emailInput.addEventListener("input", () => {
-  clearTimeout(autoSaveTimeout);
-  autoSaveTimeout = setTimeout(() => {
-    // Simulate auto-save
-    if (emailInput.value.trim()) {
-      console.log("Auto-saved email:", emailInput.value);
-    }
-  }, 1000);
-});
-
-console.log("🚀 Página de recuperação de senha carregada com sucesso!");
-
-// Add some easter eggs for developers
-console.log(`
-🧠 SISTEMA NEURAL ATIVO 🧠
-═══════════════════════════
-Status: Online
-Versão: 2.1.47
-Última atualização: ${new Date().toISOString()}
-═══════════════════════════
-`);
-
-// Fun fact generator
-const funFacts = [
-  "🤖 IA processa 1TB de dados por segundo",
-  "⚡ Conexões neurais: 86 bilhões",
-  "🔮 Previsão quântica: 99.7% precisão",
-  "🌟 Velocidade de processamento: Luz²",
-  "🔐 Criptografia: Nível Galáctico",
-];
-
-setInterval(() => {
-  if (Math.random() < 0.1) {
-    // 10% chance every interval
-    const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
-    if (!floatingMessage.classList.contains("show")) {
-      showFloatingMessage(randomFact);
-    }
-  }
-}, 15000); // Check every 15 seconds
+`;
+document.head.appendChild(style);
