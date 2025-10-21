@@ -80,7 +80,7 @@ function initializeEventListeners() {
   // Success step
   const goToLoginBtn = document.getElementById("goToLoginBtn");
   goToLoginBtn.addEventListener("click", () => {
-    window.location.href = "./login.html";
+    window.location.href = "/index.html";
   });
 }
 
