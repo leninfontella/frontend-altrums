@@ -129,7 +129,10 @@ async function sendVerificationCode() {
     } else {
       // ✅ TRATAR ERROS ESPECÍFICOS
       if (response.status === 404) {
-        showNotification("Email não cadastrado no sistema", "error");
+        showNotification(
+          "Se o endereço de email estiver registrado em nosso sistema, enviaremos o código de recuperação de senha.",
+          "error"
+        );
         emailInput.focus();
         emailInput.select();
       } else if (response.status === 403) {
