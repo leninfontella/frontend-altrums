@@ -1,6 +1,6 @@
 // SUBSTITUIR TODO O CONTEÚDO DE forgot-password.js
 
-const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
+const API_BASE_URL = "http://localhost:5000/api";
 
 // State management
 let currentStep = 1;
@@ -80,7 +80,7 @@ function initializeEventListeners() {
   // Success step
   const goToLoginBtn = document.getElementById("goToLoginBtn");
   goToLoginBtn.addEventListener("click", () => {
-    window.location.href = "/index.html";
+    window.location.href = "./login.html";
   });
 }
 
@@ -127,7 +127,16 @@ async function sendVerificationCode() {
       // Start resend timer
       startResendTimer();
     } else {
-      showNotification(data.message || "Erro ao enviar código", "error");
+      // ✅ TRATAR ERROS ESPECÍFICOS
+      if (response.status === 404) {
+        showNotification("Email não cadastrado no sistema", "error");
+        emailInput.focus();
+        emailInput.select();
+      } else if (response.status === 403) {
+        showNotification(data.message || "Conta inativa ou suspensa", "error");
+      } else {
+        showNotification(data.message || "Erro ao enviar código", "error");
+      }
     }
   } catch (error) {
     console.error("Erro ao enviar código:", error);
