@@ -1,7 +1,11 @@
+// SUBSTITUIR TODO O CONTEÚDO DE forgot-password.js
+
+const API_BASE_URL = "http://localhost:5000/api";
+
 // State management
 let currentStep = 1;
 let userEmail = "";
-let verificationCode = "";
+let resetToken = ""; // Token recebido após verificar código
 let resendTimer = null;
 let resendCountdown = 0;
 
@@ -80,7 +84,224 @@ function initializeEventListeners() {
   });
 }
 
-// Email validation
+// ========== API CALLS ==========
+
+async function sendVerificationCode() {
+  const emailInput = document.getElementById("emailInput");
+  const sendCodeBtn = document.getElementById("sendCodeBtn");
+
+  userEmail = emailInput.value.trim();
+
+  if (!isValidEmail(userEmail)) {
+    showNotification("Por favor, insira um e-mail válido", "error");
+    return;
+  }
+
+  // Desabilitar botão e mostrar loading
+  sendCodeBtn.disabled = true;
+  sendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/auth/request-password-reset`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: userEmail }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showNotification("Código enviado para " + userEmail, "success");
+
+      // Update email display
+      document.getElementById("emailDisplay").textContent = userEmail;
+
+      // Move to next step
+      goToStep(2);
+
+      // Start resend timer
+      startResendTimer();
+    } else {
+      showNotification(data.message || "Erro ao enviar código", "error");
+    }
+  } catch (error) {
+    console.error("Erro ao enviar código:", error);
+    showNotification("Erro de conexão. Tente novamente.", "error");
+  } finally {
+    // Restaurar botão
+    sendCodeBtn.disabled = false;
+    sendCodeBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Código';
+  }
+}
+
+async function verifyCode() {
+  const codeInputs = document.querySelectorAll(".code-input");
+  const verifyCodeBtn = document.getElementById("verifyCodeBtn");
+
+  let enteredCode = "";
+  codeInputs.forEach((input) => {
+    enteredCode += input.value;
+  });
+
+  if (enteredCode.length !== 6) {
+    showNotification("Por favor, insira o código completo", "error");
+    return;
+  }
+
+  // Desabilitar botão e mostrar loading
+  verifyCodeBtn.disabled = true;
+  verifyCodeBtn.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-reset-code`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: userEmail,
+        code: enteredCode,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      resetToken = data.resetToken; // Armazenar token para usar no reset
+      showNotification("Código verificado com sucesso!", "success");
+      goToStep(3);
+    } else {
+      showNotification(data.message || "Código inválido ou expirado", "error");
+
+      // Limpar inputs em caso de erro
+      codeInputs.forEach((input) => {
+        input.value = "";
+        input.classList.remove("filled");
+      });
+      codeInputs[0].focus();
+      validateCodeInputs();
+    }
+  } catch (error) {
+    console.error("Erro ao verificar código:", error);
+    showNotification("Erro de conexão. Tente novamente.", "error");
+  } finally {
+    // Restaurar botão
+    verifyCodeBtn.disabled = false;
+    verifyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Verificar Código';
+  }
+}
+
+async function resetPassword() {
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+  const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+
+  const password = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+
+  if (password !== confirmPassword) {
+    showNotification("As senhas não coincidem", "error");
+    return;
+  }
+
+  // Validar força da senha
+  if (!validatePasswordStrength(password)) {
+    showNotification("A senha não atende aos requisitos mínimos", "error");
+    return;
+  }
+
+  // Desabilitar botão e mostrar loading
+  resetPasswordBtn.disabled = true;
+  resetPasswordBtn.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Alterando...';
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        resetToken: resetToken,
+        newPassword: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showNotification("Senha redefinida com sucesso!", "success");
+      goToStep(4);
+    } else {
+      showNotification(data.message || "Erro ao redefinir senha", "error");
+    }
+  } catch (error) {
+    console.error("Erro ao resetar senha:", error);
+    showNotification("Erro de conexão. Tente novamente.", "error");
+  } finally {
+    // Restaurar botão
+    resetPasswordBtn.disabled = false;
+    resetPasswordBtn.innerHTML = '<i class="fas fa-key"></i> Redefinir Senha';
+  }
+}
+
+async function resendVerificationCode() {
+  if (resendCountdown > 0) {
+    return;
+  }
+
+  const resendCodeBtn = document.getElementById("resendCodeBtn");
+  resendCodeBtn.disabled = true;
+  resendCodeBtn.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Reenviando...';
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/auth/request-password-reset`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: userEmail }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showNotification("Código reenviado para " + userEmail, "success");
+
+      // Limpar inputs atuais
+      const codeInputs = document.querySelectorAll(".code-input");
+      codeInputs.forEach((input) => {
+        input.value = "";
+        input.classList.remove("filled");
+      });
+      codeInputs[0].focus();
+      validateCodeInputs();
+
+      // Reiniciar timer
+      startResendTimer();
+    } else {
+      showNotification(data.message || "Erro ao reenviar código", "error");
+    }
+  } catch (error) {
+    console.error("Erro ao reenviar código:", error);
+    showNotification("Erro de conexão. Tente novamente.", "error");
+  } finally {
+    resendCodeBtn.disabled = false;
+  }
+}
+
+// ========== VALIDATION HELPERS ==========
+
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -94,33 +315,17 @@ function validateEmailInput() {
   sendCodeBtn.disabled = !isValid;
 }
 
-function sendVerificationCode() {
-  const emailInput = document.getElementById("emailInput");
-  userEmail = emailInput.value;
+function validatePasswordStrength(password) {
+  const hasLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
 
-  if (!isValidEmail(userEmail)) {
-    showNotification("Por favor, insira um e-mail válido", "error");
-    return;
-  }
-
-  // Simulate API call
-  showNotification("Código enviado para " + userEmail, "success");
-
-  // Generate a random 6-digit code (in production, this would be done on the server)
-  verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-  console.log("Código de verificação (para teste):", verificationCode);
-
-  // Update email display
-  document.getElementById("emailDisplay").textContent = userEmail;
-
-  // Move to next step
-  goToStep(2);
-
-  // Start resend timer
-  startResendTimer();
+  return hasLength && hasUppercase && hasLowercase && hasNumber;
 }
 
-// Code input handling
+// ========== CODE INPUT HANDLING ==========
+
 function handleCodeInput(e, index) {
   const input = e.target;
   const value = input.value;
@@ -208,55 +413,6 @@ function validateCodeInputs() {
   verifyCodeBtn.disabled = !allFilled;
 }
 
-function verifyCode() {
-  const codeInputs = document.querySelectorAll(".code-input");
-  let enteredCode = "";
-
-  codeInputs.forEach((input) => {
-    enteredCode += input.value;
-  });
-
-  // Simulate API verification
-  // In production, this would verify with the server
-  if (enteredCode === verificationCode) {
-    showNotification("Código verificado com sucesso!", "success");
-    goToStep(3);
-  } else {
-    showNotification("Código inválido. Tente novamente.", "error");
-    // Clear inputs
-    codeInputs.forEach((input) => {
-      input.value = "";
-      input.classList.remove("filled");
-    });
-    codeInputs[0].focus();
-    validateCodeInputs();
-  }
-}
-
-function resendVerificationCode() {
-  if (resendCountdown > 0) {
-    return;
-  }
-
-  // Generate new code
-  verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-  console.log("Novo código de verificação (para teste):", verificationCode);
-
-  showNotification("Código reenviado para " + userEmail, "success");
-
-  // Clear current inputs
-  const codeInputs = document.querySelectorAll(".code-input");
-  codeInputs.forEach((input) => {
-    input.value = "";
-    input.classList.remove("filled");
-  });
-  codeInputs[0].focus();
-  validateCodeInputs();
-
-  // Restart timer
-  startResendTimer();
-}
-
 function startResendTimer() {
   const resendCodeBtn = document.getElementById("resendCodeBtn");
   resendCountdown = 60;
@@ -280,7 +436,8 @@ function startResendTimer() {
   }, 1000);
 }
 
-// Password validation
+// ========== PASSWORD VALIDATION ==========
+
 function validatePassword() {
   const newPasswordInput = document.getElementById("newPasswordInput");
   const password = newPasswordInput.value;
@@ -391,26 +548,8 @@ function togglePasswordVisibility(inputId, iconId) {
   }
 }
 
-function resetPassword() {
-  const newPasswordInput = document.getElementById("newPasswordInput");
-  const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+// ========== NAVIGATION ==========
 
-  const password = newPasswordInput.value;
-  const confirmPassword = confirmPasswordInput.value;
-
-  if (password !== confirmPassword) {
-    showNotification("As senhas não coincidem", "error");
-    return;
-  }
-
-  // Simulate API call to reset password
-  setTimeout(() => {
-    showNotification("Senha redefinida com sucesso!", "success");
-    goToStep(4);
-  }, 500);
-}
-
-// Navigation
 function goToStep(step) {
   const currentStepEl = document.querySelector(".step-container.active");
 
@@ -483,7 +622,8 @@ function updateHeaderSubtitle() {
   headerSubtitle.textContent = subtitles[currentStep];
 }
 
-// Notifications
+// ========== NOTIFICATIONS ==========
+
 function showNotification(message, type = "info") {
   // Remove existing notification
   const existingNotification = document.querySelector(".notification");
