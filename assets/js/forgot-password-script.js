@@ -1,6 +1,6 @@
 // SUBSTITUIR TODO O CONTEÚDO DE forgot-password.js
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
 
 // State management
 let currentStep = 1;
@@ -80,7 +80,7 @@ function initializeEventListeners() {
   // Success step
   const goToLoginBtn = document.getElementById("goToLoginBtn");
   goToLoginBtn.addEventListener("click", () => {
-    window.location.href = "./login.html";
+    window.location.href = "/index.html";
   });
 }
 
