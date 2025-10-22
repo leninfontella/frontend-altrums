@@ -669,7 +669,7 @@ function showComingSoonNotification(feature) {
     z-index: 10001;
     animation: slideUpNotification 0.4s ease;
   `;
-  notification.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 8px;"></i>${feature} em breve!`;
+  notification.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 8px;"></i>${feature} aberto!`;
 
   document.body.appendChild(notification);
 
@@ -751,3 +751,179 @@ window.exportFAQs = function () {
   link.click();
   console.log("💾 FAQs exportados com sucesso!");
 };
+
+// ========== GERENCIAMENTO DOS MODAIS LEGAIS ==========
+
+document.addEventListener("DOMContentLoaded", function () {
+  initializeLegalModals();
+});
+
+function initializeLegalModals() {
+  console.log("⚖️ Modais legais inicializados");
+
+  // Configurar botões de abertura dos modais
+  setupModalTriggers();
+
+  // Configurar botões de fechamento
+  setupCloseButtons();
+
+  // Fechar com ESC
+  setupEscapeKey();
+
+  // Fechar ao clicar no backdrop
+  setupBackdropClose();
+}
+
+// ========== TRIGGERS DE ABERTURA ==========
+
+function setupModalTriggers() {
+  // Botões nos resource links
+  const resourceLinks = document.querySelectorAll(".resource-link");
+
+  resourceLinks.forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      const text = this.querySelector("span").textContent.trim();
+
+      if (text === "Termos de Uso") {
+        openTermsModal();
+      } else if (text === "Política de Privacidade") {
+        openPrivacyModal();
+      }
+    });
+  });
+
+  // Funções globais para abrir os modais (podem ser chamadas de qualquer lugar)
+  window.openTermsModal = openTermsModal;
+  window.openPrivacyModal = openPrivacyModal;
+}
+
+function openTermsModal() {
+  const modal = document.getElementById("terms-modal");
+  if (!modal) {
+    console.warn("⚠️ Modal de Termos não encontrado");
+    return;
+  }
+
+  modal.classList.remove("hidden");
+  modal.classList.remove("closing");
+  document.body.style.overflow = "hidden";
+
+  // Scroll para o topo
+  const modalBody = modal.querySelector(".legal-modal-body");
+  if (modalBody) {
+    modalBody.scrollTop = 0;
+  }
+
+  console.log("📄 Modal de Termos de Uso aberto");
+}
+
+function openPrivacyModal() {
+  const modal = document.getElementById("privacy-modal");
+  if (!modal) {
+    console.warn("⚠️ Modal de Privacidade não encontrado");
+    return;
+  }
+
+  modal.classList.remove("hidden");
+  modal.classList.remove("closing");
+  document.body.style.overflow = "hidden";
+
+  // Scroll para o topo
+  const modalBody = modal.querySelector(".legal-modal-body");
+  if (modalBody) {
+    modalBody.scrollTop = 0;
+  }
+
+  console.log("🔒 Modal de Política de Privacidade aberto");
+}
+
+// ========== FECHAMENTO DOS MODAIS ==========
+
+function setupCloseButtons() {
+  // Botão fechar do modal de Termos
+  const closeTermsBtn = document.getElementById("close-terms-modal");
+  if (closeTermsBtn) {
+    closeTermsBtn.addEventListener("click", function () {
+      closeLegalModal("terms-modal");
+    });
+  }
+
+  // Botão fechar do modal de Privacidade
+  const closePrivacyBtn = document.getElementById("close-privacy-modal");
+  if (closePrivacyBtn) {
+    closePrivacyBtn.addEventListener("click", function () {
+      closeLegalModal("privacy-modal");
+    });
+  }
+}
+
+function closeLegalModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  modal.classList.add("closing");
+
+  setTimeout(() => {
+    modal.classList.add("hidden");
+    modal.classList.remove("closing");
+    document.body.style.overflow = "";
+  }, 300);
+
+  console.log(`✖️ Modal ${modalId} fechado`);
+}
+
+// ========== FECHAR COM ESC ==========
+
+function setupEscapeKey() {
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      const termsModal = document.getElementById("terms-modal");
+      const privacyModal = document.getElementById("privacy-modal");
+
+      if (termsModal && !termsModal.classList.contains("hidden")) {
+        closeLegalModal("terms-modal");
+      } else if (privacyModal && !privacyModal.classList.contains("hidden")) {
+        closeLegalModal("privacy-modal");
+      }
+    }
+  });
+}
+
+// ========== FECHAR AO CLICAR NO BACKDROP ==========
+
+function setupBackdropClose() {
+  // Modal de Termos
+  const termsModal = document.getElementById("terms-modal");
+  if (termsModal) {
+    const backdrop = termsModal.querySelector(".legal-modal-backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", function () {
+        closeLegalModal("terms-modal");
+      });
+    }
+  }
+
+  // Modal de Privacidade
+  const privacyModal = document.getElementById("privacy-modal");
+  if (privacyModal) {
+    const backdrop = privacyModal.querySelector(".legal-modal-backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", function () {
+        closeLegalModal("privacy-modal");
+      });
+    }
+  }
+}
+
+// ========== UTILITÁRIOS ==========
+
+// Exportar funções globalmente para uso externo
+window.closeLegalModal = closeLegalModal;
+
+// Log de inicialização
+console.log("✅ Sistema de modais legais carregado com sucesso!");
+console.log("📋 Modais disponíveis:", {
+  termos: "openTermsModal()",
+  privacidade: "openPrivacyModal()",
+});
