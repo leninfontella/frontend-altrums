@@ -799,7 +799,7 @@ const navigationButtons = {
   "go-timeline": "../../timeline/html/timeline.html",
   "go-settings": "../../configuracao/html/index.html",
   "go-home": "/pages/home/html/index.html",
-  "go-support": "../../support/html/suporte.html",
+  "go-support": "../../support/html/support.html",
   "go-security": "/pages/security/html/security.html",
   "go-transactions": "/pages/transactions/html/transactions.html",
 };

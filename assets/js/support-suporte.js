@@ -1,551 +1,409 @@
-// Botão go home:
-
-const goHome = document.getElementById("go-home");
-const homeButton = document.getElementById("go-home-button");
-
-homeButton.addEventListener("click", () => {
-  if (document.referrer) {
-    // Se existe uma página anterior no histórico, volta para ela
-    window.history.back();
-  } else {
-    // Se não existe (ex: usuário entrou direto), vai para uma página padrão
-    window.location.href = "/index.html";
-  }
-});
-// goHome.onclick = goHomeButton;
-// homeButton.onclick = goHomeButton;
-
-// Função para voltar à página anterior
-function goBack() {
-  console.log("Voltando para a página anterior...");
-  // window.history.back();
-
-  // Ou redirecionar para uma página específica:
-  // window.location.href = "/index.html";
-}
-
-// Função para abrir WhatsApp
-function openWhatsApp() {
-  const phoneNumber = "5551989134037"; // Substitua pelo número real
-  const message = "Olá! Preciso de suporte com o Altrum!";
-  const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-    message
-  )}`;
-
-  // Abre em uma nova aba
-  window.open(url, "_blank");
-}
-
-// Função para abrir cliente de email
-function openEmail() {
-  const email = "suporte@leninfontella.com";
-  const subject = "Solicitação de Suporte";
-  const body = "Olá! Preciso de ajuda com a plataforma.";
-
-  // Cria o link mailto
-  window.location.href = `mailto:${email}?subject=${encodeURIComponent(
-    subject
-  )}&body=${encodeURIComponent(body)}`;
-}
-
-// Função para fechar formulário de contato
-function closeContactForm() {
-  AppState.closeForm();
-
-  // Adicionar animação de saída
-  const form = document.getElementById("contactForm");
-  form.style.animation = "slideUp 0.3s ease";
-
-  setTimeout(() => {
-    form.classList.remove("active");
-    form.style.animation = "";
-  }, 300);
-}
-
-// Função para mostrar/esconder formulário de contato
-function toggleContactForm() {
-  const form = document.getElementById("contactForm");
-  form.classList.toggle("active");
-
-  // Se o formulário foi aberto, fazer scroll suave até ele
-  if (form.classList.contains("active")) {
-    form.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    });
-  }
-}
-
-// Função para abrir FAQ
-function openFAQ() {
-  console.log("Abrindo FAQ...");
-  // Redirecionar para a página de FAQ
-  // window.location.href = '../faq/html/faq.html';
-
-  // Ou abrir em nova aba
-  // window.open('../faq/html/faq.html', '_blank');
-}
-
-// Função para enviar formulário
-function submitForm(event) {
-  event.preventDefault();
-
-  const button = event.target.querySelector(".submit-button");
-  const originalText = button.textContent;
-
-  // Desabilitar botão e mostrar loading
-  button.textContent = "Enviando...";
-  button.disabled = true;
-
-  // Simular envio (substituir por integração real)
-  setTimeout(() => {
-    // Mostrar sucesso
-    showSuccessMessage(
-      "Mensagem enviada com sucesso! Entraremos em contato em breve."
-    );
-
-    // Restaurar botão
-    button.textContent = originalText;
-    button.disabled = false;
-
-    // Limpar formulário
-    event.target.reset();
-
-    // Fechar formulário
-    document.getElementById("contactForm").classList.remove("active");
-  }, 2000);
-}
-
-// Função para mostrar mensagem de sucesso
-function showSuccessMessage(message) {
-  // Criar elemento de notificação
-  const notification = document.createElement("div");
-  notification.className = "success-notification";
-  notification.textContent = message;
-
-  // Adicionar estilos
-  Object.assign(notification.style, {
-    position: "fixed",
-    top: "20px",
-    right: "20px",
-    background: "linear-gradient(135deg, #7877c6 0%, #5b5a9f 100%)",
-    color: "white",
-    padding: "16px 24px",
-    borderRadius: "12px",
-    boxShadow: "0 8px 32px rgba(120, 119, 198, 0.3)",
-    zIndex: "9999",
-    fontSize: "14px",
-    fontWeight: "500",
-    maxWidth: "300px",
-    transform: "translateX(100%)",
-    transition: "transform 0.3s ease",
-    backdropFilter: "blur(20px)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-  });
-
-  // Adicionar ao DOM
-  document.body.appendChild(notification);
-
-  // Animar entrada
-  setTimeout(() => {
-    notification.style.transform = "translateX(0)";
-  }, 100);
-
-  // Remover após 5 segundos
-  setTimeout(() => {
-    notification.style.transform = "translateX(100%)";
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 300);
-  }, 5000);
-}
-
-// Função para validar email
-function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-// Função para adicionar validação em tempo real
-function addRealTimeValidation() {
-  const form = document.querySelector("#contactForm form");
-  const inputs = form.querySelectorAll(".input-field, .textarea-field");
-
-  inputs.forEach((input) => {
-    input.addEventListener("blur", function () {
-      validateField(this);
-    });
-
-    input.addEventListener("input", function () {
-      if (this.classList.contains("error")) {
-        validateField(this);
-      }
-    });
-  });
-}
-
-// Função para validar campo individual
-function validateField(field) {
-  const value = field.value.trim();
-  let isValid = true;
-  let errorMessage = "";
-
-  // Validação por tipo
-  if (field.type === "email" && value) {
-    if (!isValidEmail(value)) {
-      isValid = false;
-      errorMessage = "E-mail inválido";
-    }
-  }
-
-  // Validação de campos obrigatórios
-  if (field.required && !value) {
-    isValid = false;
-    errorMessage = "Campo obrigatório";
-  }
-
-  // Aplicar estilos de validação
-  if (!isValid) {
-    field.classList.add("error");
-    showFieldError(field, errorMessage);
-  } else {
-    field.classList.remove("error");
-    removeFieldError(field);
-  }
-
-  return isValid;
-}
-
-// Função para mostrar erro no campo
-function showFieldError(field, message) {
-  let errorElement = field.parentNode.querySelector(".field-error");
-
-  if (!errorElement) {
-    errorElement = document.createElement("div");
-    errorElement.className = "field-error";
-    Object.assign(errorElement.style, {
-      color: "#ff4757",
-      fontSize: "12px",
-      marginTop: "4px",
-      fontWeight: "500",
-    });
-    field.parentNode.appendChild(errorElement);
-  }
-
-  errorElement.textContent = message;
-  field.style.borderColor = "#ff4757";
-}
-
-// Função para remover erro do campo
-function removeFieldError(field) {
-  const errorElement = field.parentNode.querySelector(".field-error");
-  if (errorElement) {
-    errorElement.remove();
-  }
-  field.style.borderColor = "";
-}
-
-// Função para animar elementos na entrada
-function animateElementsOnLoad() {
-  const options = document.querySelectorAll(".support-option");
-
-  options.forEach((option, index) => {
-    // Reset inicial
-    option.style.opacity = "0";
-    option.style.transform = "translateY(20px)";
-
-    // Animar com delay
-    setTimeout(() => {
-      option.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-      option.style.opacity = "1";
-      option.style.transform = "translateY(0)";
-    }, index * 100 + 200);
-  });
-}
-
-// Função para adicionar efeitos de ripple nos botões
-function addRippleEffect() {
-  const buttons = document.querySelectorAll(
-    ".support-option, .submit-button, .back-button"
-  );
-
-  buttons.forEach((button) => {
-    button.addEventListener("click", function (e) {
-      const ripple = document.createElement("span");
-      const rect = this.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
-
-      Object.assign(ripple.style, {
-        position: "absolute",
-        width: size + "px",
-        height: size + "px",
-        left: x + "px",
-        top: y + "px",
-        background: "rgba(255, 255, 255, 0.3)",
-        borderRadius: "50%",
-        transform: "scale(0)",
-        animation: "ripple 0.6s ease-out",
-        pointerEvents: "none",
-      });
-
-      // Garantir que o botão tenha position relative
-      if (getComputedStyle(this).position === "static") {
-        this.style.position = "relative";
-      }
-
-      this.appendChild(ripple);
-
-      // Remover ripple após animação
-      setTimeout(() => {
-        ripple.remove();
-      }, 600);
-    });
-  });
-}
-
-// Função para adicionar animação de digitação
-function addTypingAnimation() {
-  const subtitle = document.querySelector(".app-subtitle");
-  const originalText = subtitle.textContent;
-
-  subtitle.textContent = "";
-
-  let i = 0;
-  const typeInterval = setInterval(() => {
-    subtitle.textContent += originalText.charAt(i);
-    i++;
-
-    if (i >= originalText.length) {
-      clearInterval(typeInterval);
-    }
-  }, 50);
-}
-
-// Função para detectar scroll no formulário
-function handleFormScroll() {
-  const supportOptions = document.querySelector(".support-options");
-  const contactForm = document.getElementById("contactForm");
-
-  // Observer para detectar quando o formulário fica visível
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.style.animation = "slideInUp 0.6s ease forwards";
-      }
-    });
-  });
-
-  // Observar o formulário quando ele estiver ativo
-  const formObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.attributeName === "class") {
-        if (contactForm.classList.contains("active")) {
-          observer.observe(contactForm);
-        } else {
-          observer.unobserve(contactForm);
-        }
-      }
-    });
-  });
-
-  formObserver.observe(contactForm, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
-}
-
-// Função para gerenciar estado da aplicação
-const AppState = {
-  isFormOpen: false,
-
-  openForm() {
-    this.isFormOpen = true;
-    document.getElementById("contactForm").classList.add("active");
+// ========== CONFIGURAÇÃO ==========
+const SUPPORT_CONFIG = {
+  whatsapp: {
+    number: "5551989134037", // Substitua pelo número real (código do país + DDD + número)
+    message: "Olá! Preciso de ajuda com o Altrum Coins.",
   },
-
-  closeForm() {
-    this.isFormOpen = false;
-    document.getElementById("contactForm").classList.remove("active");
+  email: {
+    address: "suporte@leninfontella.com",
+    subject: "Suporte Altrum Coins",
+    body: "Olá, gostaria de ajuda com:",
   },
-
-  toggleForm() {
-    if (this.isFormOpen) {
-      this.closeForm();
-    } else {
-      this.openForm();
-    }
+  socialMedia: {
+    instagram: "https://instagram.com/altrumcoins",
+    youtube: "https://youtube.com/@altrumcoins",
+    facebook: "https://facebook.com/altrumcoins",
+    discord: "https://discord.gg/altrumcoins",
+    tiktok: "https://tiktok.com/@altrumcoins",
+    twitter: "https://x.com/altrumcoins",
+    linkedin: "https://linkedin.com/company/altrumcoins",
+    telegram: "https://t.me/altrumcoins",
   },
 };
 
-// Função para adicionar atalhos de teclado
-function addKeyboardShortcuts() {
-  document.addEventListener("keydown", (e) => {
-    // ESC para fechar formulário
-    if (e.key === "Escape" && AppState.isFormOpen) {
-      AppState.closeForm();
-    }
+// ========== INICIALIZAÇÃO ==========
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🚀 Inicializando página de suporte...");
 
-    // Ctrl/Cmd + Enter para enviar formulário
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && AppState.isFormOpen) {
-      const form = document.querySelector("#contactForm form");
-      if (form) {
-        form.dispatchEvent(new Event("submit"));
-      }
-    }
-  });
+  initializeSupport();
+  setupContactOptions();
+  setupSocialMedia();
+  animateOnLoad();
+
+  console.log("✅ Página de suporte inicializada!");
+});
+
+// ========== FUNÇÃO PRINCIPAL ==========
+function initializeSupport() {
+  console.log("⚙️ Configurando suporte...");
+
+  // Verificar se o usuário está autenticado
+  checkAuthentication();
+
+  // Configurar eventos
+  setupBackButton();
 }
 
-// Função para salvar rascunho do formulário
-function setupFormDraft() {
-  const form = document.querySelector("#contactForm form");
-  const inputs = form.querySelectorAll(".input-field, .textarea-field");
-
-  // Carregar rascunho salvo
-  inputs.forEach((input) => {
-    const savedValue = localStorage.getItem(
-      `draft_${input.name || input.type}`
-    );
-    if (savedValue) {
-      input.value = savedValue;
-    }
-
-    // Salvar automaticamente enquanto digita
-    input.addEventListener("input", () => {
-      localStorage.setItem(`draft_${input.name || input.type}`, input.value);
-    });
-  });
-
-  // Limpar rascunho após envio
-  form.addEventListener("submit", () => {
-    inputs.forEach((input) => {
-      localStorage.removeItem(`draft_${input.name || input.type}`);
-    });
-  });
-}
-
-// Função para adicionar feedback tátil (vibração)
-function addHapticFeedback() {
-  const buttons = document.querySelectorAll(
-    ".support-option, .submit-button, .back-button"
-  );
-
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      // Vibração leve em dispositivos móveis
-      if (navigator.vibrate) {
-        navigator.vibrate(10);
-      }
-    });
-  });
-}
-
-// Função principal de inicialização
-function initializeApp() {
-  // Aguardar carregamento completo
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeApp);
-    return;
-  }
-
-  // Inicializar todas as funcionalidades
-  animateElementsOnLoad();
-  addRippleEffect();
-  addFormBackButtonRipple();
-  addRealTimeValidation();
-  handleFormScroll();
-  addKeyboardShortcuts();
-  addHapticFeedback();
-
-  // Adicionar animação de digitação após delay
-  setTimeout(addTypingAnimation, 1000);
-
-  // Configurar rascunho apenas se localStorage estiver disponível
-  if (typeof Storage !== "undefined") {
-    setupFormDraft();
-  }
-
-  console.log("Página de Suporte inicializada com sucesso!");
-}
-
-// Função para cleanup ao sair da página
-function cleanup() {
-  // Remover event listeners se necessário
-  console.log("Cleanup executado");
-}
-
-// Event listeners para ciclo de vida da página
-window.addEventListener("beforeunload", cleanup);
-
-// Atualizar função toggleContactForm para usar AppState
-function toggleContactForm() {
-  AppState.toggleForm();
-
-  if (AppState.isFormOpen) {
-    document.getElementById("contactForm").scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    });
+// ========== VERIFICAÇÃO DE AUTENTICAÇÃO ==========
+function checkAuthentication() {
+  // Verificar se existe módulo Auth global
+  if (
+    typeof Auth !== "undefined" &&
+    Auth.isAuthenticated &&
+    !Auth.isAuthenticated()
+  ) {
+    console.warn("⚠️ Usuário não autenticado");
+    // Opcional: redirecionar para login
+    // window.location.href = '/login.html';
   }
 }
 
-// Função para adicionar efeito ripple no botão de voltar do formulário
-function addFormBackButtonRipple() {
-  const formBackButton = document.querySelector(".form-back-button");
+// ========== NAVEGAÇÃO ==========
+function setupBackButton() {
+  const backButton = document.getElementById("go-back");
 
-  if (formBackButton) {
-    formBackButton.addEventListener("click", function (e) {
-      const ripple = document.createElement("span");
-      const rect = this.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
-
-      Object.assign(ripple.style, {
-        position: "absolute",
-        width: size + "px",
-        height: size + "px",
-        left: x + "px",
-        top: y + "px",
-        background: "rgba(120, 119, 198, 0.3)",
-        borderRadius: "50%",
-        transform: "scale(0)",
-        animation: "ripple 0.6s ease-out",
-        pointerEvents: "none",
-      });
-
-      this.style.position = "relative";
-      this.appendChild(ripple);
+  if (backButton) {
+    backButton.addEventListener("click", function () {
+      // Adicionar feedback visual
+      this.style.transform = "scale(0.9)";
 
       setTimeout(() => {
-        ripple.remove();
-      }, 600);
+        this.style.transform = "";
+
+        // Voltar para a página anterior ou perfil
+        if (document.referrer) {
+          window.history.back();
+        } else {
+          window.location.href = "../profile/html/profile.html";
+        }
+      }, 150);
     });
   }
 }
 
-// Adicionar CSS para animação de ripple
-const rippleStyles = document.createElement("style");
-rippleStyles.textContent = `
-  @keyframes ripple {
-    to {
-      transform: scale(4);
+// ========== OPÇÕES DE CONTATO ==========
+function setupContactOptions() {
+  const whatsappOption = document.getElementById("whatsapp-option");
+  const emailOption = document.getElementById("email-option");
+
+  if (whatsappOption) {
+    whatsappOption.addEventListener("click", function (e) {
+      e.preventDefault();
+      openWhatsApp();
+    });
+  }
+
+  if (emailOption) {
+    emailOption.addEventListener("click", function (e) {
+      e.preventDefault();
+      openEmail();
+    });
+  }
+}
+
+function openWhatsApp() {
+  console.log("📱 Abrindo WhatsApp...");
+
+  const { number, message } = SUPPORT_CONFIG.whatsapp;
+  const encodedMessage = encodeURIComponent(message);
+  const url = `https://wa.me/${number}?text=${encodedMessage}`;
+
+  // Feedback visual
+  showNotification("Abrindo WhatsApp...", "success");
+
+  // Abrir WhatsApp
+  window.open(url, "_blank");
+
+  // Registrar evento (analytics opcional)
+  logSupportEvent("whatsapp_opened");
+}
+
+function openEmail() {
+  console.log("📧 Abrindo cliente de e-mail...");
+
+  const { address, subject, body } = SUPPORT_CONFIG.email;
+  const encodedSubject = encodeURIComponent(subject);
+  const encodedBody = encodeURIComponent(body);
+  const url = `mailto:${address}?subject=${encodedSubject}&body=${encodedBody}`;
+
+  // Feedback visual
+  showNotification("Abrindo e-mail...", "success");
+
+  // Abrir cliente de e-mail
+  window.location.href = url;
+
+  // Registrar evento (analytics opcional)
+  logSupportEvent("email_opened");
+}
+
+// ========== REDES SOCIAIS ==========
+function setupSocialMedia() {
+  const socialLinks = document.querySelectorAll(".social-link");
+
+  socialLinks.forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const platform = this.classList[1]; // instagram, youtube, etc.
+      openSocialMedia(platform, this);
+    });
+  });
+}
+
+function openSocialMedia(platform, element) {
+  console.log(`🌐 Abrindo ${platform}...`);
+
+  const url = SUPPORT_CONFIG.socialMedia[platform];
+
+  if (url) {
+    // Feedback visual
+    addClickAnimation(element);
+    showNotification(`Abrindo ${platform}...`, "info");
+
+    // Abrir rede social
+    setTimeout(() => {
+      window.open(url, "_blank");
+    }, 200);
+
+    // Registrar evento
+    logSupportEvent("social_media_opened", { platform });
+  } else {
+    console.warn(`⚠️ URL não configurada para ${platform}`);
+    showNotification("Link não disponível no momento", "warning");
+  }
+}
+
+// ========== ANIMAÇÕES ==========
+function animateOnLoad() {
+  // Animar hero section
+  const heroSection = document.querySelector(".hero-section");
+  if (heroSection) {
+    heroSection.style.opacity = "0";
+    heroSection.style.transform = "translateY(20px)";
+
+    setTimeout(() => {
+      heroSection.style.transition = "all 0.6s ease";
+      heroSection.style.opacity = "1";
+      heroSection.style.transform = "translateY(0)";
+    }, 100);
+  }
+
+  // Animar cards com delay
+  const cards = document.querySelectorAll(".support-option, .info-card");
+  cards.forEach((card, index) => {
+    card.style.opacity = "0";
+    card.style.transform = "translateY(20px)";
+
+    setTimeout(() => {
+      card.style.transition = "all 0.5s ease";
+      card.style.opacity = "1";
+      card.style.transform = "translateY(0)";
+    }, 200 + index * 50);
+  });
+
+  // Animar ícones sociais
+  const socialLinks = document.querySelectorAll(".social-link");
+  socialLinks.forEach((link, index) => {
+    link.style.opacity = "0";
+    link.style.transform = "scale(0.8)";
+
+    setTimeout(() => {
+      link.style.transition = "all 0.4s ease";
+      link.style.opacity = "1";
+      link.style.transform = "scale(1)";
+    }, 400 + index * 30);
+  });
+}
+
+function addClickAnimation(element) {
+  if (!element) return;
+
+  element.style.transform = "scale(0.95)";
+  element.style.transition = "transform 0.15s ease";
+
+  setTimeout(() => {
+    element.style.transform = "";
+    element.style.transition = "all 0.3s ease";
+  }, 150);
+}
+
+// ========== NOTIFICAÇÕES ==========
+function showNotification(message, type = "info") {
+  console.log(`📢 Notificação (${type}):`, message);
+
+  // Criar elemento de notificação
+  const notification = document.createElement("div");
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+
+  // Estilos inline
+  Object.assign(notification.style, {
+    position: "fixed",
+    top: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    background:
+      type === "success"
+        ? "linear-gradient(135deg, #00ff88, #00cc66)"
+        : type === "warning"
+        ? "linear-gradient(135deg, #ffaa00, #cc8800)"
+        : type === "error"
+        ? "linear-gradient(135deg, #ff4444, #cc0000)"
+        : "linear-gradient(135deg, #00d4ff, #0099cc)",
+    color: "#fff",
+    padding: "12px 24px",
+    borderRadius: "12px",
+    fontSize: "14px",
+    fontWeight: "600",
+    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+    zIndex: "9999",
+    animation: "slideDown 0.3s ease",
+    maxWidth: "90%",
+    textAlign: "center",
+  });
+
+  // Adicionar ao body
+  document.body.appendChild(notification);
+
+  // Remover após 3 segundos
+  setTimeout(() => {
+    notification.style.animation = "slideUp 0.3s ease";
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
+
+// Adicionar estilos de animação
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideDown {
+    from {
       opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   }
   
-  .field-error {
-    animation: shake 0.3s ease-in-out;
-  }
-  
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
   }
 `;
-document.head.appendChild(rippleStyles);
+document.head.appendChild(style);
 
-// Inicializar aplicação
-initializeApp();
+// ========== ANALYTICS E LOGGING ==========
+function logSupportEvent(eventName, data = {}) {
+  const eventData = {
+    event: eventName,
+    timestamp: new Date().toISOString(),
+    page: "support",
+    ...data,
+  };
+
+  console.log("📊 Evento registrado:", eventData);
+
+  // Aqui você pode integrar com Google Analytics, Mixpanel, etc.
+  // Exemplo:
+  // if (typeof gtag !== 'undefined') {
+  //   gtag('event', eventName, data);
+  // }
+
+  // Ou salvar localmente para análise
+  try {
+    const events = JSON.parse(localStorage.getItem("support_events") || "[]");
+    events.push(eventData);
+    localStorage.setItem("support_events", JSON.stringify(events.slice(-50))); // Manter últimos 50
+  } catch (error) {
+    console.warn("⚠️ Erro ao salvar evento:", error);
+  }
+}
+
+// ========== FUNÇÕES AUXILIARES ==========
+function formatPhoneNumber(number) {
+  // Remove caracteres não numéricos
+  const cleaned = number.replace(/\D/g, "");
+
+  // Formata para padrão internacional
+  if (cleaned.length === 13) {
+    // +55 34 999999999
+    return `+${cleaned.slice(0, 2)} (${cleaned.slice(2, 4)}) ${cleaned.slice(
+      4,
+      9
+    )}-${cleaned.slice(9)}`;
+  }
+
+  return number;
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showNotification("Copiado para área de transferência!", "success");
+      })
+      .catch((err) => {
+        console.error("❌ Erro ao copiar:", err);
+        showNotification("Erro ao copiar", "error");
+      });
+  } else {
+    // Fallback para navegadores antigos
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.select();
+
+    try {
+      document.execCommand("copy");
+      showNotification("Copiado para área de transferência!", "success");
+    } catch (err) {
+      console.error("❌ Erro ao copiar:", err);
+      showNotification("Erro ao copiar", "error");
+    }
+
+    document.body.removeChild(textArea);
+  }
+}
+
+// ========== DEBUG ==========
+function debugSupport() {
+  console.log("🔧 DEBUG - Configuração de Suporte:");
+  console.log("WhatsApp:", SUPPORT_CONFIG.whatsapp);
+  console.log("E-mail:", SUPPORT_CONFIG.email);
+  console.log("Redes Sociais:", SUPPORT_CONFIG.socialMedia);
+
+  const events = JSON.parse(localStorage.getItem("support_events") || "[]");
+  console.log("Eventos registrados:", events);
+}
+
+// ========== EXPOSIÇÃO GLOBAL ==========
+if (typeof window !== "undefined") {
+  window.openWhatsApp = openWhatsApp;
+  window.openEmail = openEmail;
+  window.openSocialMedia = openSocialMedia;
+  window.showNotification = showNotification;
+  window.debugSupport = debugSupport;
+  window.copyToClipboard = copyToClipboard;
+}
+
+// ========== LOG INICIAL ==========
+console.log(`
+🎯 Sistema de Suporte Altrum Coins
+📱 WhatsApp: ${SUPPORT_CONFIG.whatsapp.number}
+📧 E-mail: ${SUPPORT_CONFIG.email.address}
+🌐 Redes Sociais: 8 plataformas configuradas
+🛠️ Debug: debugSupport()
+📋 Copiar: copyToClipboard(text)
+`);
