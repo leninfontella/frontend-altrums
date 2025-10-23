@@ -205,19 +205,30 @@ body {
 }
 
 .back-button {
-  background: none;
-  border: none;
-  color: #00d4ff;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space;
   font-size: 18px;
+
+  color: #00d4ff;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  overflow: hidden;
+  position: absolute; /* Adiciona posição absoluta */
+  top: 0;
+  left: 0;
 }
 
 .back-button:hover {
   background: rgba(0, 212, 255, 0.1);
   transform: scale(1.05);
+  border-color: rgba(0, 212, 255, 0.3);
 }
 
 .page-title {

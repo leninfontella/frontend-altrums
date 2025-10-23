@@ -1387,6 +1387,167 @@ function initializeSecurityModal() {
   );
 }
 
+/**
+ * Exibe uma notificação customizada
+ * @param {string} message - Mensagem a ser exibida
+ * @param {string} type - Tipo da notificação: 'success', 'error', 'info', 'warning'
+ */
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = "custom-notification";
+  notification.setAttribute("data-type", type);
+
+  // Ícones baseados no tipo
+  const icons = {
+    success: "fa-check-circle",
+    error: "fa-exclamation-circle",
+    info: "fa-info-circle",
+    warning: "fa-exclamation-triangle",
+  };
+
+  const icon = icons[type] || icons.info;
+
+  notification.innerHTML = `
+    <div class="notification-content">
+      <i class="fas ${icon} notification-icon"></i>
+      <span class="notification-message">${message}</span>
+    </div>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Trigger animação de entrada
+  setTimeout(() => {
+    notification.classList.add("show");
+  }, 10);
+
+  // Remover após 3 segundos
+  setTimeout(() => {
+    notification.classList.remove("show");
+    notification.classList.add("hide");
+
+    setTimeout(() => {
+      notification.remove();
+    }, 400);
+  }, 3000);
+}
+
+/**
+ * Salva as preferências de notificação no sessionStorage
+ * @param {string} type - Tipo de notificação (pushNotifications ou emailNotifications)
+ * @param {boolean} isActive - Estado da notificação (ativada ou desativada)
+ */
+function saveNotificationPreference(type, isActive) {
+  try {
+    const preferences = JSON.parse(
+      sessionStorage.getItem("notificationPreferences") || "{}"
+    );
+    preferences[type] = isActive;
+    sessionStorage.setItem(
+      "notificationPreferences",
+      JSON.stringify(preferences)
+    );
+    console.log("💾 Preferências salvas:", preferences);
+  } catch (error) {
+    console.error("❌ Erro ao salvar preferências:", error);
+  }
+}
+
+/**
+ * Carrega as preferências de notificação do sessionStorage
+ */
+function loadNotificationPreferences() {
+  try {
+    const preferences = JSON.parse(
+      sessionStorage.getItem("notificationPreferences") || "{}"
+    );
+
+    // Aplicar preferências salvas aos toggles
+    document.querySelectorAll(".setting-item").forEach((item) => {
+      const settingTitle = item
+        .querySelector(".setting-title")
+        ?.textContent.trim();
+      const toggle = item.querySelector(".toggle-switch");
+
+      if (toggle && settingTitle) {
+        if (
+          settingTitle === "Push Notifications" &&
+          preferences.pushNotifications !== undefined
+        ) {
+          if (preferences.pushNotifications) {
+            toggle.classList.add("active");
+          } else {
+            toggle.classList.remove("active");
+          }
+        } else if (
+          settingTitle === "E-mail" &&
+          preferences.emailNotifications !== undefined
+        ) {
+          if (preferences.emailNotifications) {
+            toggle.classList.add("active");
+          } else {
+            toggle.classList.remove("active");
+          }
+        }
+      }
+    });
+
+    console.log("📂 Preferências carregadas:", preferences);
+  } catch (error) {
+    console.error("❌ Erro ao carregar preferências:", error);
+  }
+}
+
+/**
+ * Alterna o estado do toggle e exibe notificação
+ * @param {HTMLElement} element - Elemento do toggle switch
+ */
+function toggleSwitch(element) {
+  element.classList.toggle("active");
+
+  // Identificar qual toggle foi acionado
+  const settingItem = element.closest(".setting-item");
+  const settingTitle = settingItem
+    ?.querySelector(".setting-title")
+    ?.textContent.trim();
+
+  const isActive = element.classList.contains("active");
+
+  // Mostrar notificação baseada no toggle
+  if (settingTitle === "Push Notifications") {
+    if (isActive) {
+      showNotification("🔔 Notificações push ativadas com sucesso!", "success");
+      console.log("✅ Push Notifications: ATIVADO");
+    } else {
+      showNotification("🔕 Notificações push desativadas", "info");
+      console.log("❌ Push Notifications: DESATIVADO");
+    }
+    saveNotificationPreference("pushNotifications", isActive);
+  } else if (settingTitle === "E-mail") {
+    if (isActive) {
+      showNotification("📧 Notificações por e-mail ativadas!", "success");
+      console.log("✅ E-mail Notifications: ATIVADO");
+    } else {
+      showNotification("📭 Notificações por e-mail desativadas", "info");
+      console.log("❌ E-mail Notifications: DESATIVADO");
+    }
+    saveNotificationPreference("emailNotifications", isActive);
+  }
+}
+
+// ========== INICIALIZAÇÃO ==========
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🔔 Sistema de notificações inicializado");
+
+  // Carregar preferências de notificação
+  loadNotificationPreferences();
+
+  console.log(
+    "💡 Uso: showNotification('Mensagem', 'success|error|info|warning')"
+  );
+});
+
 // ========== MODAL DE DESATIVAR CONTA ==========
 
 document.addEventListener("DOMContentLoaded", function () {
