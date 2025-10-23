@@ -303,8 +303,8 @@ function handleLogoutSession(button) {
 
 function handleLogoutAll() {
   showConfirmModal(
-    "Encerrar Todas as Sessões",
-    "Você será desconectado de TODOS os dispositivos, incluindo o atual. Deseja continuar?",
+    "Encerrar sessão atual",
+    "Você será desconectado de sua sessão atual. Deseja continuar?",
     async () => {
       try {
         let token = null;
