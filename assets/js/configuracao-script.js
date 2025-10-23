@@ -299,13 +299,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Botão voltar
   const backButton = document.querySelector(".back-button");
+
   if (backButton) {
     backButton.addEventListener("click", function () {
-      this.style.transform = "scale(0.9)";
-      setTimeout(() => {
-        this.style.transform = "";
-      }, 150);
-      console.log("Voltando para tela anterior...");
+      window.location.href = "/pages/profile/profile.html";
     });
   }
 
