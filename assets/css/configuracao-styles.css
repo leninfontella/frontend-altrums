@@ -3434,3 +3434,83 @@ body {
     width: 100%;
   }
 }
+
+/* ========== DESATIVAR OPÇÕES DE SEGURANÇA (EXCETO ALTERAR SENHA) ========== */
+
+/* Classe para desativar opções específicas */
+.security-option.disabled {
+  /* Aplica filtro preto e branco */
+  filter: grayscale(100%);
+
+  /* Diminui a opacidade */
+  opacity: 0.6;
+
+  /* Desativa interações */
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Remove o efeito hover nas opções desativadas */
+.security-option.disabled:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.security-option.disabled::before {
+  display: none;
+}
+
+/* Ícones das opções desativadas */
+.security-option.disabled .security-icon {
+  color: #666666 !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.security-option.disabled:hover .security-icon {
+  transform: none;
+}
+
+/* Texto das opções desativadas */
+.security-option.disabled .security-name {
+  color: #888888 !important;
+}
+
+.security-option.disabled .security-description {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Toggle switches desativados */
+.security-option.disabled .toggle-switch {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.security-option.disabled .toggle-switch .toggle-slider {
+  background: #666666 !important;
+}
+
+/* Mantém o botão "Alterar Senha" com estilo normal */
+.security-option:not(.disabled) {
+  /* Estilos normais já definidos anteriormente */
+}
+
+/* Badge "Em breve" para opções desativadas (opcional) */
+.security-option.disabled::after {
+  content: "Em breve";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

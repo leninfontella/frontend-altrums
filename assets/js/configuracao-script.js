@@ -1355,6 +1355,36 @@ function initializeSecurityModal() {
       window.location.href = "/pages/change-password/html/change-password.html";
     });
   }
+  // Desativar opções de Autenticação em Dois Fatores e Biometria
+  const securityOptions = securityModal.querySelectorAll(".security-option");
+
+  securityOptions.forEach((option) => {
+    const optionName = option
+      .querySelector(".security-name")
+      ?.textContent.trim();
+
+    // Desativa apenas as opções com toggle (2FA e Biometria)
+    if (
+      optionName === "Autenticação em Dois Fatores" ||
+      optionName === "Biometria"
+    ) {
+      option.classList.add("disabled");
+
+      // Remove event listeners de toggle se existirem
+      const toggleSwitch = option.querySelector(".toggle-switch");
+      if (toggleSwitch) {
+        // Cria um clone para remover todos os event listeners
+        const newToggle = toggleSwitch.cloneNode(true);
+        toggleSwitch.parentNode.replaceChild(newToggle, toggleSwitch);
+      }
+
+      console.log(`🔒 Opção "${optionName}" desativada`);
+    }
+  });
+
+  console.log(
+    "✅ Opções de segurança configuradas (2FA e Biometria desativadas)"
+  );
 }
 
 // ========== MODAL DE DESATIVAR CONTA ==========
