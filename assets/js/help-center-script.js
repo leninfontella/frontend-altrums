@@ -288,11 +288,26 @@ const tutorialsData = {
 document.addEventListener("DOMContentLoaded", function () {
   console.log("🎓 Central de Ajuda inicializada");
 
+  // Debug: verificar se elementos existem
+  console.log("🔍 Debug - Elementos encontrados:");
+  console.log(
+    "  - Contact buttons:",
+    document.querySelectorAll(".contact-button").length
+  );
+  console.log(
+    "  - Contact cards:",
+    document.querySelectorAll(".contact-card").length
+  );
+  console.log("  - FAQ items:", document.querySelectorAll(".faq-item").length);
+
   initializeBackButton();
   initializeSearch();
   renderFAQ(faqData);
   initializeTutorials();
   initializeContactButtons();
+  initializeLegalModals();
+
+  console.log("✅ Todas as funções inicializadas!");
 });
 
 // ========== BOTÃO VOLTAR ==========
@@ -324,7 +339,6 @@ function initializeSearch() {
   searchInput.addEventListener("input", function () {
     const query = this.value.trim().toLowerCase();
 
-    // Mostrar/esconder botão de limpar
     if (query) {
       searchClear.style.display = "flex";
     } else {
@@ -335,14 +349,12 @@ function initializeSearch() {
       return;
     }
 
-    // Debounce para performance
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       performSearch(query);
     }, 300);
   });
 
-  // Limpar busca
   searchClear.addEventListener("click", function () {
     searchInput.value = "";
     searchClear.style.display = "none";
@@ -352,7 +364,6 @@ function initializeSearch() {
     searchInput.focus();
   });
 
-  // Busca ao pressionar Enter
   searchInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
       const query = this.value.trim().toLowerCase();
@@ -366,11 +377,7 @@ function initializeSearch() {
 
 function performSearch(query) {
   console.log("🔍 Buscando por:", query);
-
-  // Filtrar FAQ
   filterFAQ(query);
-
-  // Mostrar sugestões
   showSearchSuggestions(query);
 }
 
@@ -378,7 +385,6 @@ function showSearchSuggestions(query) {
   const searchSuggestions = document.getElementById("search-suggestions");
   if (!searchSuggestions) return;
 
-  // Buscar sugestões nos dados
   const matches = faqData.filter((item) => {
     const questionMatch = item.question.toLowerCase().includes(query);
     const answerMatch = item.answer.toLowerCase().includes(query);
@@ -403,7 +409,6 @@ function showSearchSuggestions(query) {
 
     searchSuggestions.classList.add("active");
 
-    // Adicionar eventos de clique nas sugestões
     searchSuggestions.querySelectorAll(".suggestion-item").forEach((item) => {
       item.addEventListener("click", function () {
         const faqId = parseInt(this.getAttribute("data-faq-id"));
@@ -437,7 +442,6 @@ function filterFAQ(query) {
     }
   });
 
-  // Mostrar mensagem "Nenhum resultado"
   if (noResults) {
     if (visibleCount === 0 && query) {
       noResults.style.display = "block";
@@ -452,12 +456,10 @@ function scrollToFAQ(faqId) {
   if (faqItem && faqItem.classList.contains("faq-item")) {
     faqItem.scrollIntoView({ behavior: "smooth", block: "center" });
 
-    // Abrir FAQ automaticamente
     if (!faqItem.classList.contains("active")) {
       faqItem.classList.add("active");
     }
 
-    // Destacar temporariamente
     faqItem.style.background = "rgba(0, 212, 255, 0.1)";
     setTimeout(() => {
       faqItem.style.background = "";
@@ -496,20 +498,17 @@ function renderFAQ(data) {
     )
     .join("");
 
-  // Adicionar eventos de clique
   document.querySelectorAll(".faq-question").forEach((question) => {
     question.addEventListener("click", function () {
       const faqItem = this.closest(".faq-item");
       const isActive = faqItem.classList.contains("active");
 
-      // Fechar outros FAQs abertos (opcional - remova se quiser múltiplos abertos)
       document.querySelectorAll(".faq-item.active").forEach((item) => {
         if (item !== faqItem) {
           item.classList.remove("active");
         }
       });
 
-      // Toggle atual
       faqItem.classList.toggle("active");
 
       console.log(
@@ -548,7 +547,6 @@ function openTutorialModal(tutorialId) {
 
   if (!modal || !modalTitle || !modalBody) return;
 
-  // Atualizar conteúdo
   modalTitle.textContent = tutorial.title;
   modalBody.innerHTML = tutorial.steps
     .map(
@@ -576,7 +574,6 @@ function openTutorialModal(tutorialId) {
     )
     .join("");
 
-  // Mostrar modal
   modal.classList.remove("hidden");
   modal.classList.remove("closing");
   document.body.style.overflow = "hidden";
@@ -596,47 +593,72 @@ function closeTutorialModal() {
   }, 300);
 }
 
-// Event listeners para fechar modal
-document.addEventListener("DOMContentLoaded", function () {
-  const closeBtn = document.getElementById("close-tutorial-modal");
-  const modal = document.getElementById("tutorial-modal");
-
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeTutorialModal);
-  }
-
-  if (modal) {
-    const backdrop = modal.querySelector(".tutorial-modal-backdrop");
-    if (backdrop) {
-      backdrop.addEventListener("click", closeTutorialModal);
-    }
-  }
-
-  // Fechar com ESC
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && modal && !modal.classList.contains("hidden")) {
-      closeTutorialModal();
-    }
-  });
-});
-
-// ========== BOTÕES DE CONTATO ==========
+// ========== BOTÕES DE CONTATO (CORRIGIDO) ==========
 
 function initializeContactButtons() {
+  console.log("🔧 Inicializando botões de contato...");
+
+  // Método 1: Via botões diretos
   const contactButtons = document.querySelectorAll(".contact-button");
 
   contactButtons.forEach((button) => {
-    button.addEventListener("click", function () {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
       const card = this.closest(".contact-card");
-      const title = card.querySelector(".contact-title").textContent;
+      const contactType = card ? card.getAttribute("data-contact-type") : null;
 
-      console.log("📞 Botão de contato clicado:", title);
+      console.log("📞 Botão clicado! Tipo:", contactType);
 
-      // Simular ações de contato
-      if (title === "E-mail") {
-        window.location.href = "mailto:suporte@altrum.com";
-      } else if (title === "WhatsApp") {
-        window.open("https://wa.me/5511999999999", "_blank");
+      if (contactType === "email") {
+        console.log("📧 Abrindo e-mail...");
+        const mailtoLink =
+          "mailto:suporte@altrum.com?subject=Solicitação de Suporte - Altrum&body=Olá, preciso de ajuda com:";
+        window.location.href = mailtoLink;
+
+        setTimeout(() => {
+          showNotification("📧 Cliente de e-mail aberto!", "success");
+        }, 100);
+      } else if (contactType === "whatsapp") {
+        console.log("💬 Abrindo WhatsApp...");
+        const whatsappNumber = "5511999999999";
+        const message = encodeURIComponent(
+          "Olá! Preciso de ajuda com o Altrum."
+        );
+        const whatsappURL = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+        const newWindow = window.open(
+          whatsappURL,
+          "_blank",
+          "noopener,noreferrer"
+        );
+
+        if (newWindow) {
+          showNotification("💬 WhatsApp aberto em nova aba!", "success");
+        } else {
+          // Fallback se popup blocker estiver ativo
+          window.location.href = whatsappURL;
+        }
+      } else {
+        console.warn("⚠️ Tipo de contato desconhecido:", contactType);
+      }
+    });
+  });
+
+  // Método 2: Via cards inteiros (fallback)
+  const contactCards = document.querySelectorAll(".contact-card");
+
+  contactCards.forEach((card) => {
+    card.style.cursor = "pointer";
+
+    card.addEventListener("click", function (e) {
+      // Só executa se não clicou diretamente no botão
+      if (!e.target.closest(".contact-button")) {
+        const button = this.querySelector(".contact-button");
+        if (button) {
+          button.click();
+        }
       }
     });
   });
@@ -646,30 +668,47 @@ function initializeContactButtons() {
   resourceLinks.forEach((link) => {
     link.addEventListener("click", function (e) {
       e.preventDefault();
-      const text = this.querySelector("span").textContent;
-      showComingSoonNotification(text);
+      const resourceType = this.getAttribute("data-resource");
+
+      console.log("📚 Resource link clicado:", resourceType);
+
+      if (resourceType === "terms") {
+        openTermsModal();
+      } else if (resourceType === "privacy") {
+        openPrivacyModal();
+      }
     });
   });
+
+  console.log("✅ Botões de contato inicializados:", contactButtons.length);
 }
 
-function showComingSoonNotification(feature) {
+function showNotification(message, type = "info") {
   const notification = document.createElement("div");
+
+  const colors = {
+    success: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+    info: "linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)",
+    warning: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
+    error: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+  };
+
   notification.style.cssText = `
     position: fixed;
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    background: ${colors[type] || colors.info};
     color: white;
     padding: 16px 28px;
     border-radius: 16px;
     font-size: 14px;
     font-weight: 600;
-    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     z-index: 10001;
     animation: slideUpNotification 0.4s ease;
   `;
-  notification.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 8px;"></i>${feature} aberto!`;
+  notification.textContent = message;
 
   document.body.appendChild(notification);
 
@@ -677,6 +716,140 @@ function showComingSoonNotification(feature) {
     notification.style.animation = "slideDownNotification 0.4s ease forwards";
     setTimeout(() => notification.remove(), 400);
   }, 2500);
+}
+
+// ========== GERENCIAMENTO DOS MODAIS LEGAIS ==========
+
+function initializeLegalModals() {
+  console.log("⚖️ Modais legais inicializados");
+
+  setupCloseButtons();
+  setupEscapeKey();
+  setupBackdropClose();
+}
+
+function openTermsModal() {
+  const modal = document.getElementById("terms-modal");
+  if (!modal) {
+    console.warn("⚠️ Modal de Termos não encontrado");
+    return;
+  }
+
+  modal.classList.remove("hidden");
+  modal.classList.remove("closing");
+  document.body.style.overflow = "hidden";
+
+  const modalBody = modal.querySelector(".legal-modal-body");
+  if (modalBody) {
+    modalBody.scrollTop = 0;
+  }
+
+  console.log("📄 Modal de Termos de Uso aberto");
+  showNotification("📄 Termos de Uso aberto!", "info");
+}
+
+function openPrivacyModal() {
+  const modal = document.getElementById("privacy-modal");
+  if (!modal) {
+    console.warn("⚠️ Modal de Privacidade não encontrado");
+    return;
+  }
+
+  modal.classList.remove("hidden");
+  modal.classList.remove("closing");
+  document.body.style.overflow = "hidden";
+
+  const modalBody = modal.querySelector(".legal-modal-body");
+  if (modalBody) {
+    modalBody.scrollTop = 0;
+  }
+
+  console.log("🔒 Modal de Política de Privacidade aberto");
+  showNotification("🔒 Política de Privacidade aberta!", "info");
+}
+
+function setupCloseButtons() {
+  const closeTermsBtn = document.getElementById("close-terms-modal");
+  if (closeTermsBtn) {
+    closeTermsBtn.addEventListener("click", function () {
+      closeLegalModal("terms-modal");
+    });
+  }
+
+  const closePrivacyBtn = document.getElementById("close-privacy-modal");
+  if (closePrivacyBtn) {
+    closePrivacyBtn.addEventListener("click", function () {
+      closeLegalModal("privacy-modal");
+    });
+  }
+
+  const closeTutorialBtn = document.getElementById("close-tutorial-modal");
+  if (closeTutorialBtn) {
+    closeTutorialBtn.addEventListener("click", closeTutorialModal);
+  }
+}
+
+function closeLegalModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  modal.classList.add("closing");
+
+  setTimeout(() => {
+    modal.classList.add("hidden");
+    modal.classList.remove("closing");
+    document.body.style.overflow = "";
+  }, 300);
+
+  console.log(`✖️ Modal ${modalId} fechado`);
+}
+
+function setupEscapeKey() {
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      const termsModal = document.getElementById("terms-modal");
+      const privacyModal = document.getElementById("privacy-modal");
+      const tutorialModal = document.getElementById("tutorial-modal");
+
+      if (termsModal && !termsModal.classList.contains("hidden")) {
+        closeLegalModal("terms-modal");
+      } else if (privacyModal && !privacyModal.classList.contains("hidden")) {
+        closeLegalModal("privacy-modal");
+      } else if (tutorialModal && !tutorialModal.classList.contains("hidden")) {
+        closeTutorialModal();
+      }
+    }
+  });
+}
+
+function setupBackdropClose() {
+  const termsModal = document.getElementById("terms-modal");
+  if (termsModal) {
+    const backdrop = termsModal.querySelector(".legal-modal-backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", function () {
+        closeLegalModal("terms-modal");
+      });
+    }
+  }
+
+  const privacyModal = document.getElementById("privacy-modal");
+  if (privacyModal) {
+    const backdrop = privacyModal.querySelector(".legal-modal-backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", function () {
+        closeLegalModal("privacy-modal");
+      });
+    }
+  }
+
+  const tutorialModal = document.getElementById("tutorial-modal");
+  if (tutorialModal) {
+    const backdrop = tutorialModal.querySelector(".tutorial-modal-backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", closeTutorialModal);
+    }
+  }
 }
 
 // ========== ANIMAÇÕES CSS ADICIONAIS ==========
@@ -752,178 +925,7 @@ window.exportFAQs = function () {
   console.log("💾 FAQs exportados com sucesso!");
 };
 
-// ========== GERENCIAMENTO DOS MODAIS LEGAIS ==========
-
-document.addEventListener("DOMContentLoaded", function () {
-  initializeLegalModals();
-});
-
-function initializeLegalModals() {
-  console.log("⚖️ Modais legais inicializados");
-
-  // Configurar botões de abertura dos modais
-  setupModalTriggers();
-
-  // Configurar botões de fechamento
-  setupCloseButtons();
-
-  // Fechar com ESC
-  setupEscapeKey();
-
-  // Fechar ao clicar no backdrop
-  setupBackdropClose();
-}
-
-// ========== TRIGGERS DE ABERTURA ==========
-
-function setupModalTriggers() {
-  // Botões nos resource links
-  const resourceLinks = document.querySelectorAll(".resource-link");
-
-  resourceLinks.forEach((link) => {
-    link.addEventListener("click", function (e) {
-      e.preventDefault();
-      const text = this.querySelector("span").textContent.trim();
-
-      if (text === "Termos de Uso") {
-        openTermsModal();
-      } else if (text === "Política de Privacidade") {
-        openPrivacyModal();
-      }
-    });
-  });
-
-  // Funções globais para abrir os modais (podem ser chamadas de qualquer lugar)
-  window.openTermsModal = openTermsModal;
-  window.openPrivacyModal = openPrivacyModal;
-}
-
-function openTermsModal() {
-  const modal = document.getElementById("terms-modal");
-  if (!modal) {
-    console.warn("⚠️ Modal de Termos não encontrado");
-    return;
-  }
-
-  modal.classList.remove("hidden");
-  modal.classList.remove("closing");
-  document.body.style.overflow = "hidden";
-
-  // Scroll para o topo
-  const modalBody = modal.querySelector(".legal-modal-body");
-  if (modalBody) {
-    modalBody.scrollTop = 0;
-  }
-
-  console.log("📄 Modal de Termos de Uso aberto");
-}
-
-function openPrivacyModal() {
-  const modal = document.getElementById("privacy-modal");
-  if (!modal) {
-    console.warn("⚠️ Modal de Privacidade não encontrado");
-    return;
-  }
-
-  modal.classList.remove("hidden");
-  modal.classList.remove("closing");
-  document.body.style.overflow = "hidden";
-
-  // Scroll para o topo
-  const modalBody = modal.querySelector(".legal-modal-body");
-  if (modalBody) {
-    modalBody.scrollTop = 0;
-  }
-
-  console.log("🔒 Modal de Política de Privacidade aberto");
-}
-
-// ========== FECHAMENTO DOS MODAIS ==========
-
-function setupCloseButtons() {
-  // Botão fechar do modal de Termos
-  const closeTermsBtn = document.getElementById("close-terms-modal");
-  if (closeTermsBtn) {
-    closeTermsBtn.addEventListener("click", function () {
-      closeLegalModal("terms-modal");
-    });
-  }
-
-  // Botão fechar do modal de Privacidade
-  const closePrivacyBtn = document.getElementById("close-privacy-modal");
-  if (closePrivacyBtn) {
-    closePrivacyBtn.addEventListener("click", function () {
-      closeLegalModal("privacy-modal");
-    });
-  }
-}
-
-function closeLegalModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-
-  modal.classList.add("closing");
-
-  setTimeout(() => {
-    modal.classList.add("hidden");
-    modal.classList.remove("closing");
-    document.body.style.overflow = "";
-  }, 300);
-
-  console.log(`✖️ Modal ${modalId} fechado`);
-}
-
-// ========== FECHAR COM ESC ==========
-
-function setupEscapeKey() {
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      const termsModal = document.getElementById("terms-modal");
-      const privacyModal = document.getElementById("privacy-modal");
-
-      if (termsModal && !termsModal.classList.contains("hidden")) {
-        closeLegalModal("terms-modal");
-      } else if (privacyModal && !privacyModal.classList.contains("hidden")) {
-        closeLegalModal("privacy-modal");
-      }
-    }
-  });
-}
-
-// ========== FECHAR AO CLICAR NO BACKDROP ==========
-
-function setupBackdropClose() {
-  // Modal de Termos
-  const termsModal = document.getElementById("terms-modal");
-  if (termsModal) {
-    const backdrop = termsModal.querySelector(".legal-modal-backdrop");
-    if (backdrop) {
-      backdrop.addEventListener("click", function () {
-        closeLegalModal("terms-modal");
-      });
-    }
-  }
-
-  // Modal de Privacidade
-  const privacyModal = document.getElementById("privacy-modal");
-  if (privacyModal) {
-    const backdrop = privacyModal.querySelector(".legal-modal-backdrop");
-    if (backdrop) {
-      backdrop.addEventListener("click", function () {
-        closeLegalModal("privacy-modal");
-      });
-    }
-  }
-}
-
-// ========== UTILITÁRIOS ==========
-
 // Exportar funções globalmente para uso externo
+window.openTermsModal = openTermsModal;
+window.openPrivacyModal = openPrivacyModal;
 window.closeLegalModal = closeLegalModal;
-
-// Log de inicialização
-console.log("✅ Sistema de modais legais carregado com sucesso!");
-console.log("📋 Modais disponíveis:", {
-  termos: "openTermsModal()",
-  privacidade: "openPrivacyModal()",
-});
