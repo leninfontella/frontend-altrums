@@ -1076,6 +1076,189 @@ if (typeof module !== "undefined" && module.exports) {
   };
 }
 
+// ========== GERENCIADOR DO MODAL DE META ATINGIDA ==========
+
+class GoalAchievementModal {
+  constructor() {
+    this.modal = document.getElementById("goal-achievement-modal");
+    this.closeBtn = document.getElementById("close-achievement-modal");
+    this.goalValueEl = document.getElementById("achievement-goal-value");
+    this.hasShownModal = false;
+
+    this.init();
+  }
+
+  init() {
+    if (!this.modal) {
+      console.warn("⚠️ Modal de meta atingida não encontrado");
+      return;
+    }
+
+    // Configurar evento de fechar
+    if (this.closeBtn) {
+      this.closeBtn.addEventListener("click", () => this.close());
+    }
+
+    // Fechar ao clicar no backdrop
+    this.modal.addEventListener("click", (e) => {
+      if (e.target === this.modal) {
+        this.close();
+      }
+    });
+
+    // Fechar com tecla ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.modal.classList.contains("show")) {
+        this.close();
+      }
+    });
+
+    console.log("✅ Modal de meta atingida inicializado");
+  }
+
+  show(goalAmount) {
+    if (!this.modal) return;
+
+    // Atualizar valor da meta
+    if (this.goalValueEl) {
+      this.goalValueEl.textContent = `${goalAmount} moedas`;
+    }
+
+    // Mostrar modal
+    this.modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+
+    // Marcar que já foi mostrado nesta sessão
+    this.hasShownModal = true;
+    sessionStorage.setItem("goalAchievedShown", "true");
+
+    console.log("🎉 Modal de meta atingida exibido!");
+  }
+
+  close() {
+    if (!this.modal) return;
+
+    // Adicionar animação de saída
+    this.modal.classList.add("closing");
+
+    // Remover modal após animação
+    setTimeout(() => {
+      this.modal.classList.remove("show", "closing");
+      document.body.style.overflow = "";
+    }, 300);
+
+    console.log("✅ Modal de meta atingida fechado");
+  }
+
+  checkGoalAchievement() {
+    // Verificar se já foi mostrado nesta sessão
+    if (
+      this.hasShownModal ||
+      sessionStorage.getItem("goalAchievedShown") === "true"
+    ) {
+      return false;
+    }
+
+    const goalData = GoalManager.getGoalData();
+
+    // Verificar se a meta foi atingida (100% ou mais)
+    if (goalData.progress >= 100) {
+      console.log("🎯 Meta atingida! Mostrando modal...");
+      this.show(goalData.goal);
+      return true;
+    }
+
+    return false;
+  }
+
+  reset() {
+    // Permitir que o modal seja mostrado novamente
+    this.hasShownModal = false;
+    sessionStorage.removeItem("goalAchievedShown");
+    console.log("🔄 Estado do modal resetado");
+  }
+}
+
+// ========== INTEGRAÇÃO COM O SISTEMA EXISTENTE ==========
+
+// Inicializar o modal quando o DOM estiver pronto
+let goalAchievementModal;
+
+document.addEventListener("DOMContentLoaded", () => {
+  goalAchievementModal = new GoalAchievementModal();
+});
+
+// Modificar a função GoalManager.updateGoalDisplay para verificar conquista
+const originalUpdateGoalDisplay = GoalManager.updateGoalDisplay;
+GoalManager.updateGoalDisplay = function () {
+  // Chamar função original
+  originalUpdateGoalDisplay.call(this);
+
+  // Verificar se atingiu a meta
+  if (goalAchievementModal) {
+    goalAchievementModal.checkGoalAchievement();
+  }
+};
+
+// Modificar a função updateAfterDonation para verificar conquista
+const originalUpdateAfterDonation = GoalManager.updateAfterDonation;
+GoalManager.updateAfterDonation = function (donationAmount) {
+  // Chamar função original
+  const result = originalUpdateAfterDonation.call(this, donationAmount);
+
+  // Verificar se atingiu a meta após a doação
+  if (result && goalAchievementModal) {
+    setTimeout(() => {
+      goalAchievementModal.checkGoalAchievement();
+    }, 500); // Pequeno delay para permitir animações
+  }
+
+  return result;
+};
+
+// Função para resetar o modal (útil para testes ou nova meta)
+function resetGoalAchievement() {
+  if (goalAchievementModal) {
+    goalAchievementModal.reset();
+    console.log("✅ Modal de conquista resetado - pode ser exibido novamente");
+  }
+}
+
+// Função para forçar exibição do modal (útil para testes)
+function testGoalAchievementModal() {
+  if (goalAchievementModal) {
+    const goalData = GoalManager.getGoalData();
+    goalAchievementModal.show(goalData.goal);
+    console.log("🧪 Testando modal de meta atingida");
+  } else {
+    console.error("❌ Modal não inicializado");
+  }
+}
+
+// Expor funções globalmente para debug
+if (typeof window !== "undefined") {
+  window.GoalAchievementModal = GoalAchievementModal;
+  window.goalAchievementModal = goalAchievementModal;
+  window.testGoalAchievementModal = testGoalAchievementModal;
+  window.resetGoalAchievement = resetGoalAchievement;
+}
+
+// Exportar para uso em módulos
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    GoalAchievementModal,
+    testGoalAchievementModal,
+    resetGoalAchievement,
+  };
+}
+
+console.log(`
+🎯 Modal de Meta Atingida Carregado!
+🧪 Testar: testGoalAchievementModal()
+🔄 Resetar: resetGoalAchievement()
+📊 O modal aparece automaticamente quando a meta é atingida
+`);
+
 console.log(`
 🎮 Sistema de Perfil Atualizado com API!
 📡 API Base: ${API_BASE_URL}

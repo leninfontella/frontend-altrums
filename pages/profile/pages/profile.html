@@ -251,5 +251,34 @@
     <script src="../../../assets/js/config-edit-globalInit.js"></script>
     <script src="../../../assets/js/profile-profile.js"></script>
     <!-- <script src="../../../../assets/js/profile-pull-to-refresh.js"></script> -->
+
+    <!-- Modal de Meta Atingida -->
+    <div id="goal-achievement-modal" class="goal-achievement-modal">
+      <div class="goal-achievement-backdrop"></div>
+      <div class="goal-achievement-content">
+        <div class="goal-achievement-icon">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <h2 class="goal-achievement-title">Você atingiu a meta!</h2>
+        <p class="goal-achievement-message">
+          Parabéns! Você completou sua meta de doações deste mês.
+        </p>
+        <div class="goal-achievement-stats">
+          <div class="achievement-stat">
+            <span class="stat-label">Meta Alcançada</span>
+            <span id="achievement-goal-value" class="stat-value"
+              >100 moedas</span
+            >
+          </div>
+        </div>
+        <button
+          id="close-achievement-modal"
+          class="goal-achievement-btn"
+          type="button"
+        >
+          Continuar
+        </button>
+      </div>
+    </div>
   </body>
 </html>
