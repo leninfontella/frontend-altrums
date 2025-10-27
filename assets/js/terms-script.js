@@ -1,7 +1,7 @@
 // ========== INICIALIZAÇÃO ==========
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("📄 Página de Termos de Uso carregada");
+  // console.log("📄 Página de Termos de Uso carregada");
 
   initializeBackButton();
   addScrollAnimations();
@@ -31,7 +31,7 @@ function initializeBackButton() {
         }
       }, 150);
 
-      console.log("🔙 Voltando para página anterior");
+      // console.log("🔙 Voltando para página anterior");
     });
   }
 }
@@ -64,7 +64,7 @@ function addScrollAnimations() {
     observer.observe(section);
   });
 
-  console.log(`👁️ Observando ${sections.length} seções para animação`);
+  // console.log(`👁️ Observando ${sections.length} seções para animação`);
 }
 
 // ========== RASTREAMENTO DE TEMPO DE LEITURA ==========
@@ -83,7 +83,7 @@ function trackReadTime() {
       hasScrolledToBottom = true;
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
 
-      console.log(`✅ Usuário leu os termos por ${timeSpent} segundos`);
+      // console.log(`✅ Usuário leu os termos por ${timeSpent} segundos`);
 
       // Aqui você pode enviar analytics
       logTermsReading(timeSpent);
@@ -96,10 +96,10 @@ function logTermsReading(timeSpent) {
   sessionStorage.setItem("termsReadTime", timeSpent);
   sessionStorage.setItem("termsReadDate", new Date().toISOString());
 
-  console.log("💾 Leitura dos termos salva:", {
-    timeSpent: `${timeSpent}s`,
-    date: new Date().toLocaleString("pt-BR"),
-  });
+  // console.log("💾 Leitura dos termos salva:", {
+  //   timeSpent: `${timeSpent}s`,
+  //   date: new Date().toLocaleString("pt-BR"),
+  // });
 
   // Mostrar notificação sutil
   showReadConfirmation();
@@ -238,12 +238,12 @@ document.head.appendChild(style);
 
 // ========== INFORMAÇÕES DE DEBUG ==========
 
-console.log("✅ Termos de Uso carregados com sucesso!");
-console.log("💡 Dicas:", {
-  "Duplo clique": "Duplo clique em qualquer seção para copiar o texto",
-  Scroll: "Role até o final para marcar como lido",
-  Voltar: "Clique no botão voltar para retornar",
-});
+// console.log("✅ Termos de Uso carregados com sucesso!");
+// console.log("💡 Dicas:", {
+//   "Duplo clique": "Duplo clique em qualquer seção para copiar o texto",
+//   Scroll: "Role até o final para marcar como lido",
+//   Voltar: "Clique no botão voltar para retornar",
+// });
 
 // ========== UTILITÁRIOS ==========
 
@@ -253,10 +253,10 @@ window.hasReadTerms = function () {
   const readDate = sessionStorage.getItem("termsReadDate");
 
   if (readTime && readDate) {
-    console.log("📖 Termos já foram lidos:", {
-      tempo: `${readTime}s`,
-      data: new Date(readDate).toLocaleString("pt-BR"),
-    });
+    // console.log("📖 Termos já foram lidos:", {
+    //   tempo: `${readTime}s`,
+    //   data: new Date(readDate).toLocaleString("pt-BR"),
+    // });
     return true;
   }
 
@@ -267,10 +267,10 @@ window.hasReadTerms = function () {
 window.clearTermsHistory = function () {
   sessionStorage.removeItem("termsReadTime");
   sessionStorage.removeItem("termsReadDate");
-  console.log("🗑️ Histórico de leitura dos termos limpo");
+  // console.log("🗑️ Histórico de leitura dos termos limpo");
 };
 
 // Verificar ao carregar se já leu antes
 if (window.hasReadTerms()) {
-  console.log("👤 Usuário retornando - já leu os termos anteriormente");
+  // console.log("👤 Usuário retornando - já leu os termos anteriormente");
 }

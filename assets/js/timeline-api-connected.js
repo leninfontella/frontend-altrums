@@ -270,7 +270,7 @@ const Logger = {
   log: (message, data = null) => {
     const config = getEnvironmentConfig();
     if (config.ENABLE_LOGS) {
-      console.log(`[Timeline API] ${message}`, data || "");
+      // console.log(`[Timeline API] ${message}`, data || "");
     }
   },
 

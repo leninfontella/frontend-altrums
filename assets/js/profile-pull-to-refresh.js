@@ -307,12 +307,12 @@ class ProfilePullToRefresh {
       refreshCallback: this.handleRefresh.bind(this),
     });
 
-    console.log("✅ Pull-to-refresh inicializado no perfil");
+    // console.log("✅ Pull-to-refresh inicializado no perfil");
   }
 
   async handleRefresh() {
     try {
-      console.log("🔄 Iniciando refresh do perfil via pull-to-refresh...");
+      // console.log("🔄 Iniciando refresh do perfil via pull-to-refresh...");
 
       // Limpar cache se as funções estão disponíveis
       if (typeof refreshDashboard === "function") {
@@ -325,7 +325,7 @@ class ProfilePullToRefresh {
         window.location.reload();
       }
 
-      console.log("✅ Refresh do perfil concluído");
+      // console.log("✅ Refresh do perfil concluído");
     } catch (error) {
       console.error("❌ Erro durante refresh:", error);
       throw error; // Re-throw para o PullToRefresh tratar
@@ -374,11 +374,3 @@ if (typeof module !== "undefined" && module.exports) {
     ProfilePullToRefresh,
   };
 }
-
-console.log(`
-🔄 Pull-to-Refresh System Loaded!
-📱 Funciona com touch e mouse
-🎯 Integrado com sistema de perfil
-🛠️ Debug: window.profilePullToRefresh
-🔧 Manual refresh: profilePullToRefresh.refresh()
-`);

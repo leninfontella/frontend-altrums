@@ -5,13 +5,13 @@ function waitForDependencies() {
   return new Promise((resolve) => {
     const checkDependencies = () => {
       if (window.Auth && window.api) {
-        console.log("✅ Dependências carregadas: Auth e API");
+        // console.log("✅ Dependências carregadas: Auth e API");
         resolve();
       } else {
-        console.log("🔄 Aguardando dependências...", {
-          Auth: !!window.Auth,
-          API: !!window.api,
-        });
+        // console.log("🔄 Aguardando dependências...", {
+        //   Auth: !!window.Auth,
+        //   API: !!window.api,
+        // });
         setTimeout(checkDependencies, 100);
       }
     };
@@ -52,7 +52,7 @@ let currentPoints = 0;
 // Função para buscar dados do usuário atual usando a rota unificada de badges
 async function fetchUserData() {
   try {
-    console.log("🔄 Carregando dados do usuário via /api/badges...");
+    // console.log("🔄 Carregando dados do usuário via /api/badges...");
 
     const response = await api.get("/api/badges");
     const result = await response.json();
@@ -84,11 +84,11 @@ async function fetchUserData() {
     // Alteração 4: Corrigir a lógica para pegar pontos e progresso
     currentPoints = badgesData.currentPoints || 0;
 
-    console.log("✅ Dados do usuário carregados:", {
-      name: currentUserData.name,
-      points: currentPoints,
-      coins: currentUserData.coins,
-    });
+    // console.log("✅ Dados do usuário carregados:", {
+    //   name: currentUserData.name,
+    //   points: currentPoints,
+    //   coins: currentUserData.coins,
+    // });
 
     return currentUserData;
   } catch (error) {
@@ -393,7 +393,7 @@ function showLevelUpNotification(newLevel) {
 // Função para atualizar toda a exibição
 async function updateDisplay() {
   try {
-    console.log("🔄 Atualizando display de badges...");
+    // console.log("🔄 Atualizando display de badges...");
 
     // Mostrar loading
     showLoadingState();
@@ -405,7 +405,7 @@ async function updateDisplay() {
     const badgeProgress = await fetchBadgeProgressFromAPI();
     if (badgeProgress) {
       currentPoints = badgeProgress.points || currentPoints;
-      console.log("📊 Dados de badge da API:", badgeProgress);
+      // console.log("📊 Dados de badge da API:", badgeProgress);
     }
 
     // Renderizar interface
@@ -415,7 +415,7 @@ async function updateDisplay() {
     // Esconder loading
     hideLoadingState();
 
-    console.log("✅ Display atualizado com sucesso");
+    // console.log("✅ Display atualizado com sucesso");
   } catch (error) {
     console.error("❌ Erro ao atualizar display:", error);
     hideLoadingState();
@@ -506,7 +506,7 @@ async function refreshUserData() {
 
 // Função de voltar
 function goBack() {
-  console.log("Voltando para a página anterior...");
+  // console.log("Voltando para a página anterior...");
   if (window.history.length > 1) {
     window.history.back();
   } else {
@@ -717,7 +717,7 @@ function addAnimationStyles() {
 // Função principal de inicialização
 async function initializeBadgesSystem() {
   try {
-    console.log("🚀 Inicializando sistema de badges integrado...");
+    // console.log("🚀 Inicializando sistema de badges integrado...");
 
     // Aguardar dependências
     await waitForDependencies();
@@ -748,7 +748,7 @@ async function initializeBadgesSystem() {
       document.body.style.opacity = "1";
     }, 100);
 
-    console.log("✅ Sistema de badges inicializado com sucesso");
+    // console.log("✅ Sistema de badges inicializado com sucesso");
 
     // Configurar listeners para atualizações em tempo real
     window.addEventListener("userChanged", refreshUserData);
@@ -780,7 +780,7 @@ async function updatePointsFromServer() {
       renderCurrentLevelCard();
       renderBadgesGrid();
 
-      console.log("Dados de badges atualizados via API");
+      // console.log("Dados de badges atualizados via API");
       return true;
     }
 
@@ -804,9 +804,9 @@ function startPeriodicUpdate(intervalMs = 30000) {
   updateInterval = setInterval(async () => {
     try {
       const success = await updatePointsFromServer();
-      if (success) {
-        console.log("🔄 Dados atualizados automaticamente");
-      }
+      // if (success) {
+      //   console.log("🔄 Dados atualizados automaticamente");
+      // }
     } catch (error) {
       console.warn("⚠️ Falha na atualização automática:", error);
     }
@@ -843,14 +843,14 @@ window.addEventListener("beforeunload", () => {
 // Listener para mudanças de autenticação
 window.addEventListener("storage", (event) => {
   if (event.key === "authToken" || event.key === "userData") {
-    console.log("🔄 Mudança de autenticação detectada, atualizando badges...");
+    // console.log("🔄 Mudança de autenticação detectada, atualizando badges...");
     setTimeout(refreshUserData, 1000); // Aguardar estabilização
   }
 });
 
 // Verificar se Auth já existe, senão aguardar
 if (typeof window.Auth !== "undefined" && typeof window.api !== "undefined") {
-  console.log("✅ Dependências já carregadas");
+  // console.log("✅ Dependências já carregadas");
 } else {
-  console.log("⏳ Aguardando carregamento das dependências...");
+  // console.log("⏳ Aguardando carregamento das dependências...");
 }

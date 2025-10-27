@@ -816,7 +816,7 @@ class TimelineManager {
   }
 
   static handleItemClick(donation) {
-    console.log("Clique na doação:", donation);
+    // console.log("Clique na doação:", donation);
     // Aqui você pode adicionar modal de detalhes, etc.
   }
 
@@ -1201,7 +1201,7 @@ class SearchManager {
   }
 
   static handleUserSelect(userId) {
-    console.log("Usuário selecionado:", userId);
+    // console.log("Usuário selecionado:", userId);
 
     const searchInput = document.getElementById("searchInput");
     const searchResults = document.getElementById("searchResults");
@@ -1247,7 +1247,7 @@ class NavigationManager {
 
     // Escutar mudanças no histórico
     window.addEventListener("popstate", (event) => {
-      console.log("Navegação via histórico detectada:", event);
+      // console.log("Navegação via histórico detectada:", event);
     });
   }
 
@@ -1264,15 +1264,15 @@ class NavigationManager {
         const referrer = navigationData.referrer || document.referrer;
         const currentDomain = window.location.origin;
 
-        console.log("Dados de navegação:", {
-          referrer,
-          currentDomain,
-          historyLength: window.history.length,
-        });
+        // console.log("Dados de navegação:", {
+        //   referrer,
+        //   currentDomain,
+        //   historyLength: window.history.length,
+        // });
 
         // Estratégia 1: Se veio de uma página interna
         if (referrer && referrer.startsWith(currentDomain)) {
-          console.log("Voltando via history.back() - referrer interno");
+          // console.log("Voltando via history.back() - referrer interno");
           this.goBackWithFallback();
           return;
         }
@@ -1295,13 +1295,13 @@ class NavigationManager {
         );
 
         if (possibleSource) {
-          console.log("Redirecionando para fonte provável:", possibleSource);
+          // console.log("Redirecionando para fonte provável:", possibleSource);
           window.location.href = possibleSource;
           return;
         }
 
         // Estratégia 4: Fallback para home
-        console.log("Redirecionando para home - fallback");
+        // console.log("Redirecionando para home - fallback");
         window.location.href = "/index.html";
       });
 
@@ -1337,7 +1337,7 @@ class NavigationManager {
       if (stillGoingBack === "true") {
         // Se ainda está marcado como "voltando", significa que não conseguiu
         sessionStorage.removeItem("timeline_going_back");
-        console.log("Não conseguiu voltar, redirecionando para home");
+        // console.log("Não conseguiu voltar, redirecionando para home");
         window.location.href = "/index.html";
       }
     }, 500);
@@ -1412,7 +1412,7 @@ class NavigationManager {
   }
 
   static handleNavigation(target) {
-    console.log("Navegando para:", target);
+    // console.log("Navegando para:", target);
 
     // Mapear targets para URLs
     const navigationMap = {
@@ -1696,7 +1696,7 @@ class AutoUpdateManager {
 // INICIALIZAÇÃO PRINCIPAL
 // ===============================
 async function initialize() {
-  console.log("🚀 Enhanced Timeline System v2.1 Mobile - Inicializando...");
+  // console.log("🚀 Enhanced Timeline System v2.1 Mobile - Inicializando...");
 
   if (!AuthService.isAuthenticated()) {
     console.warn("Usuário não autenticado");
@@ -1732,7 +1732,7 @@ async function initialize() {
     //   NotificationService.show(" Timeline carregada com sucesso!", "success");
     // }, 1000);
 
-    console.log("✅ Timeline mobile inicializada com sucesso");
+    // console.log("✅ Timeline mobile inicializada com sucesso");
     return true;
   } catch (error) {
     console.error("Erro na inicialização:", error);
@@ -1804,13 +1804,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // INICIALIZAÇÃO E EVENTOS
 // ===============================
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🌟 Sistema Timeline Mobile v2.1 - Inicializando...");
+  // console.log("🌟 Sistema Timeline Mobile v2.1 - Inicializando...");
 
   try {
     const initialized = await initialize();
 
     if (initialized) {
-      console.log("✅ Todos os componentes mobile inicializados!");
+      // console.log("✅ Todos os componentes mobile inicializados!");
     } else {
       console.error("❌ Falha na inicialização");
     }
@@ -1827,5 +1827,5 @@ window.addEventListener("beforeunload", () => {
   SearchManager.searchCache.clear();
 });
 
-console.log("🎉 Enhanced Timeline System v2.1 Mobile carregado!");
-console.log("📚 API disponível em: window.timelineAPI");
+// console.log("🎉 Enhanced Timeline System v2.1 Mobile carregado!");
+// console.log("📚 API disponível em: window.timelineAPI");

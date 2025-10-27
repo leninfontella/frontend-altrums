@@ -167,11 +167,11 @@ function updateUserRanking() {
   const userPosition = Math.floor(Math.random() * 10) + 1;
   const userCoins = Math.floor(Math.random() * 50000) + 1000;
 
-  console.log(
-    `Posição atual: ${userPosition}º | Moedas doadas: ${userCoins.toLocaleString(
-      "pt-BR"
-    )}`
-  );
+  // console.log(
+  //   `Posição atual: ${userPosition}º | Moedas doadas: ${userCoins.toLocaleString(
+  //     "pt-BR"
+  //   )}`
+  // );
 
   // Aqui você pode implementar a lógica real de atualização
   // Por exemplo, fazer uma requisição para a API do app
@@ -280,7 +280,7 @@ function saveUserProgress(coins, position) {
   };
 
   // Em um app real, isso seria salvo no AsyncStorage ou backend
-  console.log("Progresso salvo:", userData);
+  // console.log("Progresso salvo:", userData);
 }
 
 // Função para mostrar detalhes do prêmio em modal

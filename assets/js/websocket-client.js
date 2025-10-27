@@ -15,7 +15,7 @@ class GlobalWebSocketClient {
     // Determinar URL da API baseado no ambiente
     this.apiBaseUrl = this.getApiBaseUrl();
 
-    console.log("🌐 WebSocket Global inicializado");
+    // console.log("🌐 WebSocket Global inicializado");
   }
 
   getApiBaseUrl() {
@@ -37,7 +37,7 @@ class GlobalWebSocketClient {
     }
 
     if (!Auth.checkSession()) {
-      console.log("⚠️ Usuário não logado - WebSocket não será iniciado");
+      // console.log("⚠️ Usuário não logado - WebSocket não será iniciado");
       return;
     }
 
@@ -55,13 +55,13 @@ class GlobalWebSocketClient {
       wsUrl = "wss://api-backend-coins.onrender.com/ws";
     }
 
-    console.log(`🔌 Conectando ao WebSocket Global: ${wsUrl}`);
+    // console.log(`🔌 Conectando ao WebSocket Global: ${wsUrl}`);
 
     try {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
-        console.log("✅ WebSocket Global conectado");
+        // console.log("✅ WebSocket Global conectado");
         this.isConnecting = false;
         this.reconnectAttempts = 0;
         this.authenticate();
@@ -85,7 +85,7 @@ class GlobalWebSocketClient {
       };
 
       this.ws.onclose = (event) => {
-        console.log("🔌 WebSocket Global desconectado", event.code);
+        // console.log("🔌 WebSocket Global desconectado", event.code);
         this.isConnecting = false;
         this.isAuthenticated = false;
         this.stopHeartbeat();
@@ -116,19 +116,19 @@ class GlobalWebSocketClient {
   }
 
   handleMessage(data) {
-    console.log("📨 Mensagem recebida:", data.type);
+    // console.log("📨 Mensagem recebida:", data.type);
 
     switch (data.type) {
       case "authenticated":
         this.isAuthenticated = true;
-        console.log("✅ Autenticado no WebSocket Global");
+        // console.log("✅ Autenticado no WebSocket Global");
         this.emit("authenticated");
         // Buscar notificações pendentes do servidor ao autenticar
         this.fetchPendingNotifications();
         break;
 
       case "donation_received":
-        console.log("💰 Doação recebida:", data.data);
+        // console.log("💰 Doação recebida:", data.data);
         this.handleDonationReceived(data.data);
         break;
 
@@ -164,9 +164,9 @@ class GlobalWebSocketClient {
       const notifications = result.data || [];
 
       if (notifications.length > 0) {
-        console.log(
-          `📬 ${notifications.length} notificações pendentes encontradas`
-        );
+        // console.log(
+        //   `📬 ${notifications.length} notificações pendentes encontradas`
+        // );
 
         // Mostrar apenas a mais recente
         const latest = notifications[0];
@@ -191,7 +191,7 @@ class GlobalWebSocketClient {
           },
         }
       );
-      console.log("✅ Notificação marcada como exibida");
+      // console.log("✅ Notificação marcada como exibida");
     } catch (error) {
       console.error("Erro ao marcar notificação:", error);
     }
@@ -237,7 +237,7 @@ class GlobalWebSocketClient {
             : sessionStorage;
           storage.setItem("userData", JSON.stringify(userData));
 
-          console.log("✅ Saldo local atualizado:", donationData.newBalance);
+          // console.log("✅ Saldo local atualizado:", donationData.newBalance);
         }
       } catch (error) {
         console.error("Erro ao atualizar saldo local:", error);
@@ -375,7 +375,7 @@ class GlobalWebSocketClient {
         currentTime += 0.15;
       });
     } catch (error) {
-      console.log("⚠️ Som de notificação não disponível");
+      // console.log("⚠️ Som de notificação não disponível");
     }
   }
 
@@ -435,7 +435,7 @@ class GlobalWebSocketClient {
 
   attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log("❌ Máximo de tentativas de reconexão atingido");
+      // console.log("❌ Máximo de tentativas de reconexão atingido");
       this.updateConnectionIndicator("offline");
       return;
     }
@@ -443,9 +443,9 @@ class GlobalWebSocketClient {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * this.reconnectAttempts;
 
-    console.log(
-      `🔄 Reconexão ${this.reconnectAttempts}/${this.maxReconnectAttempts} em ${delay}ms`
-    );
+    // console.log(
+    //   `🔄 Reconexão ${this.reconnectAttempts}/${this.maxReconnectAttempts} em ${delay}ms`
+    // );
 
     setTimeout(() => {
       if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
@@ -523,7 +523,7 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden && Auth.checkSession()) {
     const status = GlobalWS.getStatus();
     if (!status.connected) {
-      console.log("🔄 Página ativa - reconectando WebSocket Global...");
+      // console.log("🔄 Página ativa - reconectando WebSocket Global...");
       GlobalWS.connect();
     }
   }
@@ -532,4 +532,4 @@ document.addEventListener("visibilitychange", () => {
 // Exportar globalmente
 window.GlobalWS = GlobalWS;
 
-console.log("✅ WebSocket Global carregado - Funciona em todas as páginas!");
+// console.log("✅ WebSocket Global carregado - Funciona em todas as páginas!");

@@ -184,7 +184,7 @@ class UserService {
         token !== "null" &&
         token !== "undefined"
       ) {
-        console.log(`Token encontrado na chave: ${key}`);
+        // console.log(`Token encontrado na chave: ${key}`);
         return token.trim();
       }
     }
@@ -197,7 +197,7 @@ class UserService {
         token !== "null" &&
         token !== "undefined"
       ) {
-        console.log(`Token encontrado no sessionStorage na chave: ${key}`);
+        // console.log(`Token encontrado no sessionStorage na chave: ${key}`);
         return token.trim();
       }
     }
@@ -213,7 +213,7 @@ class UserService {
     if (token && token.trim() !== "") {
       localStorage.setItem("token", token.trim());
       localStorage.setItem("authToken", token.trim());
-      console.log("Token salvo com sucesso");
+      // console.log("Token salvo com sucesso");
       return true;
     }
     return false;
@@ -262,7 +262,7 @@ class UserService {
     };
 
     try {
-      console.log(`Fazendo requisição para: ${API_CONFIG.baseURL}${endpoint}`);
+      // console.log(`Fazendo requisição para: ${API_CONFIG.baseURL}${endpoint}`);
       const response = await fetch(`${API_CONFIG.baseURL}${endpoint}`, config);
 
       if (!response.ok) {
@@ -278,7 +278,7 @@ class UserService {
       }
 
       const data = await response.json();
-      console.log("Resposta da API recebida:", data);
+      // console.log("Resposta da API recebida:", data);
       return data;
     } catch (error) {
       if (error.name === "TypeError" && error.message.includes("fetch")) {
@@ -326,7 +326,7 @@ class UserService {
    */
   static async getUserFromAPI() {
     try {
-      console.log("Buscando dados do usuário da API...");
+      // console.log("Buscando dados do usuário da API...");
       const response = await this.makeAuthenticatedRequest(
         API_CONFIG.endpoints.userProfile
       );
@@ -360,8 +360,8 @@ class UserService {
           profilePhotoUrl: userObj.profilePhotoUrl || null,
         };
 
-        console.log("✅ Dados do usuário processados da API:", processedData);
-        console.log(`📋 Nome completo extraído: "${fullName}"`);
+        // console.log("✅ Dados do usuário processados da API:", processedData);
+        // console.log(`📋 Nome completo extraído: "${fullName}"`);
         return processedData;
       }
 
@@ -387,7 +387,7 @@ class UserService {
    */
   static getUserFromStorage() {
     try {
-      console.log("Buscando dados do localStorage...");
+      // console.log("Buscando dados do localStorage...");
 
       const possibleKeys = ["currentUser", "userData", "user"];
       let userData = null;
@@ -398,7 +398,7 @@ class UserService {
           try {
             userData = JSON.parse(stored);
             if (userData && (userData.name || userData.fullName)) {
-              console.log(`Dados encontrados na chave: ${key}`, userData);
+              // console.log(`Dados encontrados na chave: ${key}`, userData);
               break;
             }
           } catch (parseError) {
@@ -432,8 +432,8 @@ class UserService {
           profilePhotoUrl: userData.profilePhotoUrl || null,
         };
 
-        console.log("✅ Dados do localStorage processados:", processedData);
-        console.log(`📋 Nome completo extraído: "${fullName}"`);
+        // console.log("✅ Dados do localStorage processados:", processedData);
+        // console.log(`📋 Nome completo extraído: "${fullName}"`);
         return processedData;
       }
 
@@ -448,21 +448,21 @@ class UserService {
    * Função principal para buscar dados do usuário
    */
   static async getCurrentUser() {
-    console.log("=== Iniciando busca dos dados do usuário ===");
+    // console.log("=== Iniciando busca dos dados do usuário ===");
 
     try {
       let userData = await this.getUserFromAPI();
 
       if (userData) {
-        console.log("✓ Dados obtidos da API:", userData);
+        // console.log("✓ Dados obtidos da API:", userData);
         return userData;
       }
 
-      console.log("API não retornou dados válidos, tentando localStorage...");
+      // console.log("API não retornou dados válidos, tentando localStorage...");
       userData = this.getUserFromStorage();
 
       if (userData) {
-        console.log("✓ Dados obtidos do localStorage:", userData);
+        // console.log("✓ Dados obtidos do localStorage:", userData);
         return userData;
       }
 
@@ -499,7 +499,7 @@ class RankingManager {
    */
   static async getRankingFromAPI() {
     try {
-      console.log("Buscando ranking da API...");
+      // console.log("Buscando ranking da API...");
       const response = await UserService.makeAuthenticatedRequest(
         `${API_CONFIG.endpoints.ranking}?limit=50`
       );
@@ -513,7 +513,7 @@ class RankingManager {
           currentUser: data.currentUser || data.user || null,
         };
 
-        console.log("✓ Dados de ranking obtidos:", result);
+        // console.log("✓ Dados de ranking obtidos:", result);
         return result;
       }
 
@@ -525,7 +525,7 @@ class RankingManager {
         throw error;
       }
 
-      console.log("Usando dados mock como fallback");
+      // console.log("Usando dados mock como fallback");
       return this.getMockRankingData();
     }
   }
@@ -535,7 +535,7 @@ class RankingManager {
    */
   static async getTop10FromAPI() {
     try {
-      console.log("Buscando top 10 da API...");
+      // console.log("Buscando top 10 da API...");
       const response = await UserService.makeAuthenticatedRequest(
         API_CONFIG.endpoints.top10
       );
@@ -545,7 +545,7 @@ class RankingManager {
         const users = data.users || data.top10 || data;
 
         if (Array.isArray(users) && users.length > 0) {
-          console.log("✓ Top 10 obtido:", users);
+          // console.log("✓ Top 10 obtido:", users);
           return users;
         }
       }
@@ -553,7 +553,7 @@ class RankingManager {
       throw new Error("Resposta inválida para top 10");
     } catch (error) {
       console.error("Erro ao buscar top 10:", error);
-      console.log("Usando dados mock para top 10");
+      // console.log("Usando dados mock para top 10");
       return this.getMockRankingData().users.slice(0, 10);
     }
   }
@@ -563,14 +563,14 @@ class RankingManager {
    */
   static async getMyPosition() {
     try {
-      console.log("Buscando posição do usuário...");
+      // console.log("Buscando posição do usuário...");
       const response = await UserService.makeAuthenticatedRequest(
         API_CONFIG.endpoints.myPosition
       );
 
       if (response && response.success !== false) {
         const data = response.data || response;
-        console.log("✓ Posição do usuário obtida:", data);
+        // console.log("✓ Posição do usuário obtida:", data);
         return data;
       }
 
@@ -629,7 +629,7 @@ class RankingManager {
    */
   static async updatePodium() {
     try {
-      console.log("Atualizando pódium...");
+      // console.log("Atualizando pódium...");
       const top10 = await this.getTop10FromAPI();
       let top3 = top10.slice(0, 3);
 
@@ -647,11 +647,11 @@ class RankingManager {
         });
       }
 
-      console.log(
-        `✓ Pódium com ${top10.length} usuários reais e ${
-          3 - top10.length
-        } placeholders`
-      );
+      // console.log(
+      //   `✓ Pódium com ${top10.length} usuários reais e ${
+      //     3 - top10.length
+      //   } placeholders`
+      // );
 
       // Ordem do pódium: [2º, 1º, 3º] com cores específicas
       const podiumOrder = [top3[1], top3[0], top3[2]];
@@ -783,9 +783,9 @@ class RankingManager {
         }
       });
 
-      console.log(
-        "✓ Pódium atualizado com cores de medalhas e suporte para 1-3 usuários"
-      );
+      // console.log(
+      //   "✓ Pódium atualizado com cores de medalhas e suporte para 1-3 usuários"
+      // );
     } catch (error) {
       console.error("Erro ao atualizar pódium:", error);
       const mockData = this.getMockRankingData();
@@ -944,7 +944,7 @@ class RankingManager {
    */
   static async updateRankingList(currentUser) {
     try {
-      console.log("Atualizando lista de ranking...");
+      // console.log("Atualizando lista de ranking...");
       const rankingData = await this.getRankingFromAPI();
       const rankingList = document.querySelector(".ranking-list");
 
@@ -967,9 +967,9 @@ class RankingManager {
       const currentUserId = currentUser?.id;
       const currentUserPhoto = getCurrentUserPhoto();
 
-      console.log(
-        `✓ Exibindo ${usersToShow.length} usuários (excluindo TOP 3 do pódio)`
-      );
+      // console.log(
+      //   `✓ Exibindo ${usersToShow.length} usuários (excluindo TOP 3 do pódio)`
+      // );
 
       usersToShow.forEach((user) => {
         // Identificar se é o usuário atual
@@ -1036,16 +1036,16 @@ class RankingManager {
           rankingData.currentUserRank,
           currentUserPhoto
         );
-        console.log(
-          `✓ Usuário atual adicionado na posição ${rankingData.currentUserRank}`
-        );
+        // console.log(
+        //   `✓ Usuário atual adicionado na posição ${rankingData.currentUserRank}`
+        // );
       } else if (userInPodium) {
-        console.log(
-          `✓ Usuário atual está no TOP 3 (posição ${currentUser.rank}), não será duplicado na lista`
-        );
+        // console.log(
+        //   `✓ Usuário atual está no TOP 3 (posição ${currentUser.rank}), não será duplicado na lista`
+        // );
       }
 
-      console.log("✓ Lista de ranking atualizada com sucesso");
+      // console.log("✓ Lista de ranking atualizada com sucesso");
     } catch (error) {
       console.error("Erro ao atualizar lista de ranking:", error);
       const mockData = this.getMockRankingData();
@@ -1159,7 +1159,7 @@ class UIManager {
    */
   static async updateUserInterface() {
     try {
-      console.log("=== Atualizando interface do usuário ===");
+      // console.log("=== Atualizando interface do usuário ===");
 
       const userData = await UserService.getCurrentUser();
 
@@ -1172,15 +1172,15 @@ class UIManager {
         const displayName =
           userData.fullName || userData.name || userData.firstName || "Usuário";
 
-        console.log("📋 Dados do usuário para exibição:", {
-          fullName: userData.fullName,
-          name: userData.name,
-          firstName: userData.firstName,
-          displayName: displayName,
-          balance: userBalance,
-          rank: userRank,
-          profilePhotoUrl: userData.profilePhotoUrl,
-        });
+        // console.log("📋 Dados do usuário para exibição:", {
+        //   fullName: userData.fullName,
+        //   name: userData.name,
+        //   firstName: userData.firstName,
+        //   displayName: displayName,
+        //   balance: userBalance,
+        //   rank: userRank,
+        //   profilePhotoUrl: userData.profilePhotoUrl,
+        // });
 
         // Atualizar card do usuário com NOME COMPLETO
         this.updateElement("user-name", displayName);
@@ -1194,8 +1194,8 @@ class UIManager {
           userBalance.toLocaleString()
         );
 
-        console.log("✓ Interface do usuário atualizada com sucesso");
-        console.log(`✓ Nome exibido: "${displayName}"`);
+        // console.log("✓ Interface do usuário atualizada com sucesso");
+        // console.log(`✓ Nome exibido: "${displayName}"`);
       }
 
       await RankingManager.updatePodium();
@@ -1260,7 +1260,7 @@ class UIManager {
     const element = document.getElementById(elementId);
     if (element) {
       element.textContent = content;
-      console.log(`✅ Elemento '${elementId}' atualizado: "${content}"`);
+      // console.log(`✅ Elemento '${elementId}' atualizado: "${content}"`);
     } else {
       console.warn(`⚠️ Elemento com ID '${elementId}' não encontrado no DOM`);
     }
@@ -1273,7 +1273,7 @@ class UIManager {
     const element = document.getElementById(elementId);
     if (element) {
       element.textContent = content;
-      console.log(`✅ Elemento '${elementId}' atualizado: "${content}"`);
+      // console.log(`✅ Elemento '${elementId}' atualizado: "${content}"`);
     }
   }
 
@@ -1295,7 +1295,7 @@ class UIManager {
   }
 
   static showLoading() {
-    console.log("Mostrando estado de loading");
+    // console.log("Mostrando estado de loading");
 
     const elements = ["user-name", "user-balance", "user-position"];
 
@@ -1389,7 +1389,7 @@ class Utils {
 
   static async checkAPIConnection() {
     try {
-      console.log("Verificando conexão com a API...");
+      // console.log("Verificando conexão com a API...");
 
       const response = await fetch(`${API_CONFIG.baseURL}/health`, {
         method: "GET",
@@ -1397,7 +1397,7 @@ class Utils {
       });
 
       const isConnected = response.ok;
-      console.log(`API ${isConnected ? "acessível" : "inacessível"}`);
+      // console.log(`API ${isConnected ? "acessível" : "inacessível"}`);
       return isConnected;
     } catch (error) {
       console.warn("API não está acessível:", error.message);
@@ -1429,10 +1429,10 @@ class Utils {
     localStorage.setItem("token", testToken);
     localStorage.setItem("authToken", testToken);
 
-    console.log("✓ Dados de teste salvos:");
-    console.log("  - Usuário:", testUser);
-    console.log("  - Token:", testToken);
-    console.log(`  - Nome completo: "${testUser.fullName}"`);
+    // console.log("✓ Dados de teste salvos:");
+    // console.log("  - Usuário:", testUser);
+    // console.log("  - Token:", testToken);
+    // console.log(`  - Nome completo: "${testUser.fullName}"`);
 
     return testUser;
   }
@@ -1456,47 +1456,47 @@ class Utils {
       sessionStorage.removeItem(key);
     });
 
-    console.log("✓ Dados do usuário limpos");
+    // console.log("✓ Dados do usuário limpos");
   }
 
   static debugInfo() {
     const token = UserService.getAuthToken();
     const isValidToken = UserService.validateToken(token);
 
-    console.log(`
-=== SISTEMA DE RANKING - DEBUG INFO ===
-📊 API Base: ${API_CONFIG.baseURL}
-🔑 Token: ${token ? "Presente" : "Ausente"}
-✅ Token Válido: ${isValidToken ? "Sim" : "Não"}
-🔍 Dados no localStorage: ${localStorage.getItem("currentUser") ? "Sim" : "Não"}
+    //     console.log(`
+    // === SISTEMA DE RANKING - DEBUG INFO ===
+    // 📊 API Base: ${API_CONFIG.baseURL}
+    // 🔑 Token: ${token ? "Presente" : "Ausente"}
+    // ✅ Token Válido: ${isValidToken ? "Sim" : "Não"}
+    // 🔍 Dados no localStorage: ${localStorage.getItem("currentUser") ? "Sim" : "Não"}
 
-🛠️ COMANDOS DISPONÍVEIS:
-   • testUser() - Cria usuário de teste com token
-   • clearData() - Limpa todos os dados salvos
-   • checkAPI() - Verifica conexão com API
-   • debugInfo() - Mostra informações do sistema
-   • forceReload() - Força recarregamento da interface
-   
-🔧 CLASSES PRINCIPAIS:
-   • UserService - Gerencia autenticação e dados do usuário
-   • RankingManager - Gerencia dados de ranking
-   • UIManager - Gerencia interface do usuário
-   • NavigationManager - Gerencia navegação
-   
-💡 DICA: Se não estiver funcionando, tente:
-   1. testUser() para criar dados de teste
-   2. Verificar se a API está rodando
-   3. Verificar console para erros específicos
-==========================================
-    `);
+    // 🛠️ COMANDOS DISPONÍVEIS:
+    //    • testUser() - Cria usuário de teste com token
+    //    • clearData() - Limpa todos os dados salvos
+    //    • checkAPI() - Verifica conexão com API
+    //    • debugInfo() - Mostra informações do sistema
+    //    • forceReload() - Força recarregamento da interface
+
+    // 🔧 CLASSES PRINCIPAIS:
+    //    • UserService - Gerencia autenticação e dados do usuário
+    //    • RankingManager - Gerencia dados de ranking
+    //    • UIManager - Gerencia interface do usuário
+    //    • NavigationManager - Gerencia navegação
+
+    // 💡 DICA: Se não estiver funcionando, tente:
+    //    1. testUser() para criar dados de teste
+    //    2. Verificar se a API está rodando
+    //    3. Verificar console para erros específicos
+    // ==========================================
+    //     `);
   }
 
   static async forceReload() {
-    console.log("🔄 Forçando recarregamento da interface...");
+    // console.log("🔄 Forçando recarregamento da interface...");
     try {
       UIManager.showLoading();
       await UIManager.updateUserInterface();
-      console.log("✓ Interface recarregada com sucesso");
+      // console.log("✓ Interface recarregada com sucesso");
     } catch (error) {
       console.error("❌ Erro ao recarregar interface:", error);
       UIManager.showConnectionError();
@@ -1504,7 +1504,7 @@ class Utils {
   }
 
   static async runDiagnostic() {
-    console.log("🔍 Executando diagnóstico completo...");
+    // console.log("🔍 Executando diagnóstico completo...");
 
     const results = {
       token: !!UserService.getAuthToken(),
@@ -1550,7 +1550,7 @@ class Utils {
 class RanksApp {
   static async init() {
     try {
-      console.log("🚀 Inicializando aplicação de ranking...");
+      // console.log("🚀 Inicializando aplicação de ranking...");
 
       const token = UserService.getAuthToken();
 
@@ -1561,13 +1561,13 @@ class RanksApp {
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1"
         ) {
-          console.log(
-            "🔧 Ambiente de desenvolvimento detectado. Criando dados de teste..."
-          );
+          // console.log(
+          //   "🔧 Ambiente de desenvolvimento detectado. Criando dados de teste..."
+          // );
           Utils.generateTestUser();
           await new Promise((resolve) => setTimeout(resolve, 1000));
         } else {
-          console.log("🔒 Redirecionando para login...");
+          // console.log("🔒 Redirecionando para login...");
           this.redirectToLogin();
           return;
         }
@@ -1588,13 +1588,13 @@ class RanksApp {
           "⚠️ API não acessível. Sistema funcionará com dados locais/mock."
         );
       } else {
-        console.log("✅ Conexão com API estabelecida.");
+        // console.log("✅ Conexão com API estabelecida.");
       }
 
       NavigationManager.setupNavigation();
       await UIManager.updateUserInterface();
 
-      console.log("🎉 Aplicação de ranking carregada com sucesso!");
+      // console.log("🎉 Aplicação de ranking carregada com sucesso!");
     } catch (error) {
       console.error("💥 Erro crítico ao inicializar aplicação:", error);
 
@@ -1607,7 +1607,7 @@ class RanksApp {
   }
 
   static redirectToLogin() {
-    console.log("🔄 Redirecionando para login em 3 segundos...");
+    // console.log("🔄 Redirecionando para login em 3 segundos...");
 
     const elements = ["user-name", "user-balance", "user-position"];
     elements.forEach((id) => {
@@ -1627,14 +1627,14 @@ class RanksApp {
   }
 
   static async reinitialize() {
-    console.log("🔄 Reinicializando aplicação...");
+    // console.log("🔄 Reinicializando aplicação...");
     await this.init();
   }
 }
 
 // ========== EVENTOS E INICIALIZAÇÃO ==========
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("📄 DOM carregado, inicializando aplicação...");
+  // console.log("📄 DOM carregado, inicializando aplicação...");
 
   const userNameElement = document.getElementById("user-name");
   if (
@@ -1661,7 +1661,7 @@ setInterval(() => {
       const userData = JSON.parse(localStorage.getItem("currentUser") || "{}");
       if (userData.fullName) {
         userNameElement.textContent = userData.fullName;
-        console.log("🔄 Nome corrigido automaticamente:", userData.fullName);
+        // console.log("🔄 Nome corrigido automaticamente:", userData.fullName);
       }
     }
   }

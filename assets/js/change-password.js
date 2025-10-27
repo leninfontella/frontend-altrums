@@ -3,7 +3,7 @@ let passwordStrength = 0;
 
 // Inicialização
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔐 Página de alteração de senha carregada");
+  // console.log("🔐 Página de alteração de senha carregada");
 
   initializePasswordToggles();
   initializePasswordStrength();
@@ -239,7 +239,7 @@ async function handlePasswordChange() {
     const currentPassword = document.getElementById("current-password")?.value;
     const newPassword = document.getElementById("new-password")?.value;
 
-    console.log("🔄 Iniciando alteração de senha...");
+    // console.log("🔄 Iniciando alteração de senha...");
 
     // 🔧 Buscar token na ordem correta (authToken é o padrão)
     const token =
@@ -260,7 +260,7 @@ async function handlePasswordChange() {
       return;
     }
 
-    console.log("🔑 Token encontrado:", token.substring(0, 20) + "...");
+    // console.log("🔑 Token encontrado:", token.substring(0, 20) + "...");
 
     const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
       method: "POST",
@@ -276,21 +276,21 @@ async function handlePasswordChange() {
 
     const data = await response.json();
 
-    console.log("📡 Resposta do servidor:", {
-      status: response.status,
-      success: data.success,
-      message: data.message,
-      requiresLogin: data.requiresLogin,
-    });
+    // console.log("📡 Resposta do servidor:", {
+    //   status: response.status,
+    //   success: data.success,
+    //   message: data.message,
+    //   requiresLogin: data.requiresLogin,
+    // });
 
     if (response.ok && data.success) {
-      console.log("✅ Senha alterada com sucesso");
+      // console.log("✅ Senha alterada com sucesso");
 
       // 🔧 LIMPAR TODOS OS TOKENS (forçar re-login por segurança)
       sessionStorage.clear();
       localStorage.clear();
 
-      console.log("🧹 Tokens limpos - sessão encerrada");
+      // console.log("🧹 Tokens limpos - sessão encerrada");
 
       // Resetar formulário
       const form = document.getElementById("change-password-form");
@@ -423,7 +423,7 @@ function showSuccessModalWithRelogin() {
     okBtn.parentNode.replaceChild(newBtn, okBtn);
 
     newBtn.addEventListener("click", function () {
-      console.log("🚪 Redirecionando para login...");
+      // console.log("🚪 Redirecionando para login...");
       window.location.href = "/index.html";
     });
   }
@@ -440,14 +440,14 @@ function showSuccessModalWithRelogin() {
 
     if (countdown <= 0) {
       clearInterval(countdownInterval);
-      console.log("⏱️ Tempo esgotado - redirecionando...");
+      // console.log("⏱️ Tempo esgotado - redirecionando...");
       window.location.href = "/index.html";
     }
   }, 1000);
 
   // Fallback: garantir redirecionamento mesmo se modal fechar
   setTimeout(() => {
-    console.log("⏱️ Redirecionamento automático após 5s");
+    // console.log("⏱️ Redirecionamento automático após 5s");
     window.location.href = "/index.html";
   }, 5000);
 }
@@ -602,4 +602,4 @@ function formatDate(date) {
   }
 }
 
-console.log("🔐 Script de alteração de senha carregado com sucesso!");
+// console.log("🔐 Script de alteração de senha carregado com sucesso!");

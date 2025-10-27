@@ -141,17 +141,17 @@ CONFIG.getLevelName = function (level) {
 
 // Validar se todas as configurações estão corretas
 CONFIG.validate = function () {
-  console.log("🔧 Configurações carregadas:", {
-    API_BASE: this.API_BASE,
-    endpoints: Object.keys(this.ENDPOINTS).length,
-    levels: Object.keys(this.COINS.levels).length,
-  });
+  // console.log("🔧 Configurações carregadas:", {
+  //   API_BASE: this.API_BASE,
+  //   endpoints: Object.keys(this.ENDPOINTS).length,
+  //   levels: Object.keys(this.COINS.levels).length,
+  // });
 
   // Verificar se a API está respondendo
   return fetch(this.API_BASE + "/api/health")
     .then((response) => {
       if (response.ok) {
-        console.log("✅ API conectada com sucesso");
+        // console.log("✅ API conectada com sucesso");
         return true;
       } else {
         console.warn("⚠️ API respondendo, mas com status:", response.status);

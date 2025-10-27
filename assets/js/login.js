@@ -1,10 +1,10 @@
 // Script específico para página de Login Mobile - Altrum
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Página de login mobile carregada com sistema de moedas");
+  // console.log("Página de login mobile carregada com sistema de moedas");
 
   // Verificar se usuário já está logado (usando módulos externos se disponíveis)
   if (typeof Auth !== "undefined" && Auth.isLoggedIn && Auth.isLoggedIn()) {
-    console.log("Usuário já está logado, redirecionando...");
+    // console.log("Usuário já está logado, redirecionando...");
     if (typeof CONFIG !== "undefined" && CONFIG.UI && CONFIG.UI.pages) {
       window.location.href = CONFIG.UI.pages.dashboard;
     } else {
@@ -38,7 +38,7 @@ function initializeElements() {
     screen: document.querySelector(".screen"),
   };
 
-  console.log("Elementos da página inicializados:", window.elements);
+  // console.log("Elementos da página inicializados:", window.elements);
 }
 
 // Configurar event listeners
@@ -101,7 +101,7 @@ function setupEventListeners() {
     });
   }
 
-  console.log("Event listeners configurados");
+  // console.log("Event listeners configurados");
 }
 
 // Configurar otimizações mobile
@@ -161,7 +161,7 @@ function setupMobileOptimizations() {
     });
   });
 
-  console.log("Otimizações mobile configuradas");
+  // console.log("Otimizações mobile configuradas");
 }
 
 // Detectar dispositivos
@@ -205,7 +205,7 @@ function setupAnimations() {
     }
   }
 
-  console.log("Animações configuradas");
+  // console.log("Animações configuradas");
 }
 
 // Carregar email lembrado
@@ -230,7 +230,7 @@ function loadRememberedEmail() {
   if (rememberedEmail && shouldRemember && emailField && rememberMe) {
     emailField.value = rememberedEmail;
     rememberMe.checked = true;
-    console.log("Email lembrado carregado:", rememberedEmail);
+    // console.log("Email lembrado carregado:", rememberedEmail);
   }
 }
 
@@ -416,7 +416,7 @@ function showError(fieldId, message) {
   const errorElement = document.getElementById(`${fieldId}-error`);
   const inputElement = document.getElementById(fieldId);
 
-  console.log(`🔴 Mostrando erro para ${fieldId}:`, message);
+  // console.log(`🔴 Mostrando erro para ${fieldId}:`, message);
 
   if (errorElement && inputElement) {
     errorElement.textContent = message;
@@ -515,94 +515,6 @@ function showSuccessFeedback(balance) {
   }
 }
 
-// Função auxiliar para identificar tipo de erro de autenticação
-function identifyAuthError(error) {
-  const errorMsg = error.message || error.toString();
-  const errorMsgLower = errorMsg.toLowerCase();
-
-  // Lista expandida de padrões de erro
-  const errorPatterns = {
-    incorrectPassword: [
-      "senha incorreta",
-      "senha inválida",
-      "password incorrect",
-      "invalid password",
-      "wrong password",
-      "incorrect credentials",
-      "senha não confere",
-      "password mismatch",
-      "authentication failed",
-      "credenciais inválidas",
-      "401",
-      "unauthorized",
-    ],
-    userNotFound: [
-      "usuário não encontrado",
-      "user not found",
-      "email não encontrado",
-      "email not found",
-      "não cadastrado",
-      "not registered",
-      "account not found",
-      "invalid user",
-    ],
-    networkError: [
-      "network error",
-      "erro de conexão",
-      "failed to fetch",
-      "network request failed",
-      "timeout",
-      "connection refused",
-      "erro de rede",
-      "sem conexão",
-    ],
-  };
-
-  // Verificar senha incorreta
-  if (
-    errorPatterns.incorrectPassword.some((pattern) =>
-      errorMsgLower.includes(pattern)
-    )
-  ) {
-    return {
-      field: "password",
-      message: "Senha incorreta",
-    };
-  }
-
-  // Verificar usuário não encontrado
-  if (
-    errorPatterns.userNotFound.some((pattern) =>
-      errorMsgLower.includes(pattern)
-    )
-  ) {
-    return {
-      field: "email",
-      message: "E-mail não encontrado ou não cadastrado",
-    };
-  }
-
-  // Verificar erro de rede
-  if (
-    errorPatterns.networkError.some((pattern) =>
-      errorMsgLower.includes(pattern)
-    )
-  ) {
-    return {
-      field: "password",
-      message: "Erro de conexão. Verifique sua internet.",
-    };
-  }
-
-  // Erro genérico
-  return {
-    field: "password",
-    message: errorMsg || "Erro ao fazer login. Tente novamente.",
-  };
-}
-
-// login.js
-
 /**
  * Analisa a mensagem de erro do backend para identificar o campo afetado (e-mail ou senha).
  * @param {Error} error - O objeto Error lançado pelo módulo Auth.
@@ -657,7 +569,7 @@ function identifyAuthError(error) {
 // Função principal de login otimizada para mobile
 async function handleLogin(e) {
   e.preventDefault();
-  console.log("📱 Formulário de login mobile enviado");
+  // console.log("📱 Formulário de login mobile enviado");
 
   const { emailField, passwordField, loginButton, rememberMe } =
     window.elements;
@@ -747,7 +659,7 @@ async function handleLogin(e) {
   showLoading(true);
 
   try {
-    console.log("🌐 Enviando requisição para login mobile...");
+    // console.log("🌐 Enviando requisição para login mobile...");
 
     // Preservar foto de perfil existente se Auth módulo estiver disponível
     let existingProfilePhoto = null;
@@ -755,10 +667,10 @@ async function handleLogin(e) {
       const existingUserData = Auth.getUserData();
       if (existingUserData && existingUserData.profilePhotoUrl) {
         existingProfilePhoto = existingUserData.profilePhotoUrl;
-        console.log(
-          "📸 Foto de perfil existente preservada:",
-          existingProfilePhoto
-        );
+        // console.log(
+        //   "📸 Foto de perfil existente preservada:",
+        //   existingProfilePhoto
+        // );
       }
     }
 
@@ -770,13 +682,13 @@ async function handleLogin(e) {
       // Simular login para demonstração
       await new Promise((resolve) => setTimeout(resolve, 2000));
       result = { success: true };
-      console.log(
-        "⚠️ Módulo Auth não encontrado, simulando login bem-sucedido"
-      );
+      // console.log(
+      //   "⚠️ Módulo Auth não encontrado, simulando login bem-sucedido"
+      // );
     }
 
     if (result.success) {
-      console.log("✅ Login mobile bem-sucedido!");
+      // console.log("✅ Login mobile bem-sucedido!");
 
       // Restaurar foto de perfil após login se ela existir e Auth estiver disponível
       if (
@@ -784,7 +696,7 @@ async function handleLogin(e) {
         typeof Auth !== "undefined" &&
         Auth.updateProfilePhoto
       ) {
-        console.log("🔄 Restaurando foto de perfil após login...");
+        // console.log("🔄 Restaurando foto de perfil após login...");
         Auth.updateProfilePhoto(existingProfilePhoto);
       }
 
@@ -807,7 +719,7 @@ async function handleLogin(e) {
       showSuccessFeedback(userBalance);
 
       // Redirecionar para o dashboard
-      console.log("🔄 Mostrando loader pós-login mobile...");
+      // console.log("🔄 Mostrando loader pós-login mobile...");
       showPostLoginLoader();
 
       // Usar delay e página do CONFIG se disponíveis
@@ -832,9 +744,9 @@ async function handleLogin(e) {
     // Identificar tipo de erro usando função auxiliar
     const errorInfo = identifyAuthError(err);
 
-    console.log(
-      `📋 Erro identificado - Campo: ${errorInfo.field}, Mensagem: ${errorInfo.message}`
-    );
+    // console.log(
+    //   `📋 Erro identificado - Campo: ${errorInfo.field}, Mensagem: ${errorInfo.message}`
+    // );
 
     // Mostrar erro no campo apropriado
     showError(errorInfo.field, errorInfo.message);
@@ -853,7 +765,7 @@ async function handleLogin(e) {
 
 // Interceptar eventos de conectividade
 window.addEventListener("online", () => {
-  console.log("📱 Conexão mobile restaurada");
+  // console.log("📱 Conexão mobile restaurada");
   clearError("password");
 
   // Feedback visual de conexão restaurada
@@ -869,7 +781,7 @@ window.addEventListener("online", () => {
 });
 
 window.addEventListener("offline", () => {
-  console.log("📱 Conexão mobile perdida");
+  // console.log("📱 Conexão mobile perdida");
   showError("password", "Sem conexão com a internet");
 
   // Feedback visual de perda de conexão
@@ -907,6 +819,6 @@ window.addEventListener("load", () => {
   }
 });
 
-console.log(
-  "✅ Login mobile.js carregado - versão otimizada com tratamento de erro aprimorado"
-);
+// console.log(
+//   "✅ Login mobile.js carregado - versão otimizada com tratamento de erro aprimorado"
+// );

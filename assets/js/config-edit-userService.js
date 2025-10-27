@@ -93,9 +93,9 @@ class GlobalUserService {
 
   // FUNÇÃO CRÍTICA TOTALMENTE REESCRITA: Mobile-friendly
   updateProfilePhotoEverywhere(photoUrl, forceRefresh = false) {
-    console.log("Atualizando fotos de perfil em todos os elementos");
-    console.log("URL da foto:", photoUrl);
-    console.log("Force refresh:", forceRefresh);
+    // console.log("Atualizando fotos de perfil em todos os elementos");
+    // console.log("URL da foto:", photoUrl);
+    // console.log("Force refresh:", forceRefresh);
 
     const profileImages = document.querySelectorAll(
       "[data-user-photo], .profile-image, .user-avatar, .profile-avatar, #profile-image, .user-profile-image"
@@ -107,7 +107,7 @@ class GlobalUserService {
     if (forceRefresh && imageUrl && !imageUrl.includes("ui-avatars.com")) {
       const separator = imageUrl.includes("?") ? "&" : "?";
       imageUrl = `${imageUrl}${separator}t=${Date.now()}&mobile=1&v=${Math.random()}`;
-      console.log("URL com cache busting:", imageUrl);
+      // console.log("URL com cache busting:", imageUrl);
     }
 
     let updatedCount = 0;
@@ -157,7 +157,7 @@ class GlobalUserService {
       }
     });
 
-    console.log(`Total de ${updatedCount} elementos atualizados`);
+    // console.log(`Total de ${updatedCount} elementos atualizados`);
   }
 
   getImageUrl(photoUrl) {

@@ -1,6 +1,6 @@
 // Aguarda o DOM carregar completamente
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🚀 Inicializando página de perfil...");
+  // console.log("🚀 Inicializando página de perfil...");
   initializeProfile();
 });
 
@@ -18,7 +18,7 @@ async function apiRequest(endpoint, options = {}) {
     // Rate limiting básico
     const now = Date.now();
     if (now - lastApiCall < API_COOLDOWN) {
-      console.log("⏳ Aguardando cooldown da API...");
+      // console.log("⏳ Aguardando cooldown da API...");
       await new Promise((resolve) =>
         setTimeout(resolve, API_COOLDOWN - (now - lastApiCall))
       );
@@ -30,7 +30,7 @@ async function apiRequest(endpoint, options = {}) {
       const cached = apiCache.get(cacheKey);
       if (cached && now - cached.timestamp < 30000) {
         // Cache por 30 segundos
-        console.log("📋 Usando dados do cache para:", endpoint);
+        // console.log("📋 Usando dados do cache para:", endpoint);
         return cached.data;
       }
     }
@@ -96,13 +96,13 @@ class UserProfileService {
   // Buscar dados reais do dashboard via API
   static async getDashboardData() {
     try {
-      console.log("📄 Buscando dados do dashboard da API...");
+      // console.log("📄 Buscando dados do dashboard da API...");
 
       const response = await apiRequest("/dashboard");
 
       if (response.success && response.data) {
         const data = response.data;
-        console.log("✅ Dados do dashboard carregados:", data);
+        // console.log("✅ Dados do dashboard carregados:", data);
 
         // Transformar dados da API para formato esperado pelo frontend
         const userData = {
@@ -151,12 +151,12 @@ class UserProfileService {
 
   // Fallback para quando a API não está disponível
   static getUserDataFallback() {
-    console.log("📄 Usando fallback para dados do usuário...");
+    // console.log("📄 Usando fallback para dados do usuário...");
 
     // Primeiro tentar sessionStorage
     const storedUser = Auth.getUserData();
     if (storedUser) {
-      console.log("✅ Dados encontrados no sessionStorage:", storedUser);
+      // console.log("✅ Dados encontrados no sessionStorage:", storedUser);
       return {
         fullName: storedUser.name || storedUser.fullName || "Usuário",
         firstName: this.getFirstName(storedUser.name || storedUser.fullName),
@@ -232,7 +232,7 @@ class UserProfileService {
 
       // Usar sessionStorage como o módulo Auth
       sessionStorage.setItem("currentUser", JSON.stringify(updatedData));
-      console.log("✅ Dados do usuário salvos:", updatedData);
+      // console.log("✅ Dados do usuário salvos:", updatedData);
       return true;
     } catch (error) {
       console.error("❌ Erro ao salvar dados do usuário:", error);
@@ -243,7 +243,7 @@ class UserProfileService {
   // Função para atualizar meta via API
   static async updateGoal(newGoalAmount) {
     try {
-      console.log(`🎯 Atualizando meta para ${newGoalAmount} via API...`);
+      // console.log(`🎯 Atualizando meta para ${newGoalAmount} via API...`);
 
       const response = await apiRequest("/dashboard/goal", {
         method: "PUT",
@@ -251,7 +251,7 @@ class UserProfileService {
       });
 
       if (response.success) {
-        console.log("✅ Meta atualizada na API:", response.data);
+        // console.log("✅ Meta atualizada na API:", response.data);
 
         // Atualizar dados locais também
         this.saveUserData({ donationGoal: newGoalAmount });
@@ -264,18 +264,18 @@ class UserProfileService {
       console.error("❌ Erro ao atualizar meta via API:", error);
 
       // Fallback para atualização local
-      console.log("📄 Usando fallback local para meta...");
+      // console.log("📄 Usando fallback local para meta...");
       return this.saveUserData({ donationGoal: newGoalAmount });
     }
   }
 
   // Função de debug
   static debugLocalStorage() {
-    console.log("🔧 DEBUG - SessionStorage:");
+    // console.log("🔧 DEBUG - SessionStorage:");
     for (let i = 0; i < sessionStorage.length; i++) {
       const key = sessionStorage.key(i);
       const value = sessionStorage.getItem(key);
-      console.log(`  ${key}:`, value);
+      // console.log(`  ${key}:`, value);
     }
   }
 }
@@ -348,7 +348,7 @@ class GoalManager {
     const progressText = document.getElementById("goal-progress-text");
     const progressBar = document.getElementById("goal-progress-bar");
 
-    console.log("🎯 Atualizando display da meta:", goalData);
+    // console.log("🎯 Atualizando display da meta:", goalData);
 
     if (progressText) {
       progressText.textContent = `${goalData.current}/${goalData.goal}`;
@@ -384,7 +384,7 @@ class GoalManager {
 // ========== GERENCIADOR DE DASHBOARD ==========
 class DashboardManager {
   static updateDashboard(userData) {
-    console.log("📊 Atualizando dashboard com dados:", userData);
+    // console.log("📊 Atualizando dashboard com dados:", userData);
 
     // Atualizar usuário com maior interação
     const topUserEl = document.getElementById("top-interacting-user");
@@ -439,12 +439,12 @@ class DashboardManager {
     const received = userData.monthlyReceived || 0;
     const total = donated + received;
 
-    console.log(
-      "📊 Atualizando gráfico - Doadas:",
-      donated,
-      "Recebidas:",
-      received
-    );
+    // console.log(
+    //   "📊 Atualizando gráfico - Doadas:",
+    //   donated,
+    //   "Recebidas:",
+    //   received
+    // );
 
     if (donatedCount) {
       donatedCount.textContent = `Doadas: ${donated}`;
@@ -480,12 +480,12 @@ let isLoadingData = false; // Flag para evitar chamadas múltiplas
 async function loadAndDisplayUserData() {
   // Evitar chamadas múltiplas simultâneas
   if (isLoadingData) {
-    console.log("⏳ Carregamento já em andamento...");
+    // console.log("⏳ Carregamento já em andamento...");
     return;
   }
 
   isLoadingData = true;
-  console.log("📄 Carregando e exibindo dados do usuário...");
+  // console.log("📄 Carregando e exibindo dados do usuário...");
 
   // Mostrar loading
   showLoadingState();
@@ -502,7 +502,7 @@ async function loadAndDisplayUserData() {
       return;
     }
 
-    console.log("📊 Dados do usuário carregados:", userData);
+    // console.log("📊 Dados do usuário carregados:", userData);
 
     // Esconder loading
     hideLoadingState();
@@ -511,7 +511,7 @@ async function loadAndDisplayUserData() {
     const profileName = document.getElementById("profile-name");
     if (profileName) {
       profileName.textContent = userData.fullName;
-      console.log("✅ Nome atualizado:", userData.fullName);
+      // console.log("✅ Nome atualizado:", userData.fullName);
     } else {
       console.warn("⚠️ Elemento 'profile-name' não encontrado");
     }
@@ -520,7 +520,7 @@ async function loadAndDisplayUserData() {
     const profileEmail = document.getElementById("profile-email");
     if (profileEmail) {
       profileEmail.textContent = userData.email;
-      console.log("✅ Email atualizado:", userData.email);
+      // console.log("✅ Email atualizado:", userData.email);
     } else {
       console.warn("⚠️ Elemento 'profile-email' não encontrado");
     }
@@ -573,7 +573,7 @@ function showLoadingState() {
 
 function hideLoadingState() {
   // Remove qualquer indicador de loading se necessário
-  console.log("✅ Loading concluído");
+  // console.log("✅ Loading concluído");
 }
 
 function showErrorState() {
@@ -605,7 +605,7 @@ function updateAllNameElements(userData) {
     elements.forEach((element) => {
       if (element) {
         element.textContent = userData.fullName;
-        console.log(`✅ Nome atualizado em ${selector}`);
+        // console.log(`✅ Nome atualizado em ${selector}`);
       }
     });
   });
@@ -623,7 +623,7 @@ function updateAllNameElements(userData) {
     elements.forEach((element) => {
       if (element) {
         element.textContent = userData.email;
-        console.log(`✅ Email atualizado em ${selector}`);
+        // console.log(`✅ Email atualizado em ${selector}`);
       }
     });
   });
@@ -631,7 +631,7 @@ function updateAllNameElements(userData) {
 
 // ========== FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO ==========
 async function initializeProfile() {
-  console.log("⚙️ Configurando perfil...");
+  // console.log("⚙️ Configurando perfil...");
 
   // Carrega dados do usuário PRIMEIRO
   await loadAndDisplayUserData();
@@ -643,7 +643,7 @@ async function initializeProfile() {
   setupGoalModal();
   animateDashboard();
 
-  console.log("✅ Perfil inicializado com sucesso!");
+  // console.log("✅ Perfil inicializado com sucesso!");
 }
 
 // ========== CONFIGURAÇÃO DO MODAL DE METAS ==========
@@ -768,16 +768,16 @@ function handleMenuClick(menuItem) {
 function handleMenuAction(menuTitle) {
   switch (menuTitle) {
     case "Histórico":
-      console.log("Navegando para histórico de transações");
+      // console.log("Navegando para histórico de transações");
       break;
     case "Segurança":
-      console.log("Abrindo configurações de segurança");
+      // console.log("Abrindo configurações de segurança");
       break;
     case "Suporte":
-      console.log("Abrindo suporte");
+      // console.log("Abrindo suporte");
       break;
     default:
-      console.log("Ação não definida para:", menuTitle);
+    // console.log("Ação não definida para:", menuTitle);
   }
 }
 
@@ -838,26 +838,26 @@ function handleNavigation(navItem) {
 
   navItem.classList.add("active");
   const tabName = navItem.dataset.tab;
-  console.log("Navegando para tab:", tabName);
+  // console.log("Navegando para tab:", tabName);
   handleTabNavigation(tabName);
 }
 
 function handleTabNavigation(tabName) {
   switch (tabName) {
     case "home":
-      console.log("Navegando para home");
+      // console.log("Navegando para home");
       break;
     case "timeline":
-      console.log("Navegando para timeline");
+      // console.log("Navegando para timeline");
       break;
     case "ranks":
-      console.log("Navegando para ranks");
+      // console.log("Navegando para ranks");
       break;
     case "profile":
-      console.log("Já está na página de profile");
+      // console.log("Já está na página de profile");
       break;
     default:
-      console.log("Tab não reconhecida:", tabName);
+    // console.log("Tab não reconhecida:", tabName);
   }
 }
 
@@ -883,7 +883,7 @@ function handleBackButton(button) {
   setTimeout(() => {
     button.style.transform = "";
   }, 150);
-  console.log("Voltando para página anterior");
+  // console.log("Voltando para página anterior");
 }
 
 function handleSettingsButton(button) {
@@ -891,7 +891,7 @@ function handleSettingsButton(button) {
   setTimeout(() => {
     button.style.transform = "";
   }, 300);
-  console.log("Abrindo configurações");
+  // console.log("Abrindo configurações");
 }
 
 function animateDashboard() {
@@ -927,12 +927,12 @@ function updateStats(userData) {
   const userCoins = document.getElementById("user-coins");
   const userDonations = document.getElementById("user-donations");
 
-  console.log(
-    "📊 Atualizando stats - Moedas:",
-    userData.coins,
-    "Doações:",
-    userData.donations
-  );
+  // console.log(
+  //   "📊 Atualizando stats - Moedas:",
+  //   userData.coins,
+  //   "Doações:",
+  //   userData.donations
+  // );
 
   if (userCoins) {
     animateNumber(userCoins, 0, userData.coins, true);
@@ -969,19 +969,19 @@ function animateNumber(element, from, to, isCoins = false) {
 
 // ========== FUNÇÕES DE DEBUG E TESTE ==========
 async function testProfileUpdate() {
-  console.log("🧪 Testando atualização de perfil...");
+  // console.log("🧪 Testando atualização de perfil...");
 
   try {
     // Recarregar dados da API
     await loadAndDisplayUserData();
-    console.log("✅ Teste de atualização concluído");
+    // console.log("✅ Teste de atualização concluído");
   } catch (error) {
     console.error("❌ Erro no teste:", error);
   }
 }
 
 async function simulateDonation(amount) {
-  console.log(`💰 Simulando doação de ${amount} moedas...`);
+  // console.log(`💰 Simulando doação de ${amount} moedas...`);
 
   try {
     // Simular doação localmente (na falta da API de doação)
@@ -999,7 +999,7 @@ async function simulateDonation(amount) {
     };
 
     if (UserProfileService.saveUserData(updatedData)) {
-      console.log(`✅ Doação simulada: ${amount} moedas`);
+      // console.log(`✅ Doação simulada: ${amount} moedas`);
 
       // Atualizar as metas também
       GoalManager.updateGoalDisplay();
@@ -1016,17 +1016,17 @@ async function simulateDonation(amount) {
 }
 
 async function debugProfile() {
-  console.log("🔧 DEBUG - Estado atual do perfil:");
-  console.log("SessionStorage keys:", Object.keys(sessionStorage));
-  console.log("currentUser:", sessionStorage.getItem("currentUser"));
-  console.log("dashboardData:", sessionStorage.getItem("dashboardData"));
+  // console.log("🔧 DEBUG - Estado atual do perfil:");
+  // console.log("SessionStorage keys:", Object.keys(sessionStorage));
+  // console.log("currentUser:", sessionStorage.getItem("currentUser"));
+  // console.log("dashboardData:", sessionStorage.getItem("dashboardData"));
 
   try {
     const userData = await UserProfileService.getUserData();
-    console.log("Dados processados:", userData);
+    // console.log("Dados processados:", userData);
 
     const goalData = GoalManager.getGoalData();
-    console.log("Dados da meta:", goalData);
+    // console.log("Dados da meta:", goalData);
   } catch (error) {
     console.error("Erro no debug:", error);
   }
@@ -1034,7 +1034,7 @@ async function debugProfile() {
 
 // ========== FUNÇÃO PARA FORÇAR REFRESH DOS DADOS ==========
 async function refreshDashboard() {
-  console.log("🔄 Forçando refresh do dashboard...");
+  // console.log("🔄 Forçando refresh do dashboard...");
 
   try {
     // Limpar cache
@@ -1043,7 +1043,7 @@ async function refreshDashboard() {
     // Recarregar dados
     await loadAndDisplayUserData();
 
-    console.log("✅ Dashboard atualizado com sucesso!");
+    // console.log("✅ Dashboard atualizado com sucesso!");
     return true;
   } catch (error) {
     console.error("❌ Erro ao atualizar dashboard:", error);
@@ -1117,7 +1117,7 @@ class GoalAchievementModal {
       }
     });
 
-    console.log("✅ Modal de meta atingida inicializado");
+    // console.log("✅ Modal de meta atingida inicializado");
   }
 
   loadLastState() {
@@ -1127,7 +1127,7 @@ class GoalAchievementModal {
         const state = JSON.parse(stored);
         this.lastCheckedGoal = state.goal;
         this.lastCheckedProgress = state.progress;
-        console.log("📋 Estado anterior carregado:", state);
+        // console.log("📋 Estado anterior carregado:", state);
       }
     } catch (error) {
       console.error("Erro ao carregar estado:", error);
@@ -1161,7 +1161,7 @@ class GoalAchievementModal {
     this.modal.classList.add("show");
     document.body.style.overflow = "hidden";
 
-    console.log(`🎉 Meta de ${goalAmount} moedas atingida! Modal exibido!`);
+    // console.log(`🎉 Meta de ${goalAmount} moedas atingida! Modal exibido!`);
   }
 
   close() {
@@ -1176,28 +1176,28 @@ class GoalAchievementModal {
       document.body.style.overflow = "";
     }, 300);
 
-    console.log("✅ Modal de meta atingida fechado");
+    // console.log("✅ Modal de meta atingida fechado");
   }
 
   checkGoalAchievement() {
     const goalData = GoalManager.getGoalData();
 
-    console.log("🔍 Verificando meta:", {
-      current: goalData.current,
-      goal: goalData.goal,
-      progress: goalData.progress,
-      lastGoal: this.lastCheckedGoal,
-      lastProgress: this.lastCheckedProgress,
-    });
+    // console.log("🔍 Verificando meta:", {
+    //   current: goalData.current,
+    //   goal: goalData.goal,
+    //   progress: goalData.progress,
+    //   lastGoal: this.lastCheckedGoal,
+    //   lastProgress: this.lastCheckedProgress,
+    // });
 
     // Verificar se a meta mudou (usuário definiu nova meta)
     const goalChanged =
       this.lastCheckedGoal !== null && this.lastCheckedGoal !== goalData.goal;
 
     if (goalChanged) {
-      console.log(
-        `🔄 Meta alterada de ${this.lastCheckedGoal} para ${goalData.goal}`
-      );
+      // console.log(
+      //   `🔄 Meta alterada de ${this.lastCheckedGoal} para ${goalData.goal}`
+      // );
       // Resetar estado quando meta muda
       this.saveLastState(goalData.goal, goalData.progress);
       return false;
@@ -1215,19 +1215,19 @@ class GoalAchievementModal {
 
     // Mostrar modal se acabou de atingir a meta
     if (justAchieved) {
-      console.log(
-        "🎯 META ATINGIDA! Progresso passou de",
-        this.lastCheckedProgress,
-        "para",
-        goalData.progress
-      );
+      // console.log(
+      //   "🎯 META ATINGIDA! Progresso passou de",
+      //   this.lastCheckedProgress,
+      //   "para",
+      //   goalData.progress
+      // );
       this.show(goalData.goal);
       return true;
     }
 
     // Se é a primeira verificação e já está na meta, mostrar também
     if (firstCheck && goalData.progress >= 100) {
-      console.log("🎯 Primeira verificação - meta já atingida!");
+      // console.log("🎯 Primeira verificação - meta já atingida!");
       this.show(goalData.goal);
       return true;
     }
@@ -1240,12 +1240,12 @@ class GoalAchievementModal {
     sessionStorage.removeItem("goalAchievementState");
     this.lastCheckedGoal = null;
     this.lastCheckedProgress = 0;
-    console.log("🔄 Estado do modal resetado completamente");
+    // console.log("🔄 Estado do modal resetado completamente");
   }
 
   // Forçar verificação manual
   forceCheck() {
-    console.log("🔍 Verificação manual forçada");
+    // console.log("🔍 Verificação manual forçada");
     return this.checkGoalAchievement();
   }
 }
@@ -1286,7 +1286,7 @@ if (typeof GoalManager !== "undefined") {
 if (typeof GoalManager !== "undefined" && GoalManager.updateAfterDonation) {
   const originalUpdateAfterDonation = GoalManager.updateAfterDonation;
   GoalManager.updateAfterDonation = function (donationAmount) {
-    console.log(`💰 Processando doação de ${donationAmount} moedas`);
+    // console.log(`💰 Processando doação de ${donationAmount} moedas`);
 
     // Chamar função original
     const result = originalUpdateAfterDonation.call(this, donationAmount);
@@ -1325,7 +1325,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Após salvar nova meta, verificar após delay
       setTimeout(() => {
         if (goalAchievementModal) {
-          console.log("🔄 Meta alterada - verificando status");
+          // console.log("🔄 Meta alterada - verificando status");
           goalAchievementModal.checkGoalAchievement();
         }
       }, 1500);
@@ -1344,7 +1344,7 @@ function observeGoalProgress() {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type === "attributes" || mutation.type === "childList") {
-        console.log("📊 Mudança detectada no progresso da meta");
+        // console.log("📊 Mudança detectada no progresso da meta");
         setTimeout(() => {
           if (goalAchievementModal) {
             goalAchievementModal.checkGoalAchievement();
@@ -1365,7 +1365,7 @@ function observeGoalProgress() {
     subtree: true,
   });
 
-  console.log("👁️ Observador de progresso ativado");
+  // console.log("👁️ Observador de progresso ativado");
 }
 
 // Ativar observador quando DOM carregar
@@ -1377,7 +1377,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function resetGoalAchievement() {
   if (goalAchievementModal) {
     goalAchievementModal.reset();
-    console.log("✅ Modal de conquista resetado - pode ser exibido novamente");
+    // console.log("✅ Modal de conquista resetado - pode ser exibido novamente");
   }
 }
 
@@ -1386,7 +1386,7 @@ function testGoalAchievementModal() {
   if (goalAchievementModal) {
     const goalData = GoalManager.getGoalData();
     goalAchievementModal.show(goalData.goal);
-    console.log("🧪 Testando modal de meta atingida");
+    // console.log("🧪 Testando modal de meta atingida");
   } else {
     console.error("❌ Modal não inicializado");
   }
@@ -1419,30 +1419,30 @@ if (typeof module !== "undefined" && module.exports) {
   };
 }
 
-console.log(`
-🎯 Modal de Meta Atingida v2.0 Carregado!
-✅ Detecta metas: 50, 100, 200, 500, 1000
-🔍 Verifica automaticamente ao:
-   - Carregar página
-   - Fazer doação
-   - Atualizar progresso
-   - Mudar meta
-🧪 Comandos de teste:
-   testGoalAchievementModal() - Mostrar modal
-   checkGoalNow() - Verificar agora
-   resetGoalAchievement() - Resetar estado
-   debugProfile() - Ver dados atuais
-`);
+// console.log(`
+// 🎯 Modal de Meta Atingida v2.0 Carregado!
+// ✅ Detecta metas: 50, 100, 200, 500, 1000
+// 🔍 Verifica automaticamente ao:
+//    - Carregar página
+//    - Fazer doação
+//    - Atualizar progresso
+//    - Mudar meta
+// 🧪 Comandos de teste:
+//    testGoalAchievementModal() - Mostrar modal
+//    checkGoalNow() - Verificar agora
+//    resetGoalAchievement() - Resetar estado
+//    debugProfile() - Ver dados atuais
+// `);
 
-console.log(`
-🎮 Sistema de Perfil Atualizado com API!
-📡 API Base: ${API_BASE_URL}
-🔌 Conectado ao backend MongoDB
-📱 Dados salvos em: sessionStorage.currentUser
-🛠️ Debug: debugProfile(), testProfileUpdate()
-🔄 Reload: loadAndDisplayUserData(), refreshDashboard()
-💰 Simular doação: simulateDonation(50)
-🎯 Gerenciar metas: GoalManager
-📊 Dashboard: DashboardManager
-🌐 API Request: apiRequest(endpoint, options)
-`);
+// console.log(`
+// 🎮 Sistema de Perfil Atualizado com API!
+// 📡 API Base: ${API_BASE_URL}
+// 🔌 Conectado ao backend MongoDB
+// 📱 Dados salvos em: sessionStorage.currentUser
+// 🛠️ Debug: debugProfile(), testProfileUpdate()
+// 🔄 Reload: loadAndDisplayUserData(), refreshDashboard()
+// 💰 Simular doação: simulateDonation(50)
+// 🎯 Gerenciar metas: GoalManager
+// 📊 Dashboard: DashboardManager
+// 🌐 API Request: apiRequest(endpoint, options)
+// `);

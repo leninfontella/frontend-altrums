@@ -402,12 +402,12 @@ class DataManager {
 
   static debugStorageData() {
     console.group("🔍 Debug - Dados do SessionStorage");
-    console.log("👤 User Data:", this.getUserData());
-    console.log("📊 User Stats:", this.getUserStats());
-    console.log("🤝 Interactions:", this.getInteractionData());
-    console.log("💰 Donations:", this.getDonationHistory().slice(0, 5));
-    console.log("🎯 Goal Progress:", this.getGoalProgress());
-    console.log("📈 Chart Data:", this.getMonthlyChartData());
+    // console.log("👤 User Data:", this.getUserData());
+    // console.log("📊 User Stats:", this.getUserStats());
+    // console.log("🤝 Interactions:", this.getInteractionData());
+    // console.log("💰 Donations:", this.getDonationHistory().slice(0, 5));
+    // console.log("🎯 Goal Progress:", this.getGoalProgress());
+    // console.log("📈 Chart Data:", this.getMonthlyChartData());
     console.groupEnd();
   }
 
@@ -421,7 +421,7 @@ class DataManager {
       if (oldUserData && !this.getUserData()) {
         const parsed = JSON.parse(oldUserData);
         this.saveUserData(parsed);
-        console.log("✅ Dados migrados do localStorage para sessionStorage");
+        // console.log("✅ Dados migrados do localStorage para sessionStorage");
       }
 
       return true;
@@ -433,7 +433,7 @@ class DataManager {
 
   // ========== INICIALIZAÇÃO ==========
   static initialize() {
-    console.log("🚀 Inicializando DataManager...");
+    // console.log("🚀 Inicializando DataManager...");
 
     // Migrar dados antigos se necessário
     this.migrateOldData();
@@ -456,7 +456,7 @@ class DataManager {
       this.saveInteractionData(this.getDefaultInteractions());
     }
 
-    console.log("✅ DataManager inicializado");
+    // console.log("✅ DataManager inicializado");
     return true;
   }
 }
@@ -510,20 +510,20 @@ if (typeof window !== "undefined") {
 }
 
 // ========== LOG DE INICIALIZAÇÃO ==========
-console.log(`
-🗄️  DataManager v1.0 carregado!
-📱 Funcionalidades:
-   • Gerenciamento centralizado de dados
-   • Sincronização entre páginas
-   • Histórico de doações
-   • Estatísticas em tempo real
-   • Sistema de metas
-   • Tracking de interações
+// console.log(`
+// 🗄️  DataManager v1.0 carregado!
+// 📱 Funcionalidades:
+//    • Gerenciamento centralizado de dados
+//    • Sincronização entre páginas
+//    • Histórico de doações
+//    • Estatísticas em tempo real
+//    • Sistema de metas
+//    • Tracking de interações
 
-🛠️  Comandos de debug:
-   • DataManager.debugStorageData()
-   • DataManager.processDonation(recipientId, amount)
-   • DataManager.getGoalProgress()
-`);
+// 🛠️  Comandos de debug:
+//    • DataManager.debugStorageData()
+//    • DataManager.processDonation(recipientId, amount)
+//    • DataManager.getGoalProgress()
+// `);
 
 export { DataManager, AuthDataSync };

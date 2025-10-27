@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO E INICIALIZAÇÃO ==========
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔒 Inicializando página de segurança...");
+  // console.log("🔒 Inicializando página de segurança...");
   initializeSecurity();
 });
 
@@ -25,7 +25,7 @@ function initializeSecurity() {
   setupBackButton();
   calculateSecurityScore();
 
-  console.log("✅ Página de segurança inicializada!");
+  // console.log("✅ Página de segurança inicializada!");
 }
 
 // ========== CARREGAR CONFIGURAÇÕES DO USUÁRIO ==========
@@ -35,7 +35,7 @@ function loadSecuritySettings() {
 
     if (savedSettings) {
       securitySettings = { ...securitySettings, ...JSON.parse(savedSettings) };
-      console.log("📄 Configurações carregadas:", securitySettings);
+      // console.log("📄 Configurações carregadas:", securitySettings);
     }
 
     applySettingsToUI();
@@ -62,7 +62,7 @@ function saveSecuritySettings() {
       "securitySettings",
       JSON.stringify(securitySettings)
     );
-    console.log("💾 Configurações salvas!");
+    // console.log("💾 Configurações salvas!");
     return true;
   } catch (error) {
     console.error("❌ Erro ao salvar configurações:", error);
@@ -98,7 +98,7 @@ function setupToggles() {
           "success"
         );
 
-        console.log(`🔄 ${settingName}: ${this.checked ? "ON" : "OFF"}`);
+        // console.log(`🔄 ${settingName}: ${this.checked ? "ON" : "OFF"}`);
       });
     }
   });
@@ -133,7 +133,7 @@ function calculateSecurityScore() {
     levelText.textContent = `Nível: ${level}`;
   }
 
-  console.log(`🔒 Score de segurança: ${score}/100`);
+  // console.log(`🔒 Score de segurança: ${score}/100`);
 }
 
 // ========== GERENCIAMENTO DE SESSÕES ==========
@@ -235,11 +235,11 @@ function loadCurrentSession() {
     container.innerHTML = currentSessionHtml;
   }
 
-  console.log("📱 Sessão atual carregada:", {
-    device: currentDevice,
-    browser: currentBrowser,
-    location: currentLocation,
-  });
+  // console.log("📱 Sessão atual carregada:", {
+  //   device: currentDevice,
+  //   browser: currentBrowser,
+  //   location: currentLocation,
+  // });
 }
 
 function loadOtherSessions() {
@@ -343,7 +343,7 @@ function handleLogoutAll() {
           throw new Error("Erro ao encerrar sessões");
         }
 
-        console.log("✅ Todas as sessões encerradas");
+        // console.log("✅ Todas as sessões encerradas");
         logSecurityEvent("logout_all_sessions", {
           device: detectDevice(),
           browser: detectBrowser(),
@@ -558,7 +558,7 @@ async function processAccountDeletion() {
     for (const key of possibleKeys) {
       token = localStorage.getItem(key) || sessionStorage.getItem(key);
       if (token) {
-        console.log(`✅ Token encontrado na chave: ${key}`);
+        // console.log(`✅ Token encontrado na chave: ${key}`);
         break;
       }
     }
@@ -566,10 +566,10 @@ async function processAccountDeletion() {
     if (!token && typeof Auth !== "undefined") {
       try {
         token = Auth.getToken();
-        console.log(
-          "📍 Token via Auth.getToken():",
-          token ? "✅ Encontrado" : "❌ Não encontrado"
-        );
+        // console.log(
+        //   "📍 Token via Auth.getToken():",
+        //   token ? "✅ Encontrado" : "❌ Não encontrado"
+        // );
       } catch (e) {
         console.warn("⚠️ Erro ao obter token via Auth:", e);
       }
@@ -577,8 +577,8 @@ async function processAccountDeletion() {
 
     if (!token) {
       console.error("❌ Token não encontrado em nenhum lugar!");
-      console.log("🔍 Debug - localStorage:", localStorage);
-      console.log("🔍 Debug - sessionStorage:", sessionStorage);
+      // console.log("🔍 Debug - localStorage:", localStorage);
+      // console.log("🔍 Debug - sessionStorage:", sessionStorage);
 
       showDeleteError("Sessão não encontrada. Faça login novamente.");
 
@@ -589,8 +589,8 @@ async function processAccountDeletion() {
       return;
     }
 
-    console.log("✅ Token encontrado, fazendo requisição...");
-    console.log("📡 URL da API:", `${API_BASE_URL}/users/account`);
+    // console.log("✅ Token encontrado, fazendo requisição...");
+    // console.log("📡 URL da API:", `${API_BASE_URL}/users/account`);
 
     const response = await fetch(`${API_BASE_URL}/users/account`, {
       method: "DELETE",
@@ -604,16 +604,16 @@ async function processAccountDeletion() {
       }),
     });
 
-    console.log("📥 Resposta da API:", response.status, response.statusText);
+    // console.log("📥 Resposta da API:", response.status, response.statusText);
 
     const data = await response.json();
-    console.log("📦 Dados retornados:", data);
+    // console.log("📦 Dados retornados:", data);
 
     if (!response.ok) {
       throw new Error(data.message || "Erro ao excluir conta");
     }
 
-    console.log("✅ Conta excluída com sucesso:", data);
+    // console.log("✅ Conta excluída com sucesso:", data);
 
     hideModal();
 
@@ -630,7 +630,7 @@ async function processAccountDeletion() {
         .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
-    console.log("🧹 Dados locais limpos");
+    // console.log("🧹 Dados locais limpos");
 
     window.location.href = "/index.html";
   } catch (error) {
@@ -846,9 +846,9 @@ function setupBackButton() {
 
 // ========== FUNÇÕES DE DEBUG ==========
 function debugSecurity() {
-  console.log("🔧 DEBUG - Estado de Segurança:");
-  console.log("Settings:", securitySettings);
-  console.log("SessionStorage:", sessionStorage.getItem("securitySettings"));
+  // console.log("🔧 DEBUG - Estado de Segurança:");
+  // console.log("Settings:", securitySettings);
+  // console.log("SessionStorage:", sessionStorage.getItem("securitySettings"));
 }
 
 // Expor funções globalmente
@@ -879,7 +879,7 @@ async function syncSettingsWithAPI() {
     });
 
     if (response.ok) {
-      console.log("✅ Configurações sincronizadas com API");
+      // console.log("✅ Configurações sincronizadas com API");
     }
   } catch (error) {
     console.error("❌ Erro ao sincronizar com API:", error);
@@ -1075,7 +1075,7 @@ function detectDevice() {
     device = "Linux";
   }
 
-  console.log("📱 Dispositivo detectado:", device);
+  // console.log("📱 Dispositivo detectado:", device);
   return device;
 }
 
@@ -1102,10 +1102,10 @@ async function checkBiometricSupport() {
         }
       }
 
-      console.log(
-        "🔐 Suporte biométrico:",
-        available ? "Disponível" : "Não disponível"
-      );
+      // console.log(
+      //   "🔐 Suporte biométrico:",
+      //   available ? "Disponível" : "Não disponível"
+      // );
     } catch (error) {
       console.error("Erro ao verificar biometria:", error);
     }
@@ -1133,7 +1133,7 @@ function copySecurityLogs() {
       showToast("Logs copiados para área de transferência", "success");
     })
     .catch(() => {
-      console.log("Logs:", logsText);
+      // console.log("Logs:", logsText);
       showToast("Logs exibidos no console", "success");
     });
 }
@@ -1150,7 +1150,7 @@ function checkDarkMode() {
     window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches
   ) {
-    console.log("🌙 Dark mode detectado");
+    // console.log("🌙 Dark mode detectado");
   }
 }
 
@@ -1161,30 +1161,30 @@ if ("performance" in window) {
   window.addEventListener("load", () => {
     const perfData = performance.getEntriesByType("navigation")[0];
     if (perfData) {
-      console.log(
-        `⚡ Página carregada em ${Math.round(
-          perfData.loadEventEnd - perfData.fetchStart
-        )}ms`
-      );
+      // console.log(
+      //   `⚡ Página carregada em ${Math.round(
+      //     perfData.loadEventEnd - perfData.fetchStart
+      //   )}ms`
+      // );
     }
   });
 }
 
 // ========== MENSAGEM DE BOAS-VINDAS NO CONSOLE ==========
-console.log(`
-🔒 Sistema de Segurança - Altrum Coins
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Página inicializada com sucesso
-📱 Dispositivo: ${detectDevice()}
-🔐 Score de segurança: ${calculateSecurityScoreValue()}/100
+// console.log(`
+// 🔒 Sistema de Segurança - Altrum Coins
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ✅ Página inicializada com sucesso
+// 📱 Dispositivo: ${detectDevice()}
+// 🔐 Score de segurança: ${calculateSecurityScoreValue()}/100
 
-🛠️ Comandos de Debug Disponíveis:
-   • debugSecurity() - Ver estado atual
-   • copySecurityLogs() - Copiar logs
-   • generateSecurityReport() - Gerar relatório
-   • showToast(msg, type) - Testar notificações
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`);
+// 🛠️ Comandos de Debug Disponíveis:
+//    • debugSecurity() - Ver estado atual
+//    • copySecurityLogs() - Copiar logs
+//    • generateSecurityReport() - Gerar relatório
+//    • showToast(msg, type) - Testar notificações
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// `);
 
 // ========== EXPORTS ==========
 if (typeof module !== "undefined" && module.exports) {

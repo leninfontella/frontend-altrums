@@ -286,19 +286,19 @@ const tutorialsData = {
 // ========== INICIALIZAÇÃO ==========
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🎓 Central de Ajuda inicializada");
+  // console.log("🎓 Central de Ajuda inicializada");
 
   // Debug: verificar se elementos existem
-  console.log("🔍 Debug - Elementos encontrados:");
-  console.log(
-    "  - Contact buttons:",
-    document.querySelectorAll(".contact-button").length
-  );
-  console.log(
-    "  - Contact cards:",
-    document.querySelectorAll(".contact-card").length
-  );
-  console.log("  - FAQ items:", document.querySelectorAll(".faq-item").length);
+  // console.log("🔍 Debug - Elementos encontrados:");
+  // console.log(
+  //   "  - Contact buttons:",
+  //   document.querySelectorAll(".contact-button").length
+  // );
+  // console.log(
+  //   "  - Contact cards:",
+  //   document.querySelectorAll(".contact-card").length
+  // );
+  // console.log("  - FAQ items:", document.querySelectorAll(".faq-item").length);
 
   initializeBackButton();
   initializeSearch();
@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeContactButtons();
   initializeLegalModals();
 
-  console.log("✅ Todas as funções inicializadas!");
+  // console.log("✅ Todas as funções inicializadas!");
 });
 
 // ========== BOTÃO VOLTAR ==========
@@ -376,7 +376,7 @@ function initializeSearch() {
 }
 
 function performSearch(query) {
-  console.log("🔍 Buscando por:", query);
+  // console.log("🔍 Buscando por:", query);
   filterFAQ(query);
   showSearchSuggestions(query);
 }
@@ -511,14 +511,14 @@ function renderFAQ(data) {
 
       faqItem.classList.toggle("active");
 
-      console.log(
-        `❓ FAQ ${isActive ? "fechado" : "aberto"}:`,
-        faqItem.querySelector("h3").textContent
-      );
+      // console.log(
+      //   `❓ FAQ ${isActive ? "fechado" : "aberto"}:`,
+      //   faqItem.querySelector("h3").textContent
+      // );
     });
   });
 
-  console.log(`✅ ${data.length} perguntas FAQ renderizadas`);
+  // console.log(`✅ ${data.length} perguntas FAQ renderizadas`);
 }
 
 // ========== TUTORIAIS ==========
@@ -578,7 +578,7 @@ function openTutorialModal(tutorialId) {
   modal.classList.remove("closing");
   document.body.style.overflow = "hidden";
 
-  console.log("📖 Tutorial aberto:", tutorial.title);
+  // console.log("📖 Tutorial aberto:", tutorial.title);
 }
 
 function closeTutorialModal() {
@@ -596,7 +596,7 @@ function closeTutorialModal() {
 // ========== BOTÕES DE CONTATO (CORRIGIDO) ==========
 
 function initializeContactButtons() {
-  console.log("🔧 Inicializando botões de contato...");
+  // console.log("🔧 Inicializando botões de contato...");
 
   // Método 1: Via botões diretos
   const contactButtons = document.querySelectorAll(".contact-button");
@@ -609,10 +609,10 @@ function initializeContactButtons() {
       const card = this.closest(".contact-card");
       const contactType = card ? card.getAttribute("data-contact-type") : null;
 
-      console.log("📞 Botão clicado! Tipo:", contactType);
+      // console.log("📞 Botão clicado! Tipo:", contactType);
 
       if (contactType === "email") {
-        console.log("📧 Abrindo e-mail...");
+        // console.log("📧 Abrindo e-mail...");
         const mailtoLink =
           "mailto:suporte@altrum.com?subject=Solicitação de Suporte - Altrum&body=Olá, preciso de ajuda com:";
         window.location.href = mailtoLink;
@@ -621,7 +621,7 @@ function initializeContactButtons() {
           showNotification("📧 Cliente de e-mail aberto!", "success");
         }, 100);
       } else if (contactType === "whatsapp") {
-        console.log("💬 Abrindo WhatsApp...");
+        // console.log("💬 Abrindo WhatsApp...");
         const whatsappNumber = "5511999999999";
         const message = encodeURIComponent(
           "Olá! Preciso de ajuda com o Altrum."
@@ -670,7 +670,7 @@ function initializeContactButtons() {
       e.preventDefault();
       const resourceType = this.getAttribute("data-resource");
 
-      console.log("📚 Resource link clicado:", resourceType);
+      // console.log("📚 Resource link clicado:", resourceType);
 
       if (resourceType === "terms") {
         openTermsModal();
@@ -680,7 +680,7 @@ function initializeContactButtons() {
     });
   });
 
-  console.log("✅ Botões de contato inicializados:", contactButtons.length);
+  // console.log("✅ Botões de contato inicializados:", contactButtons.length);
 }
 
 function showNotification(message, type = "info") {
@@ -721,7 +721,7 @@ function showNotification(message, type = "info") {
 // ========== GERENCIAMENTO DOS MODAIS LEGAIS ==========
 
 function initializeLegalModals() {
-  console.log("⚖️ Modais legais inicializados");
+  // console.log("⚖️ Modais legais inicializados");
 
   setupCloseButtons();
   setupEscapeKey();
@@ -744,7 +744,7 @@ function openTermsModal() {
     modalBody.scrollTop = 0;
   }
 
-  console.log("📄 Modal de Termos de Uso aberto");
+  // console.log("📄 Modal de Termos de Uso aberto");
   showNotification("📄 Termos de Uso aberto!", "info");
 }
 
@@ -764,7 +764,7 @@ function openPrivacyModal() {
     modalBody.scrollTop = 0;
   }
 
-  console.log("🔒 Modal de Política de Privacidade aberto");
+  // console.log("🔒 Modal de Política de Privacidade aberto");
   showNotification("🔒 Política de Privacidade aberta!", "info");
 }
 
@@ -801,7 +801,7 @@ function closeLegalModal(modalId) {
     document.body.style.overflow = "";
   }, 300);
 
-  console.log(`✖️ Modal ${modalId} fechado`);
+  // console.log(`✖️ Modal ${modalId} fechado`);
 }
 
 function setupEscapeKey() {
@@ -895,17 +895,17 @@ document.addEventListener("click", function (e) {
 });
 
 // Logs de debug
-console.log("✅ Central de Ajuda carregada com sucesso!");
-console.log("📊 Estatísticas:", {
-  "Total de FAQs": faqData.length,
-  "Total de Tutoriais": Object.keys(tutorialsData).length,
-});
+// console.log("✅ Central de Ajuda carregada com sucesso!");
+// console.log("📊 Estatísticas:", {
+//   "Total de FAQs": faqData.length,
+//   "Total de Tutoriais": Object.keys(tutorialsData).length,
+// });
 
 // Função para adicionar novos FAQs dinamicamente (para admins)
 window.addFAQ = function (faqItem) {
   faqData.push(faqItem);
   renderFAQ(faqData);
-  console.log("➕ Novo FAQ adicionado:", faqItem.question);
+  // console.log("➕ Novo FAQ adicionado:", faqItem.question);
 };
 
 // Função para buscar FAQ por ID
@@ -922,7 +922,7 @@ window.exportFAQs = function () {
   link.href = url;
   link.download = "faqs-backup.json";
   link.click();
-  console.log("💾 FAQs exportados com sucesso!");
+  // console.log("💾 FAQs exportados com sucesso!");
 };
 
 // Exportar funções globalmente para uso externo

@@ -5,7 +5,7 @@ function toggleSwitch(element) {
 
 // Função para carregar e exibir dados do usuário
 function loadUserData() {
-  console.log("📄 Carregando dados do usuário...");
+  // console.log("📄 Carregando dados do usuário...");
 
   // Tentar múltiplas fontes de dados
   let userName = null;
@@ -17,10 +17,10 @@ function loadUserData() {
     if (userData) {
       userName = userData.name || userData.fullName;
       userEmail = userData.email;
-      console.log("✅ Dados carregados via Auth module:", {
-        userName,
-        userEmail,
-      });
+      // console.log("✅ Dados carregados via Auth module:", {
+      //   userName,
+      //   userEmail,
+      // });
     }
   }
 
@@ -32,10 +32,10 @@ function loadUserData() {
       sessionStorage.getItem("fullName");
     userEmail =
       sessionStorage.getItem("userEmail") || sessionStorage.getItem("email");
-    console.log("📱 Dados carregados via sessionStorage:", {
-      userName,
-      userEmail,
-    });
+    // console.log("📱 Dados carregados via sessionStorage:", {
+    //   userName,
+    //   userEmail,
+    // });
   }
 
   // 3. Se ainda não encontrou, tentar localStorage
@@ -46,10 +46,10 @@ function loadUserData() {
       localStorage.getItem("fullName");
     userEmail =
       localStorage.getItem("userEmail") || localStorage.getItem("email");
-    console.log("💾 Dados carregados via localStorage:", {
-      userName,
-      userEmail,
-    });
+    // console.log("💾 Dados carregados via localStorage:", {
+    //   userName,
+    //   userEmail,
+    // });
   }
 
   // 4. Tentar userData completo do sessionStorage
@@ -60,10 +60,10 @@ function loadUserData() {
         const userData = JSON.parse(userDataString);
         userName = userData.name || userData.fullName || userData.displayName;
         userEmail = userData.email;
-        console.log("📋 Dados encontrados em userData:", {
-          userName,
-          userEmail,
-        });
+        // console.log("📋 Dados encontrados em userData:", {
+        //   userName,
+        //   userEmail,
+        // });
       }
     } catch (error) {
       console.warn("⚠️ Erro ao parsear userData:", error);
@@ -73,12 +73,12 @@ function loadUserData() {
   // 5. Valores padrão se ainda não encontrou
   if (!userName) {
     userName = "Usuário";
-    console.log("⚠️ Nome não encontrado, usando valor padrão");
+    // console.log("⚠️ Nome não encontrado, usando valor padrão");
   }
 
   if (!userEmail) {
     userEmail = "usuario@coinfuture.com";
-    console.log("⚠️ Email não encontrado, usando valor padrão");
+    // console.log("⚠️ Email não encontrado, usando valor padrão");
   }
 
   // Atualizar elementos na página
@@ -128,7 +128,7 @@ function updateUserInterface(userName, userEmail) {
         // Evitar substituir email
         element.textContent = userName;
         nameUpdated = true;
-        console.log(`✅ Nome atualizado no seletor: ${selector}`);
+        // console.log(`✅ Nome atualizado no seletor: ${selector}`);
       }
     });
   }
@@ -149,23 +149,23 @@ function updateUserInterface(userName, userEmail) {
         ) {
           element.textContent = userEmail;
           emailUpdated = true;
-          console.log(`✅ Email atualizado no seletor: ${selector}`);
+          // console.log(`✅ Email atualizado no seletor: ${selector}`);
         }
       }
     });
   }
 
   // Log de debug
-  console.log("🎯 Status da atualização:", {
-    userName,
-    userEmail,
-    nameUpdated,
-    emailUpdated,
-    availableElements: {
-      nameElements: document.querySelectorAll(".user-info h3").length,
-      emailElements: document.querySelectorAll(".user-info p").length,
-    },
-  });
+  // console.log("🎯 Status da atualização:", {
+  //   userName,
+  //   userEmail,
+  //   nameUpdated,
+  //   emailUpdated,
+  //   availableElements: {
+  //     nameElements: document.querySelectorAll(".user-info h3").length,
+  //     emailElements: document.querySelectorAll(".user-info p").length,
+  //   },
+  // });
 
   // Tentar forçar atualização se não funcionou
   if (!nameUpdated || !emailUpdated) {
@@ -175,7 +175,7 @@ function updateUserInterface(userName, userEmail) {
 
 // Função para forçar atualização quando seletores normais falham
 function forceUpdateUserData(userName, userEmail) {
-  console.log("🔧 Forçando atualização dos dados do usuário...");
+  // console.log("🔧 Forçando atualização dos dados do usuário...");
 
   // Buscar por qualquer elemento que contenha dados do usuário
   const allElements = document.querySelectorAll("*");
@@ -186,7 +186,7 @@ function forceUpdateUserData(userName, userEmail) {
     // Se encontrar texto que parece ser nome padrão
     if (text === "João Silva" || text === "Usuario" || text === "Usuário") {
       element.textContent = userName;
-      console.log("🔧 Nome forçadamente atualizado:", element);
+      // console.log("🔧 Nome forçadamente atualizado:", element);
     }
 
     // Se encontrar texto que parece ser email padrão
@@ -195,20 +195,20 @@ function forceUpdateUserData(userName, userEmail) {
       text === "usuario@coinfuture.com"
     ) {
       element.textContent = userEmail;
-      console.log("🔧 Email forçadamente atualizado:", element);
+      // console.log("🔧 Email forçadamente atualizado:", element);
     }
   });
 }
 
 // Função para buscar dados atualizados da API
 async function refreshUserDataFromAPI() {
-  console.log("🌐 Buscando dados atualizados da API...");
+  // console.log("🌐 Buscando dados atualizados da API...");
 
   if (typeof Auth !== "undefined" && Auth.getProfile) {
     try {
       const userData = await Auth.getProfile();
       if (userData) {
-        console.log("✅ Dados atualizados da API:", userData);
+        // console.log("✅ Dados atualizados da API:", userData);
 
         // Salvar dados atualizados
         sessionStorage.setItem(
@@ -235,7 +235,7 @@ async function refreshUserDataFromAPI() {
 
 // Adicionar efeito de clique nos itens de configuração
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🚀 Iniciando configurações...");
+  // console.log("🚀 Iniciando configurações...");
 
   // Carregar dados do usuário imediatamente
   const userData = loadUserData();
@@ -258,9 +258,9 @@ document.addEventListener("DOMContentLoaded", function () {
               : [];
 
             if (userInfoElements.length > 0) {
-              console.log(
-                "📄 Novos elementos detectados, atualizando dados..."
-              );
+              // console.log(
+              //   "📄 Novos elementos detectados, atualizando dados..."
+              // );
               setTimeout(() => loadUserData(), 100);
             }
           }
@@ -314,7 +314,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(() => {
         this.style.transform = "";
       }, 150);
-      console.log("Abrindo perfil do usuário...");
+      // console.log("Abrindo perfil do usuário...");
     });
   }
 
@@ -386,7 +386,7 @@ function addAdvancedEffects() {
           ".setting-title"
         ).textContent;
       const isActive = this.classList.contains("active");
-      console.log(`${settingTitle}: ${isActive ? "Ativado" : "Desativado"}`);
+      // console.log(`${settingTitle}: ${isActive ? "Ativado" : "Desativado"}`);
     });
   });
 
@@ -508,7 +508,7 @@ function addAdvancedEffects() {
         .querySelector(".setting-title").textContent;
       settings[settingName] = toggle.classList.contains("active");
     });
-    console.log("Configurações salvas:", settings);
+    // console.log("Configurações salvas:", settings);
   }
 
   // Salvar configurações quando mudar qualquer toggle
@@ -609,7 +609,7 @@ function addAdvancedEffects() {
     });
 
     if (!found) {
-      console.log(`Nenhuma configuração encontrada para: "${query}"`);
+      // console.log(`Nenhuma configuração encontrada para: "${query}"`);
     }
   }
 
@@ -628,7 +628,7 @@ function addAdvancedEffects() {
     inactivityTimer = setTimeout(() => {
       document.body.style.filter = "brightness(0.7)";
       isIdle = true;
-      console.log("Modo economia ativado");
+      // console.log("Modo economia ativado");
     }, 60000);
   }
 
@@ -746,11 +746,11 @@ document.addEventListener("DOMContentLoaded", function () {
             let logoutSuccess = false;
 
             if (typeof Auth !== "undefined" && Auth.logout) {
-              console.log("📡 Fazendo logout via Auth module...");
+              // console.log("📡 Fazendo logout via Auth module...");
               try {
                 await Auth.logout();
                 logoutSuccess = true;
-                console.log("✅ Logout via Auth module concluído");
+                // console.log("✅ Logout via Auth module concluído");
               } catch (error) {
                 console.error("❌ Erro no logout via Auth module:", error);
               }
@@ -758,7 +758,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // 2. Tentar fazer logout via fetch para API diretamente
             if (!logoutSuccess) {
-              console.log("📡 Tentando logout via API fetch...");
+              // console.log("📡 Tentando logout via API fetch...");
               try {
                 const response = await fetch("/api/auth/logout", {
                   method: "POST",
@@ -774,7 +774,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (response.ok) {
                   logoutSuccess = true;
-                  console.log("✅ Logout via API fetch concluído");
+                  // console.log("✅ Logout via API fetch concluído");
                 } else {
                   console.warn(
                     "⚠️ Logout via API retornou status:",
@@ -787,7 +787,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             // 3. Limpar dados locais independente do sucesso da API
-            console.log("🧹 Limpando dados locais...");
+            // console.log("🧹 Limpando dados locais...");
 
             // Limpar sessionStorage
             const sessionKeys = [
@@ -827,12 +827,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.cookie =
                   name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
               });
-              console.log("🍪 Cookies limpos");
+              // console.log("🍪 Cookies limpos");
             } catch (error) {
               console.warn("⚠️ Erro ao limpar cookies:", error);
             }
 
-            console.log("✅ Dados locais limpos com sucesso");
+            // console.log("✅ Dados locais limpos com sucesso");
 
             // 4. Aguardar um pouco para garantir que tudo foi processado
             await new Promise((resolve) => setTimeout(resolve, 500));
@@ -841,7 +841,7 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmModal.remove();
 
             // 6. Redirecionar para página de login
-            console.log("🔄 Redirecionando para página de login...");
+            // console.log("🔄 Redirecionando para página de login...");
 
             // Forçar limpeza da história do navegador
             if (window.history && window.history.replaceState) {
@@ -892,7 +892,7 @@ window.performLogout = async function () {
     if (typeof Auth !== "undefined" && Auth.logout) {
       try {
         await Auth.logout();
-        console.log("✅ Logout via Auth module concluído");
+        // console.log("✅ Logout via Auth module concluído");
       } catch (error) {
         console.error("❌ Erro no Auth.logout:", error);
       }
@@ -931,8 +931,7 @@ window.performLogout = async function () {
     window.location.href = "/index.html";
   } catch (error) {
     console.error("❌ Erro no logout programático:", error);
-    // Forçar limpeza e redirecionamento mesmo com erro
-    sessionStorage.clear();
+    // Forçar limpeza e redirecionamento mesmo com errosessionStorage.clear();
     window.location.href = "/index.html";
   }
 };
@@ -952,10 +951,10 @@ logoutStyles.textContent = `
 document.head.appendChild(logoutStyles);
 
 // Log de debug
-console.log("🔧 Sistema de logout corrigido carregado!");
-console.log(
-  "💡 Para testar logout programático, execute: window.performLogout()"
-);
+// console.log("🔧 Sistema de logout corrigido carregado!");
+// console.log(
+//   "💡 Para testar logout programático, execute: window.performLogout()"
+// );
 
 // Verificar se usuário está logado na inicialização
 document.addEventListener("DOMContentLoaded", function () {
@@ -992,20 +991,20 @@ window.debugUserData = function () {
 };
 
 // Logs úteis para desenvolvimento
-console.log("🚀 Altrum Settings carregado com sucesso!");
-console.log("💡 Dicas:", {
-  "Busca rápida": "Pressione Ctrl+F (Cmd+F no Mac)",
-  "Easter egg": "Clique 7 vezes no avatar do usuário",
-  "Economia de energia": "Ativado após 1 minuto de inatividade",
-  "Scroll suave": 'Clique no título "Configurações" para voltar ao topo',
-  Debug: "Execute window.debugUserData() no console para verificar dados",
-  Logout: "Clique em 'Sair da Conta' para testar o logout",
-});
+// console.log("🚀 Altrum Settings carregado com sucesso!");
+// console.log("💡 Dicas:", {
+//   "Busca rápida": "Pressione Ctrl+F (Cmd+F no Mac)",
+//   "Easter egg": "Clique 7 vezes no avatar do usuário",
+//   "Economia de energia": "Ativado após 1 minuto de inatividade",
+//   "Scroll suave": 'Clique no título "Configurações" para voltar ao topo',
+//   Debug: "Execute window.debugUserData() no console para verificar dados",
+//   Logout: "Clique em 'Sair da Conta' para testar o logout",
+// });
 
 // ========== CONFIGURAÇÃO DE MODAIS ==========
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🎨 Inicializando modais de configuração...");
+  // console.log("🎨 Inicializando modais de configuração...");
 
   initializeThemeModal();
   initializeLanguageModal();
@@ -1030,7 +1029,7 @@ function initializeThemeModal() {
   themeSetting.addEventListener("click", () => {
     themeModal.classList.remove("hidden");
     themeModal.classList.remove("closing");
-    console.log("🎨 Modal de tema aberto");
+    // console.log("🎨 Modal de tema aberto");
   });
 
   // Fechar modal
@@ -1084,7 +1083,7 @@ function initializeThemeModal() {
         closeThemeModal();
       }, 400);
 
-      console.log("🎨 Tema selecionado:", theme);
+      // console.log("🎨 Tema selecionado:", theme);
     });
   });
 
@@ -1107,7 +1106,7 @@ function updateThemeText(theme, element) {
 function saveTheme(theme) {
   try {
     sessionStorage.setItem("appTheme", theme);
-    console.log("💾 Tema salvo:", theme);
+    // console.log("💾 Tema salvo:", theme);
   } catch (error) {
     console.error("❌ Erro ao salvar tema:", error);
   }
@@ -1122,7 +1121,7 @@ function applyTheme(theme) {
     body.classList.add("theme-light");
     body.style.background =
       "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 50%, #d0d0d0 100%)";
-    console.log("☀️ Tema claro aplicado");
+    // console.log("☀️ Tema claro aplicado");
   } else if (theme === "auto") {
     const hour = new Date().getHours();
     const isDay = hour >= 6 && hour < 18;
@@ -1131,18 +1130,18 @@ function applyTheme(theme) {
       body.classList.add("theme-light");
       body.style.background =
         "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 50%, #d0d0d0 100%)";
-      console.log("🌅 Tema automático: claro (dia)");
+      // console.log("🌅 Tema automático: claro (dia)");
     } else {
       body.classList.add("theme-dark");
       body.style.background =
         "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%)";
-      console.log("🌙 Tema automático: escuro (noite)");
+      // console.log("🌙 Tema automático: escuro (noite)");
     }
   } else {
     body.classList.add("theme-dark");
     body.style.background =
       "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%)";
-    console.log("🌙 Tema escuro aplicado");
+    // console.log("🌙 Tema escuro aplicado");
   }
 }
 
@@ -1158,7 +1157,7 @@ function loadSavedTheme(themeOptions, currentThemeText) {
   updateThemeText(savedTheme, currentThemeText);
   applyTheme(savedTheme);
 
-  console.log("📂 Tema carregado:", savedTheme);
+  // console.log("📂 Tema carregado:", savedTheme);
 }
 
 // ========== MODAL DE IDIOMA ==========
@@ -1179,7 +1178,7 @@ function initializeLanguageModal() {
   languageSetting.addEventListener("click", () => {
     languageModal.classList.remove("hidden");
     languageModal.classList.remove("closing");
-    console.log("🌐 Modal de idioma aberto");
+    // console.log("🌐 Modal de idioma aberto");
   });
 
   // Fechar modal
@@ -1233,7 +1232,7 @@ function initializeLanguageModal() {
         closeLanguageModal();
       }, 400);
 
-      console.log("🌐 Idioma selecionado:", lang);
+      // console.log("🌐 Idioma selecionado:", lang);
 
       // Mostrar notificação (opcional)
       showLanguageNotification(langName);
@@ -1247,7 +1246,7 @@ function initializeLanguageModal() {
 function saveLanguage(lang) {
   try {
     sessionStorage.setItem("appLanguage", lang);
-    console.log("💾 Idioma salvo:", lang);
+    // console.log("💾 Idioma salvo:", lang);
   } catch (error) {
     console.error("❌ Erro ao salvar idioma:", error);
   }
@@ -1267,7 +1266,7 @@ function loadSavedLanguage(languageOptions, currentLanguageText) {
     }
   });
 
-  console.log("📂 Idioma carregado:", savedLang);
+  // console.log("📂 Idioma carregado:", savedLang);
 }
 
 function showLanguageNotification(langName) {
@@ -1316,7 +1315,7 @@ function initializeSecurityModal() {
   securitySetting.addEventListener("click", () => {
     securityModal.classList.remove("hidden");
     securityModal.classList.remove("closing");
-    console.log("🔒 Modal de segurança aberto");
+    // console.log("🔒 Modal de segurança aberto");
   });
 
   // Fechar modal
@@ -1348,7 +1347,7 @@ function initializeSecurityModal() {
   // Ir para página de alteração de senha
   if (changePasswordOption) {
     changePasswordOption.addEventListener("click", () => {
-      console.log("🔑 Navegando para alteração de senha...");
+      // console.log("🔑 Navegando para alteração de senha...");
       window.location.href = "/pages/change-password/html/change-password.html";
     });
   }
@@ -1375,13 +1374,13 @@ function initializeSecurityModal() {
         toggleSwitch.parentNode.replaceChild(newToggle, toggleSwitch);
       }
 
-      console.log(`🔒 Opção "${optionName}" desativada`);
+      // console.log(`🔒 Opção "${optionName}" desativada`);
     }
   });
 
-  console.log(
-    "✅ Opções de segurança configuradas (2FA e Biometria desativadas)"
-  );
+  // console.log(
+  //   "✅ Opções de segurança configuradas (2FA e Biometria desativadas)"
+  // );
 }
 
 /**
@@ -1444,7 +1443,7 @@ function saveNotificationPreference(type, isActive) {
       "notificationPreferences",
       JSON.stringify(preferences)
     );
-    console.log("💾 Preferências salvas:", preferences);
+    // console.log("💾 Preferências salvas:", preferences);
   } catch (error) {
     console.error("❌ Erro ao salvar preferências:", error);
   }
@@ -1489,7 +1488,7 @@ function loadNotificationPreferences() {
       }
     });
 
-    console.log("📂 Preferências carregadas:", preferences);
+    // console.log("📂 Preferências carregadas:", preferences);
   } catch (error) {
     console.error("❌ Erro ao carregar preferências:", error);
   }
@@ -1514,19 +1513,19 @@ function toggleSwitch(element) {
   if (settingTitle === "Push Notifications") {
     if (isActive) {
       showNotification("🔔 Notificações push ativadas com sucesso!", "success");
-      console.log("✅ Push Notifications: ATIVADO");
+      // console.log("✅ Push Notifications: ATIVADO");
     } else {
       showNotification("🔕 Notificações push desativadas", "info");
-      console.log("❌ Push Notifications: DESATIVADO");
+      // console.log("❌ Push Notifications: DESATIVADO");
     }
     saveNotificationPreference("pushNotifications", isActive);
   } else if (settingTitle === "E-mail") {
     if (isActive) {
       showNotification("📧 Notificações por e-mail ativadas!", "success");
-      console.log("✅ E-mail Notifications: ATIVADO");
+      // console.log("✅ E-mail Notifications: ATIVADO");
     } else {
       showNotification("📭 Notificações por e-mail desativadas", "info");
-      console.log("❌ E-mail Notifications: DESATIVADO");
+      // console.log("❌ E-mail Notifications: DESATIVADO");
     }
     saveNotificationPreference("emailNotifications", isActive);
   }
@@ -1535,20 +1534,20 @@ function toggleSwitch(element) {
 // ========== INICIALIZAÇÃO ==========
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔔 Sistema de notificações inicializado");
+  // console.log("🔔 Sistema de notificações inicializado");
 
   // Carregar preferências de notificação
   loadNotificationPreferences();
 
-  console.log(
-    "💡 Uso: showNotification('Mensagem', 'success|error|info|warning')"
-  );
+  // console.log(
+  //   "💡 Uso: showNotification('Mensagem', 'success|error|info|warning')"
+  // );
 });
 
 // ========== MODAL DE DESATIVAR CONTA ==========
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔧 Inicializando modal de desativação de conta...");
+  // console.log("🔧 Inicializando modal de desativação de conta...");
 
   initializeDeactivateModal();
 });
@@ -1575,7 +1574,7 @@ function initializeDeactivateModal() {
     const title = item.querySelector(".setting-title");
     if (title && title.textContent.trim().includes("Desativar Conta")) {
       deactivateButton = item;
-      console.log("✅ Botão de desativação encontrado");
+      // console.log("✅ Botão de desativação encontrado");
     }
   });
 
@@ -1694,7 +1693,7 @@ function initializeDeactivateModal() {
       confirmBtn.disabled = true;
     }
 
-    console.log("🔄 Processando desativação de conta...");
+    // console.log("🔄 Processando desativação de conta...");
 
     try {
       // Simular validação de senha (substituir por chamada real à API)
@@ -1712,7 +1711,7 @@ function initializeDeactivateModal() {
       // Processar desativação
       await deactivateAccount(password, reason);
 
-      console.log("✅ Conta desativada com sucesso");
+      // console.log("✅ Conta desativada com sucesso");
 
       // Mostrar tela de sucesso
       showSuccessScreen();
@@ -1793,7 +1792,7 @@ function initializeDeactivateModal() {
       }
 
       const data = await response.json();
-      console.log("Resposta da API:", data);
+      // console.log("Resposta da API:", data);
 
       return data;
     } catch (error) {
@@ -1876,7 +1875,7 @@ function initializeDeactivateModal() {
     deactivateModal.classList.remove("hidden");
     deactivateModal.classList.remove("closing");
     resetForm();
-    console.log("⚠️ Modal de desativação aberto");
+    // console.log("⚠️ Modal de desativação aberto");
   }
 
   // Fechar tela de sucesso
@@ -1892,7 +1891,7 @@ function initializeDeactivateModal() {
 
   // Função de logout
   async function performLogout() {
-    console.log("🚪 Fazendo logout após desativação...");
+    // console.log("🚪 Fazendo logout após desativação...");
 
     try {
       // Tentar logout via Auth module
@@ -1923,7 +1922,7 @@ function initializeDeactivateModal() {
     }
   }
 
-  console.log("✅ Modal de desativação inicializado");
+  // console.log("✅ Modal de desativação inicializado");
 }
 
 // ========== MODAL DE LIMPAR CACHE ==========
@@ -1931,7 +1930,7 @@ function initializeDeactivateModal() {
 // Adicionar após a função initializeDeactivateModal()
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🧹 Inicializando modal de limpar cache...");
+  // console.log("🧹 Inicializando modal de limpar cache...");
 
   initializeClearCacheModal();
 });
@@ -2004,7 +2003,7 @@ function initializeClearCacheModal() {
     clearCacheModal.classList.remove("closing");
     updateCacheSizes();
     resetCacheForm();
-    console.log("🧹 Modal de limpar cache aberto");
+    // console.log("🧹 Modal de limpar cache aberto");
   }
 
   // Fechar modal
@@ -2044,7 +2043,7 @@ function initializeClearCacheModal() {
   }
 
   async function handleClearCache() {
-    console.log("🧹 Iniciando limpeza de cache...");
+    // console.log("🧹 Iniciando limpeza de cache...");
 
     // Guardar tamanho antes de limpar
     const sizeBeforeCleaning = parseInt(
@@ -2083,7 +2082,7 @@ function initializeClearCacheModal() {
       const sizeBeforeCleaning = result.freedSpace;
       */
 
-      console.log("✅ Cache limpo com sucesso");
+      // console.log("✅ Cache limpo com sucesso");
 
       // Atualizar texto de espaço liberado
       const freedSpaceEl = document.getElementById("cache-freed-space");
@@ -2207,7 +2206,7 @@ function initializeClearCacheModal() {
   // Atualizar tamanhos ao carregar a página
   updateCacheSizes();
 
-  console.log("✅ Modal de limpar cache inicializado");
+  // console.log("✅ Modal de limpar cache inicializado");
 }
 
 // Função auxiliar para limpar cache via API (exemplo)
@@ -2235,7 +2234,7 @@ async function clearCacheAPI() {
     }
 
     const data = await response.json();
-    console.log("Resposta da API:", data);
+    // console.log("Resposta da API:", data);
 
     return data;
   } catch (error) {
@@ -2244,7 +2243,7 @@ async function clearCacheAPI() {
   }
 }
 
-console.log("✅ Sistema de limpar cache carregado!");
+// console.log("✅ Sistema de limpar cache carregado!");
 
 // Adicionar animação de shake para erro
 const shakeStyles = document.createElement("style");
@@ -2257,7 +2256,7 @@ shakeStyles.textContent = `
 `;
 document.head.appendChild(shakeStyles);
 
-console.log("✅ Sistema de desativação de conta carregado!");
+// console.log("✅ Sistema de desativação de conta carregado!");
 
 // ========== ANIMAÇÕES CSS ADICIONAIS ==========
 
@@ -2287,12 +2286,12 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-console.log("✅ Sistema de modais de configuração carregado com sucesso!");
+// console.log("✅ Sistema de modais de configuração carregado com sucesso!");
 
 // ========== MODAL DE AVALIAR APP ==========
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("⭐ Inicializando modal de avaliação...");
+  // console.log("⭐ Inicializando modal de avaliação...");
   initializeRatingModal();
 });
 
@@ -2307,7 +2306,7 @@ function initializeRatingModal() {
     const title = item.querySelector(".setting-title");
     if (title && title.textContent.trim().includes("Avaliar App")) {
       ratingButton = item;
-      console.log("✅ Botão de avaliação encontrado");
+      // console.log("✅ Botão de avaliação encontrado");
     }
   });
 
@@ -2346,7 +2345,7 @@ function initializeRatingModal() {
     ratingModal.classList.remove("hidden");
     ratingModal.classList.remove("closing");
     resetRatingForm();
-    console.log("⭐ Modal de avaliação aberto");
+    // console.log("⭐ Modal de avaliação aberto");
   });
 
   // Fechar modal
@@ -2387,7 +2386,7 @@ function initializeRatingModal() {
       updateFeedback(selectedRating);
       showCommentField();
       enableSubmitButton();
-      console.log(`⭐ Avaliação: ${selectedRating} estrelas`);
+      // console.log(`⭐ Avaliação: ${selectedRating} estrelas`);
     });
   });
 
@@ -2471,7 +2470,7 @@ function initializeRatingModal() {
 
     const comment = commentTextarea?.value.trim() || "";
 
-    console.log("📤 Enviando avaliação...");
+    // console.log("📤 Enviando avaliação...");
 
     submitBtn.classList.add("loading");
     submitBtn.disabled = true;
@@ -2480,7 +2479,7 @@ function initializeRatingModal() {
       // Simular API
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log("✅ Avaliação enviada:", { rating: selectedRating, comment });
+      // console.log("✅ Avaliação enviada:", { rating: selectedRating, comment });
 
       // Confetes em 5 estrelas
       if (selectedRating === 5) {
@@ -2572,7 +2571,7 @@ function initializeRatingModal() {
     setTimeout(() => notification.remove(), 3000);
   }
 
-  console.log("✅ Modal de avaliação inicializado");
+  // console.log("✅ Modal de avaliação inicializado");
 }
 
 // Função de confetes para 5 estrelas
@@ -2603,4 +2602,4 @@ function showConfetti() {
   }
 }
 
-console.log("⭐ Sistema de avaliação com efeitos especiais carregado!");
+// console.log("⭐ Sistema de avaliação com efeitos especiais carregado!");

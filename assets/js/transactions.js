@@ -1,6 +1,6 @@
 // Aguarda o DOM carregar completamente
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🚀 Inicializando página de transações...");
+  // console.log("🚀 Inicializando página de transações...");
   initializeTransactions();
 });
 
@@ -23,7 +23,7 @@ async function apiRequest(endpoint, options = {}) {
   try {
     const now = Date.now();
     if (now - lastApiCall < API_COOLDOWN) {
-      console.log("⏳ Aguardando cooldown da API...");
+      // console.log("⏳ Aguardando cooldown da API...");
       await new Promise((resolve) =>
         setTimeout(resolve, API_COOLDOWN - (now - lastApiCall))
       );
@@ -78,14 +78,14 @@ class TransactionsService {
   // Buscar doações enviadas
   static async getSentDonations(page = 1, limit = ITEMS_PER_PAGE) {
     try {
-      console.log(`📤 Buscando doações ENVIADAS - Página: ${page}`);
+      // console.log(`📤 Buscando doações ENVIADAS - Página: ${page}`);
 
       const response = await apiRequest(
         `/users/donations/sent?page=${page}&limit=${limit}`
       );
 
       if (response.success && response.data) {
-        console.log("✅ Doações enviadas carregadas:", response.data);
+        // console.log("✅ Doações enviadas carregadas:", response.data);
         return this.formatDonations(response.data, "sent");
       }
       throw new Error("Resposta inválida da API");
@@ -98,14 +98,14 @@ class TransactionsService {
   // Buscar doações recebidas
   static async getReceivedDonations(page = 1, limit = ITEMS_PER_PAGE) {
     try {
-      console.log(`📥 Buscando doações RECEBIDAS - Página: ${page}`);
+      // console.log(`📥 Buscando doações RECEBIDAS - Página: ${page}`);
 
       const response = await apiRequest(
         `/users/donations/received?page=${page}&limit=${limit}`
       );
 
       if (response.success && response.data) {
-        console.log("✅ Doações recebidas carregadas:", response.data);
+        // console.log("✅ Doações recebidas carregadas:", response.data);
         return this.formatDonations(response.data, "received");
       }
       throw new Error("Resposta inválida da API");
@@ -739,12 +739,12 @@ async function loadTransactions(append = false) {
       );
       TransactionsUI.updateLoadMoreButton(hasMoreTransactions);
 
-      console.log("✅ Transações carregadas com sucesso!", {
-        filter: currentFilter,
-        page: currentPage,
-        total: transactionsCache.transactions.length,
-        hasMore: hasMoreTransactions,
-      });
+      // console.log("✅ Transações carregadas com sucesso!", {
+      //   filter: currentFilter,
+      //   page: currentPage,
+      //   total: transactionsCache.transactions.length,
+      //   hasMore: hasMoreTransactions,
+      // });
     }
   } catch (error) {
     console.error("❌ Erro ao carregar transações:", error);
@@ -857,7 +857,7 @@ function animateInitialLoad() {
 
 // ========== FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO ==========
 async function initializeTransactions() {
-  console.log("⚙️ Configurando página de transações...");
+  // console.log("⚙️ Configurando página de transações...");
 
   // Verificar autenticação
   if (!Auth.getToken()) {
@@ -877,12 +877,12 @@ async function initializeTransactions() {
   // Carregar dados
   await loadTransactions();
 
-  console.log("✅ Página de transações inicializada com sucesso!");
+  // console.log("✅ Página de transações inicializada com sucesso!");
 }
 
 // ========== FUNÇÕES DE DEBUG ==========
 async function refreshTransactions() {
-  console.log("🔄 Atualizando transações...");
+  // console.log("🔄 Atualizando transações...");
   transactionsCache = null;
   currentPage = 1;
   currentFilter = "sent";
@@ -896,16 +896,16 @@ async function refreshTransactions() {
   });
 
   await loadTransactions();
-  console.log("✅ Transações atualizadas!");
+  // console.log("✅ Transações atualizadas!");
 }
 
 function debugTransactions() {
-  console.log("🔧 DEBUG - Estado atual:");
-  console.log("Current Filter:", currentFilter);
-  console.log("Current Page:", currentPage);
-  console.log("Has More:", hasMoreTransactions);
-  console.log("Cache:", transactionsCache);
-  console.log("Token:", Auth.getToken() ? "Presente" : "Ausente");
+  // console.log("🔧 DEBUG - Estado atual:");
+  // console.log("Current Filter:", currentFilter);
+  // console.log("Current Page:", currentPage);
+  // console.log("Has More:", hasMoreTransactions);
+  // console.log("Cache:", transactionsCache);
+  // console.log("Token:", Auth.getToken() ? "Presente" : "Ausente");
 }
 
 // ========== EXPOSIÇÃO GLOBAL PARA DEBUG ==========
@@ -917,14 +917,3 @@ if (typeof window !== "undefined") {
   window.debugTransactions = debugTransactions;
   window.loadTransactions = loadTransactions;
 }
-
-console.log(`
-💳 Sistema de Histórico de Transações v2.0
-📡 API Base: ${API_BASE_URL}
-🔌 Conectado ao backend REAL
-🛠️ Debug: debugTransactions()
-🔄 Reload: refreshTransactions()
-📊 Endpoints:
-   - /users/donations/sent (enviadas)
-   - /users/donations/received (recebidas)
-`);

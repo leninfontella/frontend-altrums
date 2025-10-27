@@ -23,19 +23,19 @@ const SUPPORT_CONFIG = {
 
 // ========== INICIALIZAÇÃO ==========
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🚀 Inicializando página de suporte...");
+  // console.log("🚀 Inicializando página de suporte...");
 
   initializeSupport();
   setupContactOptions();
   setupSocialMedia();
   animateOnLoad();
 
-  console.log("✅ Página de suporte inicializada!");
+  // console.log("✅ Página de suporte inicializada!");
 });
 
 // ========== FUNÇÃO PRINCIPAL ==========
 function initializeSupport() {
-  console.log("⚙️ Configurando suporte...");
+  // console.log("⚙️ Configurando suporte...");
 
   // Verificar se o usuário está autenticado
   checkAuthentication();
@@ -102,7 +102,7 @@ function setupContactOptions() {
 }
 
 function openWhatsApp() {
-  console.log("📱 Abrindo WhatsApp...");
+  // console.log("📱 Abrindo WhatsApp...");
 
   const { number, message } = SUPPORT_CONFIG.whatsapp;
   const encodedMessage = encodeURIComponent(message);
@@ -119,7 +119,7 @@ function openWhatsApp() {
 }
 
 function openEmail() {
-  console.log("📧 Abrindo cliente de e-mail...");
+  // console.log("📧 Abrindo cliente de e-mail...");
 
   const { address, subject, body } = SUPPORT_CONFIG.email;
   const encodedSubject = encodeURIComponent(subject);
@@ -151,7 +151,7 @@ function setupSocialMedia() {
 }
 
 function openSocialMedia(platform, element) {
-  console.log(`🌐 Abrindo ${platform}...`);
+  // console.log(`🌐 Abrindo ${platform}...`);
 
   const url = SUPPORT_CONFIG.socialMedia[platform];
 
@@ -229,7 +229,7 @@ function addClickAnimation(element) {
 
 // ========== NOTIFICAÇÕES ==========
 function showNotification(message, type = "info") {
-  console.log(`📢 Notificação (${type}):`, message);
+  // console.log(`📢 Notificação (${type}):`, message);
 
   // Criar elemento de notificação
   const notification = document.createElement("div");
@@ -310,7 +310,7 @@ function logSupportEvent(eventName, data = {}) {
     ...data,
   };
 
-  console.log("📊 Evento registrado:", eventData);
+  // console.log("📊 Evento registrado:", eventData);
 
   // Aqui você pode integrar com Google Analytics, Mixpanel, etc.
   // Exemplo:
@@ -379,13 +379,12 @@ function copyToClipboard(text) {
 
 // ========== DEBUG ==========
 function debugSupport() {
-  console.log("🔧 DEBUG - Configuração de Suporte:");
-  console.log("WhatsApp:", SUPPORT_CONFIG.whatsapp);
-  console.log("E-mail:", SUPPORT_CONFIG.email);
-  console.log("Redes Sociais:", SUPPORT_CONFIG.socialMedia);
-
-  const events = JSON.parse(localStorage.getItem("support_events") || "[]");
-  console.log("Eventos registrados:", events);
+  // console.log("🔧 DEBUG - Configuração de Suporte:");
+  // console.log("WhatsApp:", SUPPORT_CONFIG.whatsapp);
+  // console.log("E-mail:", SUPPORT_CONFIG.email);
+  // console.log("Redes Sociais:", SUPPORT_CONFIG.socialMedia);
+  // const events = JSON.parse(localStorage.getItem("support_events") || "[]");
+  // console.log("Eventos registrados:", events);
 }
 
 // ========== EXPOSIÇÃO GLOBAL ==========
@@ -399,11 +398,11 @@ if (typeof window !== "undefined") {
 }
 
 // ========== LOG INICIAL ==========
-console.log(`
-🎯 Sistema de Suporte Altrum Coins
-📱 WhatsApp: ${SUPPORT_CONFIG.whatsapp.number}
-📧 E-mail: ${SUPPORT_CONFIG.email.address}
-🌐 Redes Sociais: 8 plataformas configuradas
-🛠️ Debug: debugSupport()
-📋 Copiar: copyToClipboard(text)
-`);
+// console.log(`
+// 🎯 Sistema de Suporte Altrum Coins
+// 📱 WhatsApp: ${SUPPORT_CONFIG.whatsapp.number}
+// 📧 E-mail: ${SUPPORT_CONFIG.email.address}
+// 🌐 Redes Sociais: 8 plataformas configuradas
+// 🛠️ Debug: debugSupport()
+// 📋 Copiar: copyToClipboard(text)
+// `);

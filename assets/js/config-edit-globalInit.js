@@ -112,7 +112,7 @@
     const userData = getUserData();
     if (!userData) return;
 
-    console.log("Carregando fotos de perfil:", userData.profilePhotoUrl);
+    // console.log("Carregando fotos de perfil:", userData.profilePhotoUrl);
 
     const photoUrl = userData.profilePhotoUrl || userData.avatar;
 
@@ -136,13 +136,13 @@
       if (forceRefresh) {
         const separator = finalUrl.includes("?") ? "&" : "?";
         finalUrl = `${finalUrl}${separator}t=${Date.now()}&mobile=1&v=${Math.random()}`;
-        console.log("Cache busting aplicado em globalInit:", finalUrl);
+        // console.log("Cache busting aplicado em globalInit:", finalUrl);
       }
     } else {
       finalUrl = getInitialsPlaceholderUrl(userData.name || userData.fullName);
     }
 
-    console.log("URL final da imagem:", finalUrl);
+    // console.log("URL final da imagem:", finalUrl);
 
     const profileImages = document.querySelectorAll(
       "img[data-user-photo], img.profile-image, img.user-avatar, img.profile-avatar, img#profile-image, img.user-profile-image"
@@ -177,15 +177,15 @@
   }
 
   function initializeProfilePhoto() {
-    console.log("Inicializando foto de perfil...");
+    // console.log("Inicializando foto de perfil...");
 
     setTimeout(() => {
       const userData = getUserData();
       if (userData && userData.profilePhotoUrl) {
-        console.log(
-          "Foto de perfil encontrada no userData:",
-          userData.profilePhotoUrl
-        );
+        // console.log(
+        //   "Foto de perfil encontrada no userData:",
+        //   userData.profilePhotoUrl
+        // );
         loadProfilePhotos(false);
 
         window.dispatchEvent(
@@ -198,13 +198,13 @@
           })
         );
       } else {
-        console.log("Nenhuma foto de perfil encontrada no userData");
+        // console.log("Nenhuma foto de perfil encontrada no userData");
       }
     }, 100);
   }
 
   function initGlobal() {
-    console.log("Inicializando sistema global...");
+    // console.log("Inicializando sistema global...");
 
     if (window.userService) {
       loadUserInterface();
@@ -240,13 +240,13 @@
 
   // LISTENER CRÍTICO CORRIGIDO: Com forceRefresh
   window.addEventListener("profilePhotoUpdated", (event) => {
-    console.log("Evento de foto atualizada recebido:", event.detail);
+    // console.log("Evento de foto atualizada recebido:", event.detail);
 
     const newPhotoUrl = event.detail.photoUrl;
     const forceRefresh = event.detail.forceRefresh || false;
     const source = event.detail.source || "unknown";
 
-    console.log(`Origem do evento: ${source}, Force refresh: ${forceRefresh}`);
+    // console.log(`Origem do evento: ${source}, Force refresh: ${forceRefresh}`);
 
     const userData = getUserData();
     if (userData) {
@@ -258,7 +258,7 @@
         localStorage.setItem("userData", JSON.stringify(userData));
       }
 
-      console.log("userData atualizado com nova foto:", newPhotoUrl);
+      // console.log("userData atualizado com nova foto:", newPhotoUrl);
     }
 
     // CRÍTICO: Passar forceRefresh para loadProfilePhotos
@@ -267,14 +267,14 @@
     // Se for atualização de edit-profile, forçar refresh TOTAL
     if (source === "edit-profile" || forceRefresh) {
       setTimeout(() => {
-        console.log("Refresh adicional forçado após 500ms");
+        // console.log("Refresh adicional forçado após 500ms");
         loadProfilePhotos(true);
       }, 500);
     }
   });
 
   window.addEventListener("profilePhotoRemoved", () => {
-    console.log("Evento de foto removida recebido");
+    // console.log("Evento de foto removida recebido");
 
     const userData = getUserData();
     if (userData) {
@@ -286,7 +286,7 @@
         localStorage.setItem("userData", JSON.stringify(userData));
       }
 
-      console.log("Foto removida do userData");
+      // console.log("Foto removida do userData");
     }
 
     const profileImages = document.querySelectorAll(
@@ -306,7 +306,7 @@
       const channel = new BroadcastChannel("profile_updates");
       channel.onmessage = (event) => {
         if (event.data.type === "PHOTO_UPDATED") {
-          console.log("Broadcast recebido de outra aba/página");
+          // console.log("Broadcast recebido de outra aba/página");
           const photoUrl = event.data.photoUrl;
 
           // Atualizar localStorage
@@ -332,14 +332,14 @@
         }
       };
     } catch (e) {
-      console.log("BroadcastChannel não disponível");
+      // console.log("BroadcastChannel não disponível");
     }
   }
 
   // NOVO: Listener para storage (outras abas)
   window.addEventListener("storage", function (e) {
     if (e.key === "lastPhotoUpdate" || e.key === "currentPhotoUrl") {
-      console.log("Mudança detectada no localStorage de outra aba");
+      // console.log("Mudança detectada no localStorage de outra aba");
       setTimeout(() => {
         const photoUrl = localStorage.getItem("currentPhotoUrl");
         const userData = getUserData();
@@ -355,7 +355,7 @@
   });
 
   window.refreshUserInterface = function () {
-    console.log("Atualizacao forcada da interface...");
+    // console.log("Atualizacao forcada da interface...");
     initGlobal();
   };
 
@@ -374,14 +374,14 @@
   };
 
   window.reloadProfilePhoto = function (forceRefresh = true) {
-    console.log("Recarregamento forcado da foto de perfil...");
+    // console.log("Recarregamento forcado da foto de perfil...");
     initializeProfilePhoto();
     loadProfilePhotos(forceRefresh);
   };
 
   // NOVA FUNÇÃO: Forçar refresh completo de fotos (para mobile)
   window.forceRefreshAllPhotos = function () {
-    console.log("Force refresh TOTAL iniciado pelo globalInit");
+    // console.log("Force refresh TOTAL iniciado pelo globalInit");
     const userData = getUserData();
     if (userData && userData.profilePhotoUrl) {
       loadProfilePhotos(true);

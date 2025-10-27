@@ -35,7 +35,7 @@ class ApiConfig {
     if (typeof Auth !== "undefined" && Auth?.getToken) {
       const token = Auth.getToken();
       if (token) {
-        console.log("Token obtido via Auth global");
+        // console.log("Token obtido via Auth global");
         return token;
       }
     }
@@ -74,7 +74,7 @@ class ApiConfig {
     for (const getToken of sources) {
       const token = getToken();
       if (token) {
-        console.log("Token encontrado:", token.substring(0, 20) + "...");
+        // console.log("Token encontrado:", token.substring(0, 20) + "...");
         return token;
       }
     }
@@ -206,8 +206,8 @@ class ApiConfig {
 
     const finalOptions = { ...defaultOptions, ...options };
 
-    console.log("Fazendo requisição para:", url);
-    console.log("Method:", finalOptions.method || "GET");
+    // console.log("Fazendo requisição para:", url);
+    // console.log("Method:", finalOptions.method || "GET");
 
     try {
       const controller = new AbortController();
@@ -378,8 +378,8 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = apiConfig;
 }
 
-console.log("API Config Unificado carregado - Base URL:", apiConfig.baseURL);
-console.log("Token disponível:", !!apiConfig.token);
+// console.log("API Config Unificado carregado - Base URL:", apiConfig.baseURL);
+// console.log("Token disponível:", !!apiConfig.token);
 
 // apiConfig.js
 
@@ -389,5 +389,5 @@ const api = new ApiConfig();
 // Exporta para o escopo global
 window.api = api;
 
-console.log("API Config Unificado carregado - Base URL:", api.baseURL);
-console.log("Token disponível:", !!api.token);
+// console.log("API Config Unificado carregado - Base URL:", api.baseURL);
+// console.log("Token disponível:", !!api.token);

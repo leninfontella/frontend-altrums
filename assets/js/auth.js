@@ -51,7 +51,7 @@ const Auth = {
     }
 
     try {
-      console.log(`Fazendo requisição para: ${endpoint}`);
+      // console.log(`Fazendo requisição para: ${endpoint}`);
 
       const response = await fetch(url, {
         ...options,
@@ -93,7 +93,7 @@ const Auth = {
         throw new Error(errorMessage);
       }
 
-      console.log(`Requisição bem-sucedida para: ${endpoint}`);
+      // console.log(`Requisição bem-sucedida para: ${endpoint}`);
       // Se a requisição foi OK (2xx), retorna o objeto 'Response' para ser lido no chamador
       return response;
     } catch (error) {
@@ -124,25 +124,25 @@ const Auth = {
   setToken(token) {
     if (token) {
       sessionStorage.setItem(this.STORAGE_KEYS.token, token);
-      console.log("Token salvo com sucesso");
+      // console.log("Token salvo com sucesso");
     }
   },
 
   removeToken() {
     sessionStorage.removeItem(this.STORAGE_KEYS.token);
-    console.log("Token removido");
+    // console.log("Token removido");
   },
 
   // Marcar como novo usuário
   markAsNewUser() {
     this._isNewUserRegistration = true;
-    console.log("Marcado como novo usuário - limpeza completa será feita");
+    // console.log("Marcado como novo usuário - limpeza completa será feita");
   },
 
   // ========== GERENCIAMENTO DE DADOS DO USUÁRIO ==========
   saveUserData(responseData) {
     try {
-      console.log("💾 Salvando dados do usuário:", responseData);
+      // console.log("💾 Salvando dados do usuário:", responseData);
 
       // Extrair dados baseado em diferentes estruturas possíveis
       let token, user;
@@ -174,10 +174,10 @@ const Auth = {
 
         // Se mudou de usuário, limpar dados antigos primeiro
         if (previousUserId && previousUserId !== currentUserId) {
-          console.log("🔄 Mudança de usuário detectada:", {
-            anterior: previousUserId,
-            atual: currentUserId,
-          });
+          // console.log("🔄 Mudança de usuário detectada:", {
+          //   anterior: previousUserId,
+          //   atual: currentUserId,
+          // });
           this.clearUserSpecificData();
         }
 
@@ -188,12 +188,12 @@ const Auth = {
         let profilePhotoUrl =
           user.profilePhotoUrl || user.profilePhoto?.path || null;
 
-        console.log("🖼️ Foto recebida da API:", {
-          profilePhotoUrl: user.profilePhotoUrl,
-          profilePhotoPath: user.profilePhoto?.path,
-          profilePhotoStorage: user.profilePhoto?.storage,
-          avatar: user.avatar,
-        });
+        // console.log("🖼️ Foto recebida da API:", {
+        //   profilePhotoUrl: user.profilePhotoUrl,
+        //   profilePhotoPath: user.profilePhoto?.path,
+        //   profilePhotoStorage: user.profilePhoto?.storage,
+        //   avatar: user.avatar,
+        // });
 
         // 🔧 VALIDAÇÃO: Apenas remover se for emoji ou caractere inválido
         if (profilePhotoUrl && typeof profilePhotoUrl === "string") {
@@ -213,13 +213,13 @@ const Auth = {
             console.warn("⚠️ URL sem protocolo detectada:", profilePhotoUrl);
             profilePhotoUrl = null;
           } else {
-            console.log("✅ URL de foto válida:", profilePhotoUrl);
+            // console.log("✅ URL de foto válida:", profilePhotoUrl);
           }
         }
 
         // 🔧 NOVO: Para novos registros, NÃO limpar foto se vier da API
         if (this._isNewUserRegistration) {
-          console.log("📝 Novo usuário: usando foto da API (se houver)");
+          // console.log("📝 Novo usuário: usando foto da API (se houver)");
           // Manter profilePhotoUrl como está (null ou URL válida)
         }
 
@@ -240,12 +240,12 @@ const Auth = {
           cpf: user.cpf || user.document || "",
         };
 
-        console.log("📦 Dados processados:", {
-          name: userInfo.name,
-          email: userInfo.email,
-          profilePhotoUrl: userInfo.profilePhotoUrl,
-          hasValidPhoto: !!userInfo.profilePhotoUrl,
-        });
+        // console.log("📦 Dados processados:", {
+        //   name: userInfo.name,
+        //   email: userInfo.email,
+        //   profilePhotoUrl: userInfo.profilePhotoUrl,
+        //   hasValidPhoto: !!userInfo.profilePhotoUrl,
+        // });
 
         // 🔧 CORREÇÃO: Salvar foto separadamente APENAS se válida e diferente
         const currentSavedPhoto = localStorage.getItem(
@@ -259,21 +259,21 @@ const Auth = {
               this.STORAGE_KEYS.profilePhoto,
               userInfo.profilePhotoUrl
             );
-            console.log("✅ Foto de perfil salva:", userInfo.profilePhotoUrl);
+            // console.log("✅ Foto de perfil salva:", userInfo.profilePhotoUrl);
           } else {
-            console.log("ℹ️ Foto de perfil já está salva (sem mudanças)");
+            // console.log("ℹ️ Foto de perfil já está salva (sem mudanças)");
           }
         } else {
           // 🔧 CRÍTICO: NÃO remover foto se já existe uma salva válida
           if (currentSavedPhoto && currentSavedPhoto.startsWith("http")) {
-            console.log(
-              "⚠️ API não retornou foto, mas existe foto salva válida - MANTENDO"
-            );
+            // console.log(
+            //   "⚠️ API não retornou foto, mas existe foto salva válida - MANTENDO"
+            // );
             userInfo.profilePhotoUrl = currentSavedPhoto;
           } else {
             // Remover foto antiga apenas se não for válida
             localStorage.removeItem(this.STORAGE_KEYS.profilePhoto);
-            console.log("🗑️ Foto de perfil removida (sem foto válida)");
+            // console.log("🗑️ Foto de perfil removida (sem foto válida)");
           }
         }
 
@@ -303,7 +303,7 @@ const Auth = {
         localStorage.setItem("currentUser", JSON.stringify(userInfo));
         sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
 
-        console.log("✅ Dados salvos com sucesso!");
+        // console.log("✅ Dados salvos com sucesso!");
       }
 
       // Marcar como logado
@@ -342,14 +342,14 @@ const Auth = {
         if (separatePhotoUrl && separatePhotoUrl.startsWith("http")) {
           // 🔧 CORREÇÃO: Sempre priorizar foto salva se for válida
           parsedData.profilePhotoUrl = separatePhotoUrl;
-          console.log("📸 Foto restaurada do storage:", separatePhotoUrl);
+          // console.log("📸 Foto restaurada do storage:", separatePhotoUrl);
         } else if (!parsedData.profilePhotoUrl && separatePhotoUrl) {
           // Se não há foto no userData mas há no storage separado, usar
           parsedData.profilePhotoUrl = separatePhotoUrl;
-          console.log(
-            "📸 Foto restaurada do storage separado:",
-            separatePhotoUrl
-          );
+          // console.log(
+          //   "📸 Foto restaurada do storage separado:",
+          //   separatePhotoUrl
+          // );
         }
 
         return parsedData;
@@ -395,12 +395,12 @@ const Auth = {
       sessionStorage.setItem("currentUser", JSON.stringify(userData));
     }
 
-    console.log(`Saldo atualizado para: ${newBalance}`);
+    // console.log(`Saldo atualizado para: ${newBalance}`);
   },
 
   // FUNÇÃO MELHORADA: Atualizar foto de perfil
   updateProfilePhoto(photoUrl, skipEvent = false) {
-    console.log("Atualizando foto de perfil:", photoUrl);
+    // console.log("Atualizando foto de perfil:", photoUrl);
 
     // Verificar se já está sendo processada (evitar loop)
     if (this._updatingProfilePhoto) {
@@ -436,7 +436,7 @@ const Auth = {
         localStorage.setItem("currentUser", JSON.stringify(userData));
         sessionStorage.setItem("currentUser", JSON.stringify(userData));
 
-        console.log("Foto de perfil atualizada em todos os storages");
+        // console.log("Foto de perfil atualizada em todos os storages");
 
         // 3. Disparar evento para sincronização (apenas se não for chamada interna)
         if (!skipEvent) {
@@ -488,7 +488,7 @@ const Auth = {
       const sessionDuration = 24 * 60 * 60 * 1000; // 24 horas
 
       if (now - loginTime > sessionDuration) {
-        console.log("Sessão expirada por tempo");
+        // console.log("Sessão expirada por tempo");
         this.logout();
         return false;
       }
@@ -536,7 +536,7 @@ const Auth = {
   // ========== AUTENTICAÇÃO (LOGIN/REGISTER) ==========
   async login(email, password, rememberMe = false) {
     try {
-      console.log(`Tentativa de login para: ${email}`);
+      // console.log(`Tentativa de login para: ${email}`);
 
       this.clearUserSpecificData();
 
@@ -555,7 +555,7 @@ const Auth = {
         this.saveUserData(data);
         this.saveRememberMe(email, rememberMe);
 
-        console.log("Login realizado com sucesso");
+        // console.log("Login realizado com sucesso");
         return { success: true, data: data };
       } else {
         // 🔧 CORREÇÃO: Lançar erros específicos
@@ -597,7 +597,7 @@ const Auth = {
 
   async register(userData) {
     try {
-      console.log("Tentativa de registro para:", userData.email);
+      // console.log("Tentativa de registro para:", userData.email);
 
       // CRÍTICO: Marcar como novo usuário ANTES do registro
       this.markAsNewUser();
@@ -620,9 +620,9 @@ const Auth = {
         // Salvar dados do novo usuário
         this.saveUserData(data);
 
-        console.log(
-          "Registro realizado com sucesso - Usuário recebeu 100 moedas!"
-        );
+        // console.log(
+        //   "Registro realizado com sucesso - Usuário recebeu 100 moedas!"
+        // );
         return { success: true, data: data };
       } else {
         throw new Error(data.message || "Erro no registro");
@@ -650,13 +650,13 @@ const Auth = {
     } finally {
       // Limpar dados locais
       this.clearAllData();
-      console.log("Logout realizado");
+      // console.log("Logout realizado");
     }
   },
 
   // NOVA FUNÇÃO: Limpar apenas dados específicos do usuário (para troca)
   clearUserSpecificData() {
-    console.log("🧹 Limpando dados específicos do usuário atual...");
+    // console.log("🧹 Limpando dados específicos do usuário atual...");
 
     // Limpar dados do sessionStorage
     const sessionKeys = [
@@ -679,21 +679,21 @@ const Auth = {
     // ADICIONE ESTA LINHA PARA GARANTIR A LIMPEZA DA FOTO
     localStorage.removeItem(this.STORAGE_KEYS.profilePhoto);
 
-    console.log("✅ Dados específicos limpos (incluindo foto local)");
+    // console.log("✅ Dados específicos limpos (incluindo foto local)");
 
     // 🔧 CRÍTICO: NÃO limpar foto de perfil aqui
-    console.log("✅ Dados específicos limpos (foto preservada)");
+    // console.log("✅ Dados específicos limpos (foto preservada)");
   },
 
   // FUNÇÃO CORRIGIDA: Limpar todos os dados
   clearAllData() {
-    console.log("🧹 Limpando todos os dados...");
+    // console.log("🧹 Limpando todos os dados...");
 
     const isNewUserRegistration = this._isNewUserRegistration || false;
 
     if (isNewUserRegistration) {
       // Para novos usuários, limpar TUDO incluindo foto de perfil
-      console.log("🆕 Novo usuário detectado - limpeza completa");
+      // console.log("🆕 Novo usuário detectado - limpeza completa");
 
       Object.values(this.STORAGE_KEYS).forEach((key) => {
         sessionStorage.removeItem(key);
@@ -704,7 +704,7 @@ const Auth = {
     } else {
       // 🔧 CRÍTICO: Para logout normal, PRESERVAR foto de perfil
       const currentPhoto = this.getProfilePhoto();
-      console.log("📸 Foto atual antes da limpeza:", currentPhoto);
+      // console.log("📸 Foto atual antes da limpeza:", currentPhoto);
 
       Object.values(this.STORAGE_KEYS).forEach((key) => {
         if (key !== this.STORAGE_KEYS.profilePhoto) {
@@ -716,7 +716,7 @@ const Auth = {
       // 🔧 Restaurar foto de perfil após limpeza
       if (currentPhoto && currentPhoto.startsWith("http")) {
         localStorage.setItem(this.STORAGE_KEYS.profilePhoto, currentPhoto);
-        console.log("✅ Foto de perfil preservada:", currentPhoto);
+        // console.log("✅ Foto de perfil preservada:", currentPhoto);
       }
     }
 
@@ -741,9 +741,9 @@ const Auth = {
     // Reset do controle de usuário atual
     this._currentUserId = null;
 
-    console.log(
-      "✅ Limpeza completa realizada (foto preservada se logout normal)"
-    );
+    // console.log(
+    //   "✅ Limpeza completa realizada (foto preservada se logout normal)"
+    // );
   },
 
   // ========== PERFIL E SALDO ==========
@@ -758,12 +758,12 @@ const Auth = {
       if (data.success && data.data) {
         const userData = data.data.user || data.data;
 
-        console.log("📥 Perfil recebido da API:", {
-          name: userData.name,
-          email: userData.email,
-          profilePhotoUrl: userData.profilePhotoUrl,
-          profilePhotoStorage: userData.profilePhoto?.storage,
-        });
+        // console.log("📥 Perfil recebido da API:", {
+        //   name: userData.name,
+        //   email: userData.email,
+        //   profilePhotoUrl: userData.profilePhotoUrl,
+        //   profilePhotoStorage: userData.profilePhoto?.storage,
+        // });
 
         // 🔧 CRÍTICO: NÃO sobrescrever foto local se API não retornar
         const existingPhoto = this.getProfilePhoto();
@@ -773,12 +773,12 @@ const Auth = {
           existingPhoto &&
           existingPhoto.startsWith("http")
         ) {
-          console.log(
-            "⚠️ API não retornou foto, mas existe foto local válida - PRESERVANDO"
-          );
+          // console.log(
+          //   "⚠️ API não retornou foto, mas existe foto local válida - PRESERVANDO"
+          // );
           userData.profilePhotoUrl = existingPhoto;
         } else if (userData.profilePhotoUrl) {
-          console.log("✅ Foto recebida da API:", userData.profilePhotoUrl);
+          // console.log("✅ Foto recebida da API:", userData.profilePhotoUrl);
         }
 
         // Salvar dados atualizados
@@ -969,7 +969,7 @@ const Auth = {
 
     localStorageKeysToRemove.forEach((key) => {
       localStorage.removeItem(key);
-      console.log(`Removido localStorage: ${key}`);
+      // console.log(`Removido localStorage: ${key}`);
     });
 
     // Reset do controle
@@ -1008,7 +1008,7 @@ const Auth = {
 document.addEventListener("DOMContentLoaded", function () {
   // Redirecionar usuários logados se estiverem na página de login
   if (window.location.pathname.includes("login") && Auth.isLoggedIn()) {
-    console.log("Usuário já logado, redirecionando para dashboard");
+    // console.log("Usuário já logado, redirecionando para dashboard");
     Auth.redirectToDashboard();
     return;
   }
@@ -1019,11 +1019,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (protectedPages.some((page) => currentPath.includes(page))) {
     if (!Auth.checkSession()) {
-      console.log("Sessão inválida, redirecionando para login");
+      // console.log("Sessão inválida, redirecionando para login");
       Auth.redirectToLogin();
       return;
     }
-    console.log("Sessão válida");
+    // console.log("Sessão válida");
   }
 });
 
@@ -1031,11 +1031,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Detectar mudanças de conectividade
 window.addEventListener("online", () => {
-  console.log("Conexão restaurada");
+  // console.log("Conexão restaurada");
 });
 
 window.addEventListener("offline", () => {
-  console.log("Conexão perdida");
+  // console.log("Conexão perdida");
 });
 
 // Interceptar erros não capturados
@@ -1053,7 +1053,7 @@ window.addEventListener("unhandledrejection", (event) => {
 // Detectar mudanças no localStorage (troca de usuário)
 window.addEventListener("storage", function (event) {
   if (event.key === "authToken" || event.key === "userData") {
-    console.log("Mudança de dados de autenticação detectada");
+    // console.log("Mudança de dados de autenticação detectada");
     // Disparar evento customizado
     window.dispatchEvent(
       new CustomEvent("userChanged", {
@@ -1076,9 +1076,9 @@ if (typeof module !== "undefined" && module.exports) {
   window.Auth = Auth;
 }
 
-console.log(
-  "Módulo Auth unificado carregado com correção de múltiplos usuários!"
-);
+// console.log(
+//   "Módulo Auth unificado carregado com correção de múltiplos usuários!"
+// );
 
 // ========== COMPATIBILIDADE COM CONFIG ==========
 

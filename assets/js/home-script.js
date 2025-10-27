@@ -14,7 +14,7 @@ const UserSystem = {
 
   async loadUserProfile() {
     try {
-      console.log("🔄 Carregando perfil do usuário...");
+      // console.log("🔄 Carregando perfil do usuário...");
 
       const localData = Auth.getUserData();
       const profileFromAPI = await Auth.getProfile();
@@ -26,7 +26,7 @@ const UserSystem = {
 
       if (Object.keys(finalProfileData).length > 0) {
         this.updateUserInterface(finalProfileData);
-        console.log("✅ Perfil carregado:", finalProfileData);
+        // console.log("✅ Perfil carregado:", finalProfileData);
         return finalProfileData;
       } else {
         throw new Error("Perfil não encontrado");
@@ -37,7 +37,7 @@ const UserSystem = {
       const localData = Auth.getUserData();
       if (localData) {
         this.updateUserInterface(localData);
-        console.log("⚠️ Fallback para dados locais");
+        // console.log("⚠️ Fallback para dados locais");
         return localData;
       }
 
@@ -48,18 +48,18 @@ const UserSystem = {
 
   async loadUserBalance() {
     try {
-      console.log("🔄 Carregando saldo do usuário...");
+      // console.log("🔄 Carregando saldo do usuário...");
 
       const balance = await Auth.getBalance();
 
       if (balance !== null && balance !== undefined) {
         this.updateBalanceInterface(balance);
-        console.log("✅ Saldo carregado:", balance);
+        // console.log("✅ Saldo carregado:", balance);
         return balance;
       } else {
         const localBalance = Auth.getUserBalance();
         this.updateBalanceInterface(localBalance);
-        console.log("⚠️ Usando saldo local:", localBalance);
+        // console.log("⚠️ Usando saldo local:", localBalance);
         return localBalance;
       }
     } catch (error) {
@@ -67,20 +67,20 @@ const UserSystem = {
 
       const localBalance = Auth.getUserBalance();
       this.updateBalanceInterface(localBalance);
-      console.log("⚠️ Fallback para saldo local:", localBalance);
+      // console.log("⚠️ Fallback para saldo local:", localBalance);
       return localBalance;
     }
   },
 
   async loadUserStats() {
     try {
-      console.log("🔄 Carregando estatísticas do usuário...");
+      // console.log("🔄 Carregando estatísticas do usuário...");
 
       const stats = await Auth.getStats();
 
       if (stats) {
         this.updateStatsInterface(stats);
-        console.log("✅ Estatísticas carregadas:", stats);
+        // console.log("✅ Estatísticas carregadas:", stats);
         return stats;
       } else {
         throw new Error("Estatísticas não disponíveis");
@@ -97,23 +97,23 @@ const UserSystem = {
       };
 
       this.updateStatsInterface(mockStats);
-      console.log("⚠️ Usando estatísticas simuladas:", mockStats);
+      // console.log("⚠️ Usando estatísticas simuladas:", mockStats);
       return mockStats;
     }
   },
 
   updateUserInterface(userData) {
     try {
-      console.log("🎨 Atualizando interface do usuário:", userData);
+      // console.log("🎨 Atualizando interface do usuário:", userData);
 
       const greetingElement = document.getElementById("user-greeting");
       if (greetingElement && userData.name) {
         const firstName = userData.name.split(" ")[0];
         greetingElement.textContent = `Olá, ${firstName}!`;
-        console.log("✅ Saudação atualizada para:", firstName);
+        // console.log("✅ Saudação atualizada para:", firstName);
       } else if (greetingElement) {
         greetingElement.textContent = "Olá, Usuário!";
-        console.log("⚠️ Nome não disponível, usando fallback");
+        // console.log("⚠️ Nome não disponível, usando fallback");
       }
 
       const userNameElements = document.querySelectorAll(".user-name");
@@ -121,7 +121,7 @@ const UserSystem = {
         element.textContent = userData.name || "Usuário";
       });
 
-      console.log("✅ Interface do usuário atualizada");
+      // console.log("✅ Interface do usuário atualizada");
     } catch (error) {
       console.error("❌ Erro ao atualizar interface:", error);
     }
@@ -154,18 +154,18 @@ const UserSystem = {
       };
 
       img.onload = () => {
-        console.log("✅ Foto atualizada externamente:", imageUrl);
+        // console.log("✅ Foto atualizada externamente:", imageUrl);
       };
     } else {
       img.style.display = "none";
       icon.style.display = "block";
-      console.log("✅ Foto removida, ícone padrão restaurado");
+      // console.log("✅ Foto removida, ícone padrão restaurado");
     }
   },
 
   updateBalanceInterface(balance) {
     try {
-      console.log("💰 Atualizando saldo na interface:", balance);
+      // console.log("💰 Atualizando saldo na interface:", balance);
 
       const balanceElement = document.querySelector("#user-balance");
       if (balanceElement) {
@@ -185,7 +185,7 @@ const UserSystem = {
         }
       }
 
-      console.log("✅ Saldo atualizado na interface:", balance);
+      // console.log("✅ Saldo atualizado na interface:", balance);
     } catch (error) {
       console.error("❌ Erro ao atualizar saldo na interface:", error);
     }
@@ -193,7 +193,7 @@ const UserSystem = {
 
   updateStatsInterface(stats) {
     try {
-      console.log("📊 Atualizando estatísticas na interface:", stats);
+      // console.log("📊 Atualizando estatísticas na interface:", stats);
 
       const statsMap = [
         {
@@ -220,7 +220,7 @@ const UserSystem = {
         }
       });
 
-      console.log("✅ Estatísticas atualizadas na interface");
+      // console.log("✅ Estatísticas atualizadas na interface");
     } catch (error) {
       console.error("❌ Erro ao atualizar estatísticas:", error);
     }
@@ -228,9 +228,9 @@ const UserSystem = {
 
   async donateCoins(recipientId, amount, message = "") {
     try {
-      console.log(
-        `🎁 Processando doação: ${amount} moedas para usuário ${recipientId}`
-      );
+      // console.log(
+      //   `🎁 Processando doação: ${amount} moedas para usuário ${recipientId}`
+      // );
 
       const result = await Auth.updateBalance(
         amount,
@@ -476,10 +476,10 @@ const LevelSystem = {
           </div>
         `;
 
-        console.log("Badge de nível adicionado baseado no total doado:", {
-          totalDonated,
-          levelInfo,
-        });
+        // console.log("Badge de nível adicionado baseado no total doado:", {
+        //   totalDonated,
+        //   levelInfo,
+        // });
       }
     } catch (error) {
       console.error("Erro ao adicionar badge de nível:", error);
@@ -504,7 +504,7 @@ const LevelSystem = {
   },
 };
 
-// ========== SISTEMA DE NOTIFICAÇÃO DE LEVEL UP ==========///////////////////////////////
+// ========== SISTEMA DE NOTIFICAÇÃO DE LEVEL UP ==========
 
 const LevelUpNotification = {
   currentLevel: null,
@@ -523,10 +523,10 @@ const LevelUpNotification = {
         sessionStorage.setItem("userCurrentLevel", this.currentLevel);
         sessionStorage.setItem("lastCheckedDonated", this.lastCheckedDonated);
 
-        console.log("🎯 Sistema de Level Up inicializado:", {
-          level: this.currentLevel,
-          donated: this.lastCheckedDonated,
-        });
+        // console.log("🎯 Sistema de Level Up inicializado:", {
+        //   level: this.currentLevel,
+        //   donated: this.lastCheckedDonated,
+        // });
       }
     } catch (error) {
       console.error("❌ Erro ao inicializar sistema de Level Up:", error);
@@ -538,10 +538,10 @@ const LevelUpNotification = {
       if (savedLevel && savedDonated) {
         this.currentLevel = parseInt(savedLevel);
         this.lastCheckedDonated = parseInt(savedDonated);
-        console.log("⚠️ Recuperado do sessionStorage:", {
-          level: this.currentLevel,
-          donated: this.lastCheckedDonated,
-        });
+        // console.log("⚠️ Recuperado do sessionStorage:", {
+        //   level: this.currentLevel,
+        //   donated: this.lastCheckedDonated,
+        // });
       }
     }
   },
@@ -558,12 +558,12 @@ const LevelUpNotification = {
 
     // Verificar se realmente subiu de nível
     if (newLevel > oldLevel && oldLevel !== null) {
-      console.log("🎉 LEVEL UP detectado!", {
-        oldLevel,
-        newLevel,
-        oldDonated: this.lastCheckedDonated,
-        newDonated: newTotalDonated,
-      });
+      // console.log("🎉 LEVEL UP detectado!", {
+      //   oldLevel,
+      //   newLevel,
+      //   oldDonated: this.lastCheckedDonated,
+      //   newDonated: newTotalDonated,
+      // });
 
       // Atualizar estado
       this.currentLevel = newLevel;
@@ -587,6 +587,8 @@ const LevelUpNotification = {
 
     return false;
   },
+
+  // ... (resto do código do LevelUpNotification permanece igual)
 
   // Mostrar modal de level up
   showLevelUpModal(oldLevel, newLevelInfo, totalDonated) {
@@ -896,9 +898,11 @@ const LevelUpNotification = {
         oscillator.stop(audioContext.currentTime + note.start + note.duration);
       });
     } catch (error) {
-      console.log("⚠️ Não foi possível tocar som de level up");
+      // console.log("⚠️ Não foi possível tocar som de level up");
     }
   },
+
+  // ... (restante dos métodos)
 
   // Adicionar estilos CSS
   addStyles() {
@@ -1570,7 +1574,7 @@ function shareLevelUp(level, levelName) {
         title: "Level Up!",
         text: message,
       })
-      .catch((err) => console.log("Erro ao compartilhar:", err));
+      .catch((err) => console.error("Erro ao compartilhar:", err));
   } else {
     navigator.clipboard.writeText(message).then(() => {
       showNotification(
@@ -1614,7 +1618,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }, 1500);
       });
-      console.log("✅ WebSocket integrado com Level Up System");
+      // console.log("✅ WebSocket integrado com Level Up System");
     }
   }, 1000);
 });
@@ -1624,7 +1628,7 @@ window.LevelUpNotification = LevelUpNotification;
 window.closeLevelUpModal = closeLevelUpModal;
 window.shareLevelUp = shareLevelUp;
 
-console.log("✅ Sistema de notificação de Level Up carregado!");
+// console.log("✅ Sistema de notificação de Level Up carregado!");
 
 // Sistema de busca e doação - integração com API
 const UserSearchAPI = {
@@ -1634,7 +1638,7 @@ const UserSearchAPI = {
     try {
       if (!query || query.length < 2) return [];
 
-      console.log("🔍 Buscando usuários na API:", query);
+      // console.log("🔍 Buscando usuários na API:", query);
 
       const token = Auth.getToken();
       const response = await fetch(
@@ -1668,7 +1672,7 @@ const UserSearchAPI = {
         users = [];
       }
 
-      console.log("✅ Usuários encontrados:", users.length);
+      // console.log("✅ Usuários encontrados:", users.length);
       return users;
     } catch (error) {
       console.error("❌ Erro ao buscar usuários:", error);
@@ -1692,7 +1696,7 @@ const UserSearchAPI = {
       }
 
       const userData = await response.json();
-      console.log("✅ Detalhes do usuário carregados:", userData);
+      // console.log("✅ Detalhes do usuário carregados:", userData);
       return userData.data
         ? userData.data.user || userData.data
         : userData.user || userData;
@@ -1704,7 +1708,7 @@ const UserSearchAPI = {
 
   async processDonation(recipientId, amount, message = "") {
     try {
-      console.log("🎁 Processando doação via API:", { recipientId, amount });
+      // console.log("🎁 Processando doação via API:", { recipientId, amount });
 
       const token = Auth.getToken();
       const response = await fetch(`${this.baseUrl}/donations`, {
@@ -1728,7 +1732,7 @@ const UserSearchAPI = {
       }
 
       const result = await response.json();
-      console.log("✅ Doação processada com sucesso:", result);
+      // console.log("✅ Doação processada com sucesso:", result);
       return result;
     } catch (error) {
       console.error("❌ Erro ao processar doação:", error);
@@ -2151,7 +2155,7 @@ async function confirmDonation(recipientId, recipientName) {
       // Atualizar estatísticas após um delay
       setTimeout(() => UserSystem.loadUserStats(), 1500);
 
-      console.log("Doação realizada com sucesso:", result);
+      // console.log("Doação realizada com sucesso:", result);
     } else {
       throw new Error(result.message || "Erro ao processar doação");
     }
@@ -2194,12 +2198,12 @@ function showNotification(message, type = "info") {
 document.addEventListener("DOMContentLoaded", async () => {
   // Verificar se usuário está logado
   if (!Auth.checkSession()) {
-    console.log("Usuario não logado - redirecionando");
+    // console.log("Usuario não logado - redirecionando");
     Auth.redirectToLogin();
     return;
   }
 
-  console.log("Iniciando carregamento dos dados do usuario...");
+  // console.log("Iniciando carregamento dos dados do usuario...");
 
   try {
     // Mostrar loading state
@@ -2221,18 +2225,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       balance.status === "fulfilled" ? balance.value : Auth.getUserBalance();
     const statsData = stats.status === "fulfilled" ? stats.value : null;
 
-    if (profileData) {
-      console.log("Perfil carregado");
-    }
+    // if (profileData) {
+    //   console.log("Perfil carregado");
+    // }
 
     if (balanceData !== null) {
       LevelSystem.addLevelBadge(balanceData);
-      console.log("Saldo carregado e nivel calculado");
+      // console.log("Saldo carregado e nivel calculado");
     }
 
-    if (statsData) {
-      console.log("Estatisticas carregadas");
-    }
+    // if (statsData) {
+    //   console.log("Estatisticas carregadas");
+    // }
 
     // Habilitar botão de doação
     const searchDonateBtn = document.getElementById("search-donate-btn");
@@ -2240,10 +2244,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       searchDonateBtn.disabled = false;
       searchDonateBtn.style.opacity = "1";
       searchDonateBtn.style.cursor = "pointer";
-      console.log("Botao de doacao habilitado");
+      // console.log("Botao de doacao habilitado");
     }
 
-    console.log("Inicializacao concluida!");
+    // console.log("Inicializacao concluida!");
   } catch (error) {
     console.error("Erro durante inicializacao:", error);
     showNotification("Alguns dados podem não estar atualizados", "warning");
@@ -2273,18 +2277,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Event listeners para foto de perfil
   window.addEventListener("profilePhotoUpdated", (event) => {
-    console.log("Evento de foto atualizada recebido:", event.detail);
+    // console.log("Evento de foto atualizada recebido:", event.detail);
     const newPhotoUrl = event.detail.photoUrl;
     UserSystem.updateProfilePicture(newPhotoUrl);
   });
 
   window.addEventListener("profilePhotoRemoved", () => {
-    console.log("Evento de foto removida recebido");
+    // console.log("Evento de foto removida recebido");
     UserSystem.updateProfilePicture(null);
   });
 
   window.addEventListener("userDataUpdated", (event) => {
-    console.log("Dados do usuário atualizados:", event.detail);
+    // console.log("Dados do usuário atualizados:", event.detail);
     const userData = event.detail.userData;
     if (userData) {
       UserSystem.updateUserInterface(userData);
@@ -2293,7 +2297,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Event listener para atualização de saldo
   window.addEventListener("balanceUpdated", (event) => {
-    console.log("Saldo atualizado:", event.detail);
+    // console.log("Saldo atualizado:", event.detail);
     const newBalance = event.detail.balance;
     if (newBalance !== null && newBalance !== undefined) {
       UserSystem.updateBalanceInterface(newBalance);
@@ -2319,7 +2323,7 @@ if (searchDonateBtn) {
     }, 200);
 
     openSearchModal();
-    console.log("Modal de busca aberto");
+    // console.log("Modal de busca aberto");
   });
 }
 
@@ -2406,7 +2410,7 @@ const coinCards = document.querySelectorAll(".coin-card");
 coinCards.forEach((card) => {
   addTouchFeedback(card);
   card.addEventListener("click", () => {
-    console.log("Card de moeda clicado");
+    // console.log("Card de moeda clicado");
   });
 });
 
@@ -2425,7 +2429,7 @@ const balanceCard = document.getElementById("balance-card");
 if (balanceCard) {
   addTouchFeedback(balanceCard);
   balanceCard.addEventListener("click", () => {
-    console.log("Balance card clicado");
+    // console.log("Balance card clicado");
   });
 }
 
@@ -2499,7 +2503,7 @@ document.addEventListener(
   { passive: false }
 );
 
-// assets/js/websocket-client.js
+// ========== WEBSOCKET CLIENT ==========
 
 class WebSocketClient {
   constructor() {
@@ -2512,7 +2516,7 @@ class WebSocketClient {
     this.heartbeatInterval = null;
     this.listeners = new Map();
 
-    console.log("🔌 WebSocket Client inicializado");
+    // console.log("🔌 WebSocket Client inicializado");
   }
 
   connect() {
@@ -2520,7 +2524,7 @@ class WebSocketClient {
       this.isConnecting ||
       (this.ws && this.ws.readyState === WebSocket.OPEN)
     ) {
-      console.log("⚠️ Já existe uma conexão ativa ou em andamento");
+      // console.log("⚠️ Já existe uma conexão ativa ou em andamento");
       return;
     }
 
@@ -2532,13 +2536,13 @@ class WebSocketClient {
     const port = window.location.hostname === "localhost" ? ":5000" : "";
     const wsUrl = `${protocol}//${host}${port}/ws`;
 
-    console.log(`🔌 Conectando ao WebSocket: ${wsUrl}`);
+    // console.log(`🔌 Conectando ao WebSocket: ${wsUrl}`);
 
     try {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
-        console.log("✅ WebSocket conectado");
+        // console.log("✅ WebSocket conectado");
         this.isConnecting = false;
         this.reconnectAttempts = 0;
         this.authenticate();
@@ -2561,7 +2565,7 @@ class WebSocketClient {
       };
 
       this.ws.onclose = (event) => {
-        console.log("🔌 WebSocket desconectado", event.code, event.reason);
+        // console.log("🔌 WebSocket desconectado", event.code, event.reason);
         this.isConnecting = false;
         this.isAuthenticated = false;
         this.stopHeartbeat();
@@ -2591,17 +2595,17 @@ class WebSocketClient {
   }
 
   handleMessage(data) {
-    console.log("📨 Mensagem recebida:", data.type);
+    // console.log("📨 Mensagem recebida:", data.type);
 
     switch (data.type) {
       case "authenticated":
         this.isAuthenticated = true;
-        console.log("✅ Autenticado no WebSocket");
+        // console.log("✅ Autenticado no WebSocket");
         this.emit("authenticated");
         break;
 
       case "donation_received":
-        console.log("💰 Doação recebida:", data.data);
+        // console.log("💰 Doação recebida:", data.data);
         this.handleDonationReceived(data.data);
         break;
 
@@ -2615,7 +2619,7 @@ class WebSocketClient {
         break;
 
       default:
-        console.log("⚠️ Tipo de mensagem desconhecido:", data.type);
+      // console.log("⚠️ Tipo de mensagem desconhecido:", data.type);
     }
 
     // Emitir evento genérico
@@ -2739,7 +2743,7 @@ class WebSocketClient {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
-      console.log("⚠️ Não foi possível tocar som de notificação");
+      // console.log("⚠️ Não foi possível tocar som de notificação");
     }
   }
 
@@ -2753,7 +2757,7 @@ class WebSocketClient {
         return false;
       }
     } else {
-      console.warn("⚠️ WebSocket não está conectado");
+      // console.warn("⚠️ WebSocket não está conectado");
       return false;
     }
   }
@@ -2776,7 +2780,7 @@ class WebSocketClient {
 
   attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log("❌ Máximo de tentativas de reconexão atingido");
+      // console.log("❌ Máximo de tentativas de reconexão atingido");
       this.emit("max_reconnect_attempts");
       return;
     }
@@ -2784,9 +2788,9 @@ class WebSocketClient {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * this.reconnectAttempts;
 
-    console.log(
-      `🔄 Tentativa de reconexão ${this.reconnectAttempts}/${this.maxReconnectAttempts} em ${delay}ms`
-    );
+    // console.log(
+    //   `🔄 Tentativa de reconexão ${this.reconnectAttempts}/${this.maxReconnectAttempts} em ${delay}ms`
+    // );
 
     setTimeout(() => {
       if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
@@ -2807,7 +2811,7 @@ class WebSocketClient {
     this.isAuthenticated = false;
     this.reconnectAttempts = 0;
 
-    console.log("🔌 WebSocket desconectado manualmente");
+    // console.log("🔌 WebSocket desconectado manualmente");
   }
 
   // Sistema de eventos
@@ -2868,9 +2872,9 @@ function closeDonationReceivedPopup() {
 window.wsClient = wsClient;
 window.closeDonationReceivedPopup = closeDonationReceivedPopup;
 
-console.log(
-  "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
-);
+// console.log(
+//   "Sistema mobile HOME integrado com Auth.js, API real e pop-up de sucesso moderno carregado!"
+// );
 
 // Exportar funções globalmente para compatibilidade
 window.UserSystem = UserSystem;

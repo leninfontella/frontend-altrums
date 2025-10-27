@@ -4,7 +4,7 @@
 function showMessage(message, type = "success") {
   const messageBox = document.getElementById("message-box");
   if (!messageBox) {
-    console.log(`Mensagem (${type}):`, message);
+    // console.log(`Mensagem (${type}):`, message);
     return;
   }
 
@@ -73,7 +73,7 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
   const profileImage = document.getElementById("profile-image");
   if (!profileImage) return;
 
-  console.log("🖼️  Atualizando foto de perfil:", photoUrl);
+  // console.log("🖼️  Atualizando foto de perfil:", photoUrl);
 
   const isInvalidUrl =
     !photoUrl ||
@@ -97,7 +97,7 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
 
     if (window.apiConfig && window.apiConfig.baseURL) {
       photoUrl = window.apiConfig.baseURL + photoUrl;
-      console.log("🔧 URL construída:", photoUrl);
+      // console.log("🔧 URL construída:", photoUrl);
     } else {
       console.error("❌ apiConfig não disponível, usando placeholder");
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
@@ -111,7 +111,7 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
   if (forceRefresh) {
     const separator = imageUrl.includes("?") ? "&" : "?";
     imageUrl = `${imageUrl}${separator}t=${Date.now()}&v=${Math.random()}`;
-    console.log("🔄 Cache busting aplicado:", imageUrl);
+    // console.log("🔄 Cache busting aplicado:", imageUrl);
   }
 
   profileImage.src = imageUrl;
@@ -125,7 +125,7 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
 
     if (forceRefresh && imageUrl.includes("?t=")) {
       const cleanUrl = imageUrl.split("?t=")[0];
-      console.log("🔄 Tentando sem cache bust:", cleanUrl);
+      // console.log("🔄 Tentando sem cache bust:", cleanUrl);
       this.src = cleanUrl;
       return;
     }
@@ -138,7 +138,7 @@ function updateProfilePhotoDisplayFixed(photoUrl, forceRefresh = false) {
 
 // 🔧 FUNÇÃO CORRIGIDA: forceRefreshAllProfileImages
 function forceRefreshAllProfileImages(photoUrl) {
-  console.log("🔄 Forçando refresh de imagens de perfil");
+  // console.log("🔄 Forçando refresh de imagens de perfil");
 
   if (!photoUrl || typeof photoUrl !== "string" || photoUrl.includes("👤")) {
     console.warn("⚠️  URL inválida, não atualizando imagens");
@@ -160,7 +160,7 @@ function forceRefreshAllProfileImages(photoUrl) {
     fullUrl.includes("?") ? "&" : "?"
   }t=${timestamp}&v=${Math.random()}`;
 
-  console.log("🌐 URL com cache busting:", cacheBustedUrl);
+  // console.log("🌐 URL com cache busting:", cacheBustedUrl);
 
   const selectors = [
     "[data-user-photo]",
@@ -191,11 +191,11 @@ function forceRefreshAllProfileImages(photoUrl) {
     });
   });
 
-  console.log(`✅ ${updatedCount} elementos de imagem atualizados`);
+  // console.log(`✅ ${updatedCount} elementos de imagem atualizados`);
 }
 
 function clearUserData() {
-  console.log("Limpando dados do usuário anterior...");
+  // console.log("Limpando dados do usuário anterior...");
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
@@ -216,7 +216,7 @@ function clearUserData() {
 
 async function loadUserDataFromAPI() {
   try {
-    console.log("🔄 PRIORIDADE: Carregando dados da API...");
+    // console.log("🔄 PRIORIDADE: Carregando dados da API...");
 
     if (typeof Auth === "undefined" || !Auth.getToken()) {
       console.error("Sistema de autenticação não disponível ou token ausente");
@@ -232,7 +232,7 @@ async function loadUserDataFromAPI() {
     const userData = await Auth.getProfile();
 
     if (userData) {
-      console.log("✅ Dados atualizados recebidos da API:", userData);
+      // console.log("✅ Dados atualizados recebidos da API:", userData);
 
       populateFormWithData(userData);
 
@@ -258,7 +258,7 @@ async function loadUserDataFromAPI() {
       return;
     }
 
-    console.log("⚠️  Usando dados locais como fallback...");
+    // console.log("⚠️  Usando dados locais como fallback...");
     loadUserProfileFromLocalStorage();
     showMessage(
       "Carregado do cache local. Algumas informações podem estar desatualizadas.",
@@ -268,7 +268,7 @@ async function loadUserDataFromAPI() {
 }
 
 function populateFormWithData(userData) {
-  console.log("📝 Preenchendo formulário com dados:", userData);
+  // console.log("📝 Preenchendo formulário com dados:", userData);
 
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
@@ -290,11 +290,11 @@ function populateFormWithData(userData) {
     const normalizedPhone = normalizePhoneFromAPI(userData.phone || "");
     phoneInput.value = applyPhoneMask(normalizedPhone);
 
-    console.log("📞 Telefone aplicado:", {
-      recebido: userData.phone,
-      normalizado: normalizedPhone,
-      comMascara: phoneInput.value,
-    });
+    // console.log("📞 Telefone aplicado:", {
+    //   recebido: userData.phone,
+    //   normalizado: normalizedPhone,
+    //   comMascara: phoneInput.value,
+    // });
   }
 
   if (profileImage) {
@@ -318,7 +318,7 @@ function loadUserProfileFromLocalStorage() {
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (userData) {
-    console.log("📦 Carregando dados locais como fallback:", userData);
+    // console.log("📦 Carregando dados locais como fallback:", userData);
     populateFormWithData(userData);
 
     setOriginalFormData({
@@ -328,7 +328,7 @@ function loadUserProfileFromLocalStorage() {
       hasNewPhoto: false,
     });
   } else {
-    console.log("❌ Nenhum dado local encontrado");
+    // console.log("❌ Nenhum dado local encontrado");
     showMessage("Nenhum dado encontrado. Faça login novamente.", "error");
     setTimeout(() => {
       window.location.href = "/index.html";
@@ -364,10 +364,10 @@ async function saveProfile() {
     const phoneRaw = document.getElementById("phone").value.trim();
     const phone = cleanPhoneNumber(phoneRaw);
 
-    console.log("📞 Telefone capturado:", {
-      raw: phoneRaw,
-      cleaned: phone,
-    });
+    // console.log("📞 Telefone capturado:", {
+    //   raw: phoneRaw,
+    //   cleaned: phone,
+    // });
 
     if (!name) {
       showMessage("Nome é obrigatório", "error");
@@ -396,7 +396,7 @@ async function saveProfile() {
       phone,
     };
 
-    console.log("💾 Dados de texto a serem salvos:", profileData);
+    // console.log("💾 Dados de texto a serem salvos:", profileData);
 
     const photoInput = document.getElementById("photo-input");
 
@@ -416,7 +416,7 @@ async function saveProfile() {
       const photoFormData = new FormData();
       photoFormData.append("profilePhoto", file);
 
-      console.log("📤 Iniciando upload da nova foto...");
+      // console.log("📤 Iniciando upload da nova foto...");
 
       const uploadResponse = await window.apiConfig.post(
         "/api/profile/upload-photo",
@@ -431,10 +431,10 @@ async function saveProfile() {
         );
       }
 
-      console.log(
-        "✅ Upload de foto concluído. Resultado:",
-        uploadResult.message
-      );
+      // console.log(
+      //   "✅ Upload de foto concluído. Resultado:",
+      //   uploadResult.message
+      // );
 
       const updateResult = await Auth.updateProfile(profileData);
 
@@ -456,10 +456,10 @@ async function saveProfile() {
         );
       }
     } else {
-      console.log(
-        "💾 Salvando perfil SEM foto nova. ProfileData:",
-        profileData
-      );
+      // console.log(
+      //   "💾 Salvando perfil SEM foto nova. ProfileData:",
+      //   profileData
+      // );
 
       const result = await Auth.updateProfile(profileData);
 
@@ -473,7 +473,7 @@ async function saveProfile() {
           hasNewPhoto: false,
         });
 
-        console.log("✅ Perfil salvo com sucesso! Telefone:", phone);
+        // console.log("✅ Perfil salvo com sucesso! Telefone:", phone);
       } else {
         throw new Error(result.message || "Erro ao salvar perfil");
       }
@@ -521,28 +521,28 @@ async function saveProfile() {
 
 async function handleSuccessfulUpdate(updatedUserData) {
   try {
-    console.log("✅ Processando atualização bem-sucedida");
-    console.log("📦 Dados recebidos:", updatedUserData);
+    // console.log("✅ Processando atualização bem-sucedida");
+    // console.log("📦 Dados recebidos:", updatedUserData);
 
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
     const newPhotoUrl = updatedUserData.profilePhotoUrl || null;
 
-    console.log("🔍 Nova foto URL:", {
-      value: newPhotoUrl,
-      type: typeof newPhotoUrl,
-      isValid:
-        newPhotoUrl &&
-        typeof newPhotoUrl === "string" &&
-        newPhotoUrl.startsWith("http"),
-    });
+    // console.log("🔍 Nova foto URL:", {
+    //   value: newPhotoUrl,
+    //   type: typeof newPhotoUrl,
+    //   isValid:
+    //     newPhotoUrl &&
+    //     typeof newPhotoUrl === "string" &&
+    //     newPhotoUrl.startsWith("http"),
+    // });
 
     if (
       newPhotoUrl &&
       typeof newPhotoUrl === "string" &&
       newPhotoUrl.startsWith("http")
     ) {
-      console.log("✅ URL válida, atualizando imagens");
+      // console.log("✅ URL válida, atualizando imagens");
       updateProfilePhotoDisplayFixed(newPhotoUrl, true);
 
       setTimeout(() => {
@@ -573,11 +573,11 @@ async function handleSuccessfulUpdate(updatedUserData) {
           });
           channel.close();
         } catch (e) {
-          console.log("BroadcastChannel não disponível");
+          // console.log("BroadcastChannel não disponível");
         }
       }
     } else {
-      console.log("⚠️  Sem foto válida, usando placeholder");
+      // console.log("⚠️  Sem foto válida, usando placeholder");
       const userName = updatedUserData.name || updatedUserData.fullName || "";
       const profileImage = document.getElementById("profile-image");
       if (profileImage) {
@@ -671,7 +671,7 @@ if (typeof BroadcastChannel !== "undefined") {
     const profileChannel = new BroadcastChannel("profile_updates");
     profileChannel.onmessage = (event) => {
       if (event.data.type === "PHOTO_UPDATED") {
-        console.log("📨 Recebida atualização de foto de outra aba/página");
+        // console.log("📨 Recebida atualização de foto de outra aba/página");
         const photoUrl = event.data.photoUrl;
         if (photoUrl) {
           updateProfilePhotoDisplayFixed(photoUrl, true);
@@ -680,13 +680,13 @@ if (typeof BroadcastChannel !== "undefined") {
       }
     };
   } catch (e) {
-    console.log("BroadcastChannel não disponível neste navegador");
+    // console.log("BroadcastChannel não disponível neste navegador");
   }
 }
 
 window.addEventListener("storage", function (e) {
   if (e.key === "lastPhotoUpdate" || e.key === "currentPhotoUrl") {
-    console.log("📨 Detectada mudança no localStorage de outra aba");
+    // console.log("📨 Detectada mudança no localStorage de outra aba");
     setTimeout(() => {
       const photoUrl = localStorage.getItem("currentPhotoUrl");
       if (photoUrl) {
@@ -697,7 +697,7 @@ window.addEventListener("storage", function (e) {
 });
 
 document.addEventListener("DOMContentLoaded", async function () {
-  console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
+  // console.log("🚀 DOM carregado, iniciando carregamento do perfil...");
 
   clearUserData();
 
@@ -741,15 +741,15 @@ function hasUnsavedChanges() {
   const currentPhone = cleanPhoneNumber(currentData.phone);
   const originalPhone = cleanPhoneNumber(originalData.phone);
 
-  console.log("🔍 Verificando mudanças:", {
-    current: currentData,
-    original: originalData,
-    phonesClean: {
-      current: currentPhone,
-      original: originalPhone,
-      areEqual: currentPhone === originalPhone,
-    },
-  });
+  // console.log("🔍 Verificando mudanças:", {
+  //   current: currentData,
+  //   original: originalData,
+  //   phonesClean: {
+  //     current: currentPhone,
+  //     original: originalPhone,
+  //     areEqual: currentPhone === originalPhone,
+  //   },
+  // });
 
   const hasChanges =
     currentData.name !== originalData.name ||
@@ -757,7 +757,7 @@ function hasUnsavedChanges() {
     currentPhone !== originalPhone || // 🔧 Usar versões limpas
     currentData.hasNewPhoto !== originalData.hasNewPhoto;
 
-  console.log("📊 Tem mudanças?", hasChanges);
+  // console.log("📊 Tem mudanças?", hasChanges);
 
   return hasChanges;
 }
@@ -769,10 +769,10 @@ function normalizePhoneFromAPI(phone) {
   // Remove máscara e retorna apenas dígitos
   const cleaned = phone.replace(/\D/g, "");
 
-  console.log("📞 Normalizando telefone:", {
-    original: phone,
-    normalizado: cleaned,
-  });
+  // console.log("📞 Normalizando telefone:", {
+  //   original: phone,
+  //   normalizado: cleaned,
+  // });
 
   return cleaned;
 }
@@ -782,7 +782,7 @@ function setOriginalFormData(data) {
     ...data,
     phone: normalizePhoneFromAPI(data.phone), // 🔧 Normalizar aqui
   };
-  console.log("📝 OriginalFormData atualizado:", originalFormData);
+  // console.log("📝 OriginalFormData atualizado:", originalFormData);
 }
 
 function getCurrentFormData() {
@@ -800,11 +800,6 @@ let originalFormData = {};
 
 function getOriginalFormData() {
   return originalFormData;
-}
-
-function setOriginalFormData(data) {
-  originalFormData = { ...data };
-  console.log("📝 OriginalFormData atualizado:", originalFormData);
 }
 
 function setupPhotoPreview() {
@@ -1051,25 +1046,25 @@ async function syncUserDataSafe() {
       typeof Auth !== "undefined" &&
       navigator.onLine
     ) {
-      console.log("🔄 Sincronização automática segura...");
+      // console.log("🔄 Sincronização automática segura...");
       await loadUserDataFromAPI();
     }
   } catch (error) {
-    console.log("⚠️  Erro na sincronização automática:", error);
+    // console.log("⚠️  Erro na sincronização automática:", error);
   }
 }
 
 setInterval(syncUserDataSafe, 5 * 60 * 1000);
 
 window.addEventListener("online", () => {
-  console.log("🌐 Reconectado à internet");
+  // console.log("🌐 Reconectado à internet");
   if (!hasUnsavedChanges()) {
     syncUserDataSafe();
   }
 });
 
 window.addEventListener("offline", () => {
-  console.log("📡 Desconectado da internet");
+  // console.log("📡 Desconectado da internet");
   showMessage(
     "Modo offline. Algumas funcionalidades podem estar limitadas.",
     "error"
@@ -1077,14 +1072,14 @@ window.addEventListener("offline", () => {
 });
 
 async function forceReloadUserData() {
-  console.log("🔄 Recarregamento forçado dos dados...");
+  // console.log("🔄 Recarregamento forçado dos dados...");
   clearUserData();
   await loadUserDataFromAPI();
 }
 
 window.addEventListener("storage", function (e) {
   if (e.key === "authToken" || e.key === "userData") {
-    console.log("🔄 Mudança de usuário detectada, recarregando dados...");
+    // console.log("🔄 Mudança de usuário detectada, recarregando dados...");
     setTimeout(() => {
       forceReloadUserData();
     }, 100);
