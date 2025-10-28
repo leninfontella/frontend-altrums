@@ -523,10 +523,10 @@ const LevelUpNotification = {
         sessionStorage.setItem("userCurrentLevel", this.currentLevel);
         sessionStorage.setItem("lastCheckedDonated", this.lastCheckedDonated);
 
-        // console.log("🎯 Sistema de Level Up inicializado:", {
-        //   level: this.currentLevel,
-        //   donated: this.lastCheckedDonated,
-        // });
+        console.log("🎯 Sistema de Level Up inicializado:", {
+          level: this.currentLevel,
+          donated: this.lastCheckedDonated,
+        });
       }
     } catch (error) {
       console.error("❌ Erro ao inicializar sistema de Level Up:", error);
@@ -538,10 +538,10 @@ const LevelUpNotification = {
       if (savedLevel && savedDonated) {
         this.currentLevel = parseInt(savedLevel);
         this.lastCheckedDonated = parseInt(savedDonated);
-        // console.log("⚠️ Recuperado do sessionStorage:", {
-        //   level: this.currentLevel,
-        //   donated: this.lastCheckedDonated,
-        // });
+        console.log("⚠️ Recuperado do sessionStorage:", {
+          level: this.currentLevel,
+          donated: this.lastCheckedDonated,
+        });
       }
     }
   },
@@ -558,12 +558,12 @@ const LevelUpNotification = {
 
     // Verificar se realmente subiu de nível
     if (newLevel > oldLevel && oldLevel !== null) {
-      // console.log("🎉 LEVEL UP detectado!", {
-      //   oldLevel,
-      //   newLevel,
-      //   oldDonated: this.lastCheckedDonated,
-      //   newDonated: newTotalDonated,
-      // });
+      console.log("🎉 LEVEL UP detectado!", {
+        oldLevel,
+        newLevel,
+        oldDonated: this.lastCheckedDonated,
+        newDonated: newTotalDonated,
+      });
 
       // Atualizar estado
       this.currentLevel = newLevel;
