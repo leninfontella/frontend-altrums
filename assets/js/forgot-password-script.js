@@ -1,11 +1,9 @@
-// SUBSTITUIR TODO O CONTEÚDO DE forgot-password.js
-
 const API_BASE_URL = "https://api-backend-coins.onrender.com/api";
 
 // State management
 let currentStep = 1;
 let userEmail = "";
-let resetToken = ""; // Token recebido após verificar código
+let resetToken = "";
 let resendTimer = null;
 let resendCountdown = 0;
 
@@ -97,7 +95,6 @@ async function sendVerificationCode() {
     return;
   }
 
-  // Desabilitar botão e mostrar loading
   sendCodeBtn.disabled = true;
   sendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
@@ -117,17 +114,10 @@ async function sendVerificationCode() {
 
     if (response.ok && data.success) {
       showNotification("Código enviado para " + userEmail, "success");
-
-      // Update email display
       document.getElementById("emailDisplay").textContent = userEmail;
-
-      // Move to next step
       goToStep(2);
-
-      // Start resend timer
       startResendTimer();
     } else {
-      // ✅ TRATAR ERROS ESPECÍFICOS
       if (response.status === 404) {
         showNotification(
           "Se o endereço de email estiver registrado em nosso sistema, enviaremos o código de recuperação de senha.",
@@ -145,9 +135,8 @@ async function sendVerificationCode() {
     console.error("Erro ao enviar código:", error);
     showNotification("Erro de conexão. Tente novamente.", "error");
   } finally {
-    // Restaurar botão
     sendCodeBtn.disabled = false;
-    sendCodeBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Código';
+    sendCodeBtn.innerHTML = 'Enviar Código <i class="fas fa-arrow-right"></i>';
   }
 }
 
@@ -165,7 +154,6 @@ async function verifyCode() {
     return;
   }
 
-  // Desabilitar botão e mostrar loading
   verifyCodeBtn.disabled = true;
   verifyCodeBtn.innerHTML =
     '<i class="fas fa-spinner fa-spin"></i> Verificando...';
@@ -185,13 +173,11 @@ async function verifyCode() {
     const data = await response.json();
 
     if (response.ok && data.success) {
-      resetToken = data.resetToken; // Armazenar token para usar no reset
+      resetToken = data.resetToken;
       showNotification("Código verificado com sucesso!", "success");
       goToStep(3);
     } else {
       showNotification(data.message || "Código inválido ou expirado", "error");
-
-      // Limpar inputs em caso de erro
       codeInputs.forEach((input) => {
         input.value = "";
         input.classList.remove("filled");
@@ -203,9 +189,8 @@ async function verifyCode() {
     console.error("Erro ao verificar código:", error);
     showNotification("Erro de conexão. Tente novamente.", "error");
   } finally {
-    // Restaurar botão
     verifyCodeBtn.disabled = false;
-    verifyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Verificar Código';
+    verifyCodeBtn.innerHTML = 'Verificar <i class="fas fa-arrow-right"></i>';
   }
 }
 
@@ -222,13 +207,11 @@ async function resetPassword() {
     return;
   }
 
-  // Validar força da senha
   if (!validatePasswordStrength(password)) {
     showNotification("A senha não atende aos requisitos mínimos", "error");
     return;
   }
 
-  // Desabilitar botão e mostrar loading
   resetPasswordBtn.disabled = true;
   resetPasswordBtn.innerHTML =
     '<i class="fas fa-spinner fa-spin"></i> Alterando...';
@@ -257,9 +240,8 @@ async function resetPassword() {
     console.error("Erro ao resetar senha:", error);
     showNotification("Erro de conexão. Tente novamente.", "error");
   } finally {
-    // Restaurar botão
     resetPasswordBtn.disabled = false;
-    resetPasswordBtn.innerHTML = '<i class="fas fa-key"></i> Redefinir Senha';
+    resetPasswordBtn.innerHTML = 'Redefinir Senha <i class="fas fa-check"></i>';
   }
 }
 
@@ -290,7 +272,6 @@ async function resendVerificationCode() {
     if (response.ok && data.success) {
       showNotification("Código reenviado para " + userEmail, "success");
 
-      // Limpar inputs atuais
       const codeInputs = document.querySelectorAll(".code-input");
       codeInputs.forEach((input) => {
         input.value = "";
@@ -299,7 +280,6 @@ async function resendVerificationCode() {
       codeInputs[0].focus();
       validateCodeInputs();
 
-      // Reiniciar timer
       startResendTimer();
     } else {
       showNotification(data.message || "Erro ao reenviar código", "error");
@@ -309,6 +289,7 @@ async function resendVerificationCode() {
     showNotification("Erro de conexão. Tente novamente.", "error");
   } finally {
     resendCodeBtn.disabled = false;
+    resendCodeBtn.textContent = "Reenviar Código";
   }
 }
 
@@ -342,7 +323,6 @@ function handleCodeInput(e, index) {
   const input = e.target;
   const value = input.value;
 
-  // Only allow numbers
   if (!/^\d*$/.test(value)) {
     input.value = "";
     return;
@@ -350,7 +330,6 @@ function handleCodeInput(e, index) {
 
   if (value.length === 1) {
     input.classList.add("filled");
-    // Move to next input
     if (index < 5) {
       const nextInput = document.querySelector(
         `.code-input[data-index="${index + 1}"]`
@@ -367,7 +346,6 @@ function handleCodeInput(e, index) {
 function handleCodeKeydown(e, index) {
   const input = e.target;
 
-  // Handle backspace
   if (e.key === "Backspace" && input.value === "" && index > 0) {
     const prevInput = document.querySelector(
       `.code-input[data-index="${index - 1}"]`
@@ -378,7 +356,6 @@ function handleCodeKeydown(e, index) {
     validateCodeInputs();
   }
 
-  // Handle arrow keys
   if (e.key === "ArrowLeft" && index > 0) {
     const prevInput = document.querySelector(
       `.code-input[data-index="${index - 1}"]`
@@ -462,19 +439,16 @@ function validatePassword() {
 
   passwordStrength.style.display = "block";
 
-  // Check requirements
   const hasLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
 
-  // Update requirement indicators
   updateRequirement("req-length", hasLength);
   updateRequirement("req-uppercase", hasUppercase);
   updateRequirement("req-lowercase", hasLowercase);
   updateRequirement("req-number", hasNumber);
 
-  // Calculate strength
   let strength = 0;
   if (hasLength) strength++;
   if (hasUppercase) strength++;
@@ -498,7 +472,6 @@ function updateStrengthIndicator(strength) {
   const bars = ["strengthBar1", "strengthBar2", "strengthBar3", "strengthBar4"];
   const strengthText = document.getElementById("strengthText");
 
-  // Reset all bars
   bars.forEach((barId) => {
     const bar = document.getElementById(barId);
     bar.classList.remove("weak", "medium", "strong");
@@ -532,7 +505,6 @@ function validatePasswordMatch() {
   const password = newPasswordInput.value;
   const confirmPassword = confirmPasswordInput.value;
 
-  // Check all requirements
   const hasLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
@@ -594,7 +566,6 @@ function goToStep(step) {
     updateProgress();
     updateHeaderSubtitle();
 
-    // Focus on first input of the new step
     if (step === 1) {
       document.getElementById("emailInput").focus();
     } else if (step === 2) {
@@ -637,7 +608,6 @@ function updateHeaderSubtitle() {
 // ========== NOTIFICATIONS ==========
 
 function showNotification(message, type = "info") {
-  // Remove existing notification
   const existingNotification = document.querySelector(".notification");
   if (existingNotification) {
     existingNotification.remove();
@@ -646,35 +616,6 @@ function showNotification(message, type = "info") {
   const notification = document.createElement("div");
   notification.className = `notification notification-${type}`;
   notification.textContent = message;
-
-  // Add styles
-  Object.assign(notification.style, {
-    position: "fixed",
-    top: "20px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    padding: "16px 24px",
-    borderRadius: "12px",
-    color: "#ffffff",
-    fontWeight: "600",
-    fontSize: "14px",
-    zIndex: "1000",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-    animation: "slideInDown 0.3s ease",
-    minWidth: "300px",
-    textAlign: "center",
-  });
-
-  if (type === "success") {
-    notification.style.background =
-      "linear-gradient(135deg, #00ff88 0%, #00cc66 100%)";
-  } else if (type === "error") {
-    notification.style.background =
-      "linear-gradient(135deg, #ff4444 0%, #cc0000 100%)";
-  } else {
-    notification.style.background =
-      "linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)";
-  }
 
   document.body.appendChild(notification);
 
@@ -685,30 +626,3 @@ function showNotification(message, type = "info") {
     }, 300);
   }, 3000);
 }
-
-// Add animation styles
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes slideInDown {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-  }
-  
-  @keyframes slideOutUp {
-    from {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-20px);
-    }
-  }
-`;
-document.head.appendChild(style);

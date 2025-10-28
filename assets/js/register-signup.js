@@ -438,7 +438,7 @@ async function submitForm(e) {
 
   // 2. Mudar o estado do botão
   const originalContent = submitBtn.innerHTML;
-  submitBtn.innerHTML = "Criando...";
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
   submitBtn.disabled = true;
 
   const userData = {
@@ -635,17 +635,17 @@ style.textContent = `
   
   .notification {
     position: fixed;
-    top: 20px;
+    top: 30px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 9999;
-    min-width: 320px;
+    min-width: 400px;
     max-width: 90vw;
-    padding: 16px 20px;
-    border-radius: 12px;
+    padding: 18px 24px;
+    border-radius: 14px;
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
     animation: notificationSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
@@ -663,18 +663,18 @@ style.textContent = `
   .notification-content {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
   
   .notification-icon {
-    font-size: 18px;
+    font-size: 20px;
     flex-shrink: 0;
   }
   
   .notification-message {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.5;
   }
   
   .notification-exit {
@@ -684,7 +684,7 @@ style.textContent = `
   @keyframes notificationSlide {
     0% {
       opacity: 0;
-      transform: translateX(-50%) translateY(-20px);
+      transform: translateX(-50%) translateY(-30px);
     }
     100% {
       opacity: 1;
@@ -699,37 +699,31 @@ style.textContent = `
     }
     100% {
       opacity: 0;
-      transform: translateX(-50%) translateY(-20px);
+      transform: translateX(-50%) translateY(-30px);
     }
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: 580px) {
     .notification {
       min-width: calc(100vw - 40px);
-      left: 20px;
-      transform: none;
+      left: 50%;
+      top: 20px;
+      padding: 16px 20px;
     }
     
-    @keyframes notificationSlide {
-      0% {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .notification-icon {
+      font-size: 18px;
     }
     
-    @keyframes notificationExit {
-      0% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
+    .notification-message {
+      font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 400px) {
+    .notification {
+      min-width: calc(100vw - 32px);
+      padding: 14px 18px;
     }
   }
 `;

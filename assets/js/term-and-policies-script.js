@@ -44,8 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Ação para o botão 'OK' do modal
   continueBtn.addEventListener("click", () => {
-    // Redireciona para a página "nova-pagina.html"
-    // Você pode mudar este URL para o caminho que desejar
+    // Redireciona para a página de signup
+    // Ajuste o caminho conforme necessário para o seu projeto
     window.location.href = "/pages/register/html/signup.html";
   });
 

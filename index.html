@@ -113,7 +113,9 @@
                   </label>
                 </div>
                 <div class="forgot-password">
-                  <a href="#forgot">Esqueceu a senha?</a>
+                  <a href="/pages/forgot-password/html/forgot-password.html"
+                    >Esqueceu a senha?</a
+                  >
                 </div>
               </div>
 
@@ -154,49 +156,6 @@
         <p class="loader-developer-text">Desenvolvido por Lênin Fontella.</p>
       </div>
     </div>
-
-    <script>
-      // Remover loader inicial após carregar
-      window.addEventListener("load", function () {
-        document.getElementById("initialLoader").style.display = "none";
-      });
-
-      // Toggle senha
-      document
-        .getElementById("passwordToggle")
-        .addEventListener("click", function () {
-          const passwordField = document.getElementById("password");
-          const type = passwordField.type === "password" ? "text" : "password";
-          passwordField.type = type;
-          this.classList.toggle("fa-eye");
-          this.classList.toggle("fa-eye-slash");
-        });
-
-      // Simulação de login
-      document
-        .getElementById("formLogin")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          const loadingOverlay = document.getElementById("loadingOverlay");
-          loadingOverlay.style.display = "flex";
-
-          setTimeout(() => {
-            loadingOverlay.style.display = "none";
-            const postLoginLoader = document.getElementById("postLoginLoader");
-            postLoginLoader.style.display = "flex";
-            postLoginLoader.style.opacity = "1";
-
-            setTimeout(() => {
-              alert("Login realizado com sucesso!");
-              postLoginLoader.style.opacity = "0";
-              setTimeout(() => {
-                postLoginLoader.style.display = "none";
-              }, 600);
-            }, 2000);
-          }, 1500);
-        });
-    </script>
 
     <script src="/assets/js/auth.js"></script>
     <script src="/assets/js/config.js"></script>
