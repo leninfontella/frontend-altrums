@@ -1117,7 +1117,7 @@ class GoalAchievementModal {
       }
     });
 
-    // console.log("✅ Modal de meta atingida inicializado");
+    console.log("✅ Modal de meta atingida inicializado");
   }
 
   loadLastState() {
@@ -1161,7 +1161,7 @@ class GoalAchievementModal {
     this.modal.classList.add("show");
     document.body.style.overflow = "hidden";
 
-    // console.log(`🎉 Meta de ${goalAmount} moedas atingida! Modal exibido!`);
+    console.log(`🎉 Meta de ${goalAmount} moedas atingida! Modal exibido!`);
   }
 
   close() {
@@ -1176,28 +1176,28 @@ class GoalAchievementModal {
       document.body.style.overflow = "";
     }, 300);
 
-    // console.log("✅ Modal de meta atingida fechado");
+    console.log("✅ Modal de meta atingida fechado");
   }
 
   checkGoalAchievement() {
     const goalData = GoalManager.getGoalData();
 
-    // console.log("🔍 Verificando meta:", {
-    //   current: goalData.current,
-    //   goal: goalData.goal,
-    //   progress: goalData.progress,
-    //   lastGoal: this.lastCheckedGoal,
-    //   lastProgress: this.lastCheckedProgress,
-    // });
+    console.log("🔍 Verificando meta:", {
+      current: goalData.current,
+      goal: goalData.goal,
+      progress: goalData.progress,
+      lastGoal: this.lastCheckedGoal,
+      lastProgress: this.lastCheckedProgress,
+    });
 
     // Verificar se a meta mudou (usuário definiu nova meta)
     const goalChanged =
       this.lastCheckedGoal !== null && this.lastCheckedGoal !== goalData.goal;
 
     if (goalChanged) {
-      // console.log(
-      //   `🔄 Meta alterada de ${this.lastCheckedGoal} para ${goalData.goal}`
-      // );
+      console.log(
+        `🔄 Meta alterada de ${this.lastCheckedGoal} para ${goalData.goal}`
+      );
       // Resetar estado quando meta muda
       this.saveLastState(goalData.goal, goalData.progress);
       return false;
@@ -1215,19 +1215,19 @@ class GoalAchievementModal {
 
     // Mostrar modal se acabou de atingir a meta
     if (justAchieved) {
-      // console.log(
-      //   "🎯 META ATINGIDA! Progresso passou de",
-      //   this.lastCheckedProgress,
-      //   "para",
-      //   goalData.progress
-      // );
+      console.log(
+        "🎯 META ATINGIDA! Progresso passou de",
+        this.lastCheckedProgress,
+        "para",
+        goalData.progress
+      );
       this.show(goalData.goal);
       return true;
     }
 
     // Se é a primeira verificação e já está na meta, mostrar também
     if (firstCheck && goalData.progress >= 100) {
-      // console.log("🎯 Primeira verificação - meta já atingida!");
+      console.log("🎯 Primeira verificação - meta já atingida!");
       this.show(goalData.goal);
       return true;
     }
@@ -1240,12 +1240,12 @@ class GoalAchievementModal {
     sessionStorage.removeItem("goalAchievementState");
     this.lastCheckedGoal = null;
     this.lastCheckedProgress = 0;
-    // console.log("🔄 Estado do modal resetado completamente");
+    console.log("🔄 Estado do modal resetado completamente");
   }
 
   // Forçar verificação manual
   forceCheck() {
-    // console.log("🔍 Verificação manual forçada");
+    console.log("🔍 Verificação manual forçada");
     return this.checkGoalAchievement();
   }
 }
