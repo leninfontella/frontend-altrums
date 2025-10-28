@@ -11,136 +11,141 @@
     <link rel="stylesheet" href="/assets/css/login.css" />
   </head>
   <body>
-    <!-- Loader Inicial (antes da página carregar) -->
+    <!-- Loader Inicial -->
     <div class="initial-loader" id="initialLoader">
       <div class="loading-spinner"></div>
     </div>
 
     <div class="screen">
-      <div class="floating-particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-      </div>
-      <div class="login-container">
-        <div class="header-section">
-          <div class="logo-container">
+      <!-- Seção da Imagem (Desktop) -->
+      <div class="image-section">
+        <div class="floating-particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+        </div>
+        <div class="image-content">
+          <div class="logo-display">
             <img
               src="https://i.ibb.co/q3TwvWPz/Chat-GPT-Image-23-de-ago-de-2025-19-32-11.png"
               alt="Altrum Logo"
-              class="logo-image"
+              class="logo-image-large"
             />
           </div>
-          <h1 class="app-title">Altrum</h1>
-          <p class="app-subtitle">
-            Conecte-se ao futuro da generosidade digital.
+          <h2 class="welcome-title">Bem-vindo ao Altrum</h2>
+          <p class="welcome-subtitle">
+            Conecte-se ao futuro da generosidade digital
           </p>
         </div>
+      </div>
 
-        <div class="form-section">
-          <form id="formLogin">
-            <!-- Campo de E-mail -->
-            <div class="input-group">
-              <label class="input-label">E-mail</label>
-              <div class="input-wrapper">
-                <input
-                  type="email"
-                  class="input-field"
-                  placeholder="Digite seu e-mail"
-                  id="email"
-                  required
-                  autocomplete="username"
-                />
-                <i class="fas fa-envelope input-icon"></i>
-              </div>
-              <div class="error-message" id="email-error"></div>
+      <!-- Seção do Login -->
+      <div class="login-section">
+        <div class="login-container">
+          <div class="header-section">
+            <div class="logo-container">
+              <img
+                src="https://i.ibb.co/q3TwvWPz/Chat-GPT-Image-23-de-ago-de-2025-19-32-11.png"
+                alt="Altrum Logo"
+                class="logo-image"
+              />
             </div>
+            <h1 class="app-title">Altrum</h1>
+            <p class="app-subtitle">Faça login para continuar</p>
+          </div>
 
-            <!-- Campo de Senha -->
-            <div class="input-group">
-              <label class="input-label">Senha</label>
-              <div class="input-wrapper">
-                <input
-                  type="password"
-                  class="input-field"
-                  placeholder="Digite sua senha"
-                  id="password"
-                  required
-                  autocomplete="current-password"
-                />
-                <i class="fas fa-lock input-icon"></i>
-                <i class="fas fa-eye password-toggle"></i>
-              </div>
-              <div class="error-message" id="password-error"></div>
-            </div>
-
-            <!-- Opções do Formulário (Lembre-me e Esqueci a senha) -->
-            <div class="form-options">
-              <div class="remember-me-container">
-                <div class="checkbox-wrapper">
+          <div class="form-section">
+            <form id="formLogin">
+              <!-- Campo de E-mail -->
+              <div class="input-group">
+                <label class="input-label">E-mail</label>
+                <div class="input-wrapper">
                   <input
-                    type="checkbox"
-                    id="rememberMe"
-                    class="checkbox-input"
+                    type="email"
+                    class="input-field"
+                    placeholder="Digite seu e-mail"
+                    id="email"
+                    required
+                    autocomplete="username"
                   />
-                  <label for="rememberMe" class="checkbox-custom"></label>
+                  <i class="fas fa-envelope input-icon"></i>
                 </div>
-                <label for="rememberMe" class="checkbox-label">
-                  Lembre de mim
-                </label>
+                <div class="error-message" id="email-error"></div>
               </div>
-              <div class="forgot-password">
-                <a href="/pages/forgot-password/html/forgot-password.html"
-                  >Esqueceu a senha?</a
-                >
+
+              <!-- Campo de Senha -->
+              <div class="input-group">
+                <label class="input-label">Senha</label>
+                <div class="input-wrapper">
+                  <input
+                    type="password"
+                    class="input-field"
+                    placeholder="Digite sua senha"
+                    id="password"
+                    required
+                    autocomplete="current-password"
+                  />
+                  <i class="fas fa-lock input-icon"></i>
+                  <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+                </div>
+                <div class="error-message" id="password-error"></div>
               </div>
+
+              <!-- Opções do Formulário -->
+              <div class="form-options">
+                <div class="remember-me-container">
+                  <div class="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      class="checkbox-input"
+                    />
+                    <label for="rememberMe" class="checkbox-custom"></label>
+                  </div>
+                  <label for="rememberMe" class="checkbox-label">
+                    Lembre de mim
+                  </label>
+                </div>
+                <div class="forgot-password">
+                  <a href="#forgot">Esqueceu a senha?</a>
+                </div>
+              </div>
+
+              <!-- Botão de Login -->
+              <button type="submit" class="login-button">
+                <i class="fas fa-sign-in-alt" style="margin-right: 8px"></i>
+                Acessar
+              </button>
+            </form>
+
+            <!-- Seção de Registro -->
+            <div class="register-section">
+              <p class="register-text">Não tem uma conta?</p>
+              <a href="#register" class="register-link">
+                <span>Registrar</span>
+              </a>
             </div>
-
-            <!-- Botão de Login -->
-            <button type="submit" class="login-button">
-              <i class="fas fa-sign-in-alt" style="margin-right: 8px"></i>
-              Acessar
-            </button>
-          </form>
-
-          <!-- Seção de Registro -->
-          <div class="register-section">
-            <p class="register-text">Não tem uma conta?</p>
-            <a href="/pages/register/html/signup.html" class="register-link">
-              <span>Registrar</span>
-            </a>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Overlay de Loading -->
+    <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
       <div class="loading-spinner"></div>
     </div>
-
-    <!-- Feedback de Sucesso -->
-    <!-- <div class="success-feedback" id="successFeedback">
-      <i class="fas fa-check-circle" style="font-size: 24px"></i>
-      <div>
-        <div>Login realizado com sucesso!</div>
-        <div style="font-size: 14px; opacity: 0.9; margin-top: 4px">
-          Saldo: <span id="userBalance">0</span> moedas
-        </div>
-      </div>
-    </div> -->
 
     <!-- Loader Pós-Login -->
     <div class="post-login-loader" id="postLoginLoader">
       <div class="loading-content">
         <img
-          src="/assets/img/altrum_logo_black_circle.png"
+          src="https://i.ibb.co/q3TwvWPz/Chat-GPT-Image-23-de-ago-de-2025-19-32-11.png"
           alt="Altrum Logo"
           class="loader-logo"
         />
@@ -149,6 +154,49 @@
         <p class="loader-developer-text">Desenvolvido por Lênin Fontella.</p>
       </div>
     </div>
+
+    <script>
+      // Remover loader inicial após carregar
+      window.addEventListener("load", function () {
+        document.getElementById("initialLoader").style.display = "none";
+      });
+
+      // Toggle senha
+      document
+        .getElementById("passwordToggle")
+        .addEventListener("click", function () {
+          const passwordField = document.getElementById("password");
+          const type = passwordField.type === "password" ? "text" : "password";
+          passwordField.type = type;
+          this.classList.toggle("fa-eye");
+          this.classList.toggle("fa-eye-slash");
+        });
+
+      // Simulação de login
+      document
+        .getElementById("formLogin")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const loadingOverlay = document.getElementById("loadingOverlay");
+          loadingOverlay.style.display = "flex";
+
+          setTimeout(() => {
+            loadingOverlay.style.display = "none";
+            const postLoginLoader = document.getElementById("postLoginLoader");
+            postLoginLoader.style.display = "flex";
+            postLoginLoader.style.opacity = "1";
+
+            setTimeout(() => {
+              alert("Login realizado com sucesso!");
+              postLoginLoader.style.opacity = "0";
+              setTimeout(() => {
+                postLoginLoader.style.display = "none";
+              }, 600);
+            }, 2000);
+          }, 1500);
+        });
+    </script>
 
     <script src="/assets/js/auth.js"></script>
     <script src="/assets/js/config.js"></script>

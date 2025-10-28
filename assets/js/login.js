@@ -1,10 +1,7 @@
-// Script específico para página de Login Mobile - Altrum
+// Script para página de Login Responsivo - Altrum
 document.addEventListener("DOMContentLoaded", function () {
-  // console.log("Página de login mobile carregada com sistema de moedas");
-
-  // Verificar se usuário já está logado (usando módulos externos se disponíveis)
+  // Verificar se usuário já está logado
   if (typeof Auth !== "undefined" && Auth.isLoggedIn && Auth.isLoggedIn()) {
-    // console.log("Usuário já está logado, redirecionando...");
     if (typeof CONFIG !== "undefined" && CONFIG.UI && CONFIG.UI.pages) {
       window.location.href = CONFIG.UI.pages.dashboard;
     } else {
@@ -18,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
   setupAnimations();
   loadRememberedEmail();
-  setupMobileOptimizations();
+  setupResponsiveOptimizations();
 });
 
 // Inicializar elementos
@@ -27,18 +24,18 @@ function initializeElements() {
     form: document.getElementById("formLogin"),
     emailField: document.getElementById("email"),
     passwordField: document.getElementById("password"),
-    togglePassword: document.querySelector(".password-toggle"),
+    togglePassword: document.getElementById("passwordToggle"),
     rememberMe: document.getElementById("rememberMe"),
     loginButton: document.querySelector(".login-button"),
     registerLink: document.querySelector(".register-link"),
     loadingOverlay: document.getElementById("loadingOverlay"),
-    successFeedback: document.getElementById("successFeedback"),
-    userBalanceSpan: document.getElementById("userBalance"),
+    postLoginLoader: document.getElementById("postLoginLoader"),
     logoContainer: document.querySelector(".logo-container"),
+    logoDisplay: document.querySelector(".logo-display"),
     screen: document.querySelector(".screen"),
+    imageSection: document.querySelector(".image-section"),
+    loginSection: document.querySelector(".login-section"),
   };
-
-  // console.log("Elementos da página inicializados:", window.elements);
 }
 
 // Configurar event listeners
@@ -51,6 +48,7 @@ function setupEventListeners() {
     rememberMe,
     registerLink,
     logoContainer,
+    logoDisplay,
   } = window.elements;
 
   // Submissão do formulário
@@ -91,7 +89,7 @@ function setupEventListeners() {
     registerLink.addEventListener("click", handleRegisterClick);
   }
 
-  // Hover no logo (apenas para desktop)
+  // Hover no logo do formulário (apenas desktop)
   if (logoContainer && !isMobileDevice()) {
     logoContainer.addEventListener("mouseenter", () => {
       logoContainer.style.transform = "scale(1.05) rotate(5deg)";
@@ -101,11 +99,19 @@ function setupEventListeners() {
     });
   }
 
-  // console.log("Event listeners configurados");
+  // Hover no logo da seção de imagem (apenas desktop)
+  if (logoDisplay && !isMobileDevice()) {
+    logoDisplay.addEventListener("mouseenter", () => {
+      logoDisplay.style.transform = "scale(1.05) rotate(-5deg)";
+    });
+    logoDisplay.addEventListener("mouseleave", () => {
+      logoDisplay.style.transform = "scale(1) rotate(0deg)";
+    });
+  }
 }
 
-// Configurar otimizações mobile
-function setupMobileOptimizations() {
+// Configurar otimizações responsivas
+function setupResponsiveOptimizations() {
   // Prevenir zoom em inputs no iOS
   if (isIOS()) {
     const inputs = document.querySelectorAll(
@@ -151,17 +157,48 @@ function setupMobileOptimizations() {
   const inputs = document.querySelectorAll("input");
   inputs.forEach((input) => {
     input.addEventListener("focus", () => {
-      setTimeout(() => {
-        input.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest",
-        });
-      }, 300);
+      if (isMobileDevice()) {
+        setTimeout(() => {
+          input.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest",
+          });
+        }, 300);
+      }
     });
   });
 
-  // console.log("Otimizações mobile configuradas");
+  // Ajustar layout em mudanças de orientação
+  window.addEventListener("orientationchange", () => {
+    setTimeout(() => {
+      adjustLayoutForOrientation();
+    }, 100);
+  });
+
+  // Ajuste inicial
+  adjustLayoutForOrientation();
+}
+
+// Ajustar layout baseado na orientação e tamanho da tela
+function adjustLayoutForOrientation() {
+  const { imageSection, loginSection } = window.elements;
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const isDesktop = window.innerWidth >= 1025;
+
+  // Em desktop landscape, mostrar seção de imagem
+  if (isDesktop && imageSection) {
+    imageSection.style.display = "flex";
+  } else if (imageSection) {
+    imageSection.style.display = "none";
+  }
+
+  // Ajustar padding em landscape mobile
+  if (isLandscape && !isDesktop && loginSection) {
+    loginSection.style.padding = "20px 40px";
+  } else if (loginSection && isMobileDevice()) {
+    loginSection.style.padding = "40px 24px";
+  }
 }
 
 // Detectar dispositivos
@@ -179,6 +216,10 @@ function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
 
+function isDesktop() {
+  return window.innerWidth >= 1025 && !isMobileDevice();
+}
+
 // Configurar animações
 function setupAnimations() {
   // Animação das partículas
@@ -190,29 +231,38 @@ function setupAnimations() {
     particle.style.animationDuration = `${randomDuration}s`;
   });
 
-  // Animação de entrada para mobile
-  if (isMobileDevice()) {
-    const loginContainer = document.querySelector(".login-container");
-    if (loginContainer) {
-      loginContainer.style.opacity = "0";
-      loginContainer.style.transform = "translateY(30px)";
+  // Animação de entrada
+  const loginContainer = document.querySelector(".login-container");
+  const imageContent = document.querySelector(".image-content");
 
-      setTimeout(() => {
-        loginContainer.style.transition = "all 0.6s ease-out";
-        loginContainer.style.opacity = "1";
-        loginContainer.style.transform = "translateY(0)";
-      }, 200);
-    }
+  if (loginContainer) {
+    loginContainer.style.opacity = "0";
+    loginContainer.style.transform = "translateY(30px)";
+
+    setTimeout(() => {
+      loginContainer.style.transition = "all 0.6s ease-out";
+      loginContainer.style.opacity = "1";
+      loginContainer.style.transform = "translateY(0)";
+    }, 200);
   }
 
-  // console.log("Animações configuradas");
+  // Animação da seção de imagem (apenas desktop)
+  if (imageContent && isDesktop()) {
+    imageContent.style.opacity = "0";
+    imageContent.style.transform = "translateX(-30px)";
+
+    setTimeout(() => {
+      imageContent.style.transition = "all 0.8s ease-out";
+      imageContent.style.opacity = "1";
+      imageContent.style.transform = "translateX(0)";
+    }, 300);
+  }
 }
 
 // Carregar email lembrado
 function loadRememberedEmail() {
   const { emailField, rememberMe } = window.elements;
 
-  // Usar módulo Auth se disponível, caso contrário usar localStorage
   let rememberedEmail = null;
   let shouldRemember = false;
 
@@ -222,7 +272,6 @@ function loadRememberedEmail() {
       rememberedEmail = Auth.getRememberedEmail();
     }
   } else {
-    // Fallback para localStorage
     rememberedEmail = localStorage.getItem("rememberedEmail");
     shouldRemember = localStorage.getItem("shouldRememberMe") === "true";
   }
@@ -230,7 +279,6 @@ function loadRememberedEmail() {
   if (rememberedEmail && shouldRemember && emailField && rememberMe) {
     emailField.value = rememberedEmail;
     rememberMe.checked = true;
-    // console.log("Email lembrado carregado:", rememberedEmail);
   }
 }
 
@@ -268,7 +316,6 @@ function validateEmail() {
     return;
   }
 
-  // Usar regex do CONFIG se disponível, caso contrário usar regex padrão
   let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (
     typeof CONFIG !== "undefined" &&
@@ -300,7 +347,6 @@ function validatePassword() {
     return;
   }
 
-  // Usar configuração do CONFIG se disponível, caso contrário usar valor padrão
   let minLength = 6;
   if (
     typeof CONFIG !== "undefined" &&
@@ -343,7 +389,6 @@ function handleRememberMeChange() {
   if (!rememberMe || !emailField) return;
 
   if (rememberMe.checked && emailField.value) {
-    // Usar módulo Auth se disponível, caso contrário usar localStorage
     if (typeof Auth !== "undefined" && Auth.saveRememberMe) {
       Auth.saveRememberMe(emailField.value, true);
     } else {
@@ -359,7 +404,6 @@ function handleRememberMeChange() {
     }
   }
 
-  // Feedback tátil
   if (isMobileDevice() && navigator.vibrate) {
     navigator.vibrate(30);
   }
@@ -387,17 +431,14 @@ function handleRegisterClick(e) {
 
   if (!registerLink) return;
 
-  // Efeito visual antes de redirecionar
   registerLink.style.transform = "scale(1.05)";
-  registerLink.style.boxShadow = "0 8px 25px rgba(108, 92, 231, 0.4)";
+  registerLink.style.boxShadow = "0 8px 25px rgba(0, 212, 255, 0.4)";
 
-  // Feedback tátil
   if (isMobileDevice() && navigator.vibrate) {
     navigator.vibrate(50);
   }
 
   setTimeout(() => {
-    // Usar configuração do CONFIG se disponível
     if (
       typeof CONFIG !== "undefined" &&
       CONFIG.UI &&
@@ -411,12 +452,10 @@ function handleRegisterClick(e) {
   }, 200);
 }
 
-// Mostrar/ocultar mensagens de erro - CORRIGIDO
+// Mostrar/ocultar mensagens de erro
 function showError(fieldId, message) {
   const errorElement = document.getElementById(`${fieldId}-error`);
   const inputElement = document.getElementById(fieldId);
-
-  // console.log(`🔴 Mostrando erro para ${fieldId}:`, message);
 
   if (errorElement && inputElement) {
     errorElement.textContent = message;
@@ -424,20 +463,16 @@ function showError(fieldId, message) {
     inputElement.classList.add("error-border");
     inputElement.classList.remove("success-border");
 
-    // Shake animation para mobile
     if (isMobileDevice()) {
       inputElement.style.animation = "shake 0.5s ease-in-out";
       setTimeout(() => {
         inputElement.style.animation = "";
       }, 500);
 
-      // Feedback tátil
       if (navigator.vibrate) {
         navigator.vibrate([100, 50, 100]);
       }
     }
-  } else {
-    console.error(`❌ Elementos não encontrados para ${fieldId}`);
   }
 }
 
@@ -451,23 +486,21 @@ function clearError(fieldId) {
   }
 }
 
-// Mostrar loader pós-login antes de redirecionar
+// Mostrar loader pós-login
 function showPostLoginLoader() {
-  const loader = document.getElementById("postLoginLoader");
-  const screen = document.querySelector(".screen");
+  const { postLoginLoader, screen } = window.elements;
 
   if (screen) {
-    // Suavizar desaparecimento
     screen.style.opacity = "0";
     setTimeout(() => {
       screen.style.display = "none";
     }, 500);
   }
 
-  if (loader) {
-    loader.style.display = "flex";
+  if (postLoginLoader) {
+    postLoginLoader.style.display = "flex";
     setTimeout(() => {
-      loader.style.opacity = "1";
+      postLoginLoader.style.opacity = "1";
     }, 50);
   }
 }
@@ -480,52 +513,12 @@ function showLoading(show) {
   }
 }
 
-// Mostrar feedback de sucesso
-function showSuccessFeedback(balance) {
-  const { successFeedback, userBalanceSpan } = window.elements;
-
-  if (successFeedback && userBalanceSpan) {
-    // Usar formatador do CONFIG se disponível
-    let formattedBalance = balance || 0;
-    if (typeof CONFIG !== "undefined" && CONFIG.formatCoins) {
-      formattedBalance = CONFIG.formatCoins(balance || 0);
-    }
-
-    userBalanceSpan.textContent = formattedBalance;
-    successFeedback.style.display = "flex";
-
-    // Feedback tátil de sucesso
-    if (isMobileDevice() && navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]);
-    }
-
-    // Usar duração do CONFIG se disponível
-    let duration = 3000;
-    if (
-      typeof CONFIG !== "undefined" &&
-      CONFIG.UI &&
-      CONFIG.UI.successFeedbackDuration
-    ) {
-      duration = CONFIG.UI.successFeedbackDuration;
-    }
-
-    setTimeout(() => {
-      successFeedback.style.display = "none";
-    }, duration);
-  }
-}
-
-/**
- * Analisa a mensagem de erro do backend para identificar o campo afetado (e-mail ou senha).
- * @param {Error} error - O objeto Error lançado pelo módulo Auth.
- * @returns {{field: 'email'|'password', message: string}} Objeto com o campo e a mensagem de erro.
- */
+// Identificar erro de autenticação
 function identifyAuthError(error) {
   const defaultMessage = "Verifique se seu e-mail e senha estão corretos.";
   const errorMessage = error.message || defaultMessage;
   const errorLower = errorMessage.toLowerCase();
 
-  // Lista de palavras-chave que indicam um erro no campo E-MAIL
   const emailKeywords = [
     "e-mail",
     "email",
@@ -537,12 +530,10 @@ function identifyAuthError(error) {
     "inválido",
   ];
 
-  // Verifica se a mensagem de erro contém alguma palavra-chave de e-mail
   const isEmailError = emailKeywords.some((keyword) =>
     errorLower.includes(keyword)
   );
 
-  // Se a mensagem da API for muito genérica, usamos a mensagem padrão para credenciais
   if (
     errorMessage.includes("Erro de conexão") ||
     errorMessage.includes("Erro HTTP")
@@ -551,25 +542,21 @@ function identifyAuthError(error) {
   }
 
   if (isEmailError) {
-    // Se a mensagem for muito específica, a usamos. Caso contrário, usamos uma genérica de e-mail.
     const specificEmailMessage = errorLower.includes("e-mail não encontrado")
       ? "E-mail não encontrado ou não cadastrado."
       : errorMessage;
     return { field: "email", message: specificEmailMessage };
   }
 
-  // Se não for um erro de rede ou de e-mail, assumimos que o problema está na SENHA ou nas credenciais combinadas.
-  // Usamos a mensagem padrão ou a mensagem que veio da API.
   return {
     field: "password",
     message: defaultMessage,
   };
 }
 
-// Função principal de login otimizada para mobile
+// Função principal de login
 async function handleLogin(e) {
   e.preventDefault();
-  // console.log("📱 Formulário de login mobile enviado");
 
   const { emailField, passwordField, loginButton, rememberMe } =
     window.elements;
@@ -582,7 +569,7 @@ async function handleLogin(e) {
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
 
-  // Fechar teclado virtual no mobile
+  // Fechar teclado virtual
   if (isMobileDevice()) {
     emailField.blur();
     passwordField.blur();
@@ -598,7 +585,6 @@ async function handleLogin(e) {
     return;
   }
 
-  // Usar regex e mensagem do CONFIG se disponíveis
   let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   let emailMessage = "Por favor, digite um e-mail válido";
 
@@ -623,7 +609,6 @@ async function handleLogin(e) {
     return;
   }
 
-  // Usar configurações do CONFIG se disponíveis
   let minLength = 6;
   let passwordMessage = `A senha deve ter pelo menos ${minLength} caracteres`;
 
@@ -643,38 +628,30 @@ async function handleLogin(e) {
     return;
   }
 
-  // Efeito visual no botão otimizado para mobile
+  // Efeito visual no botão
   const originalText = loginButton.innerHTML;
   loginButton.innerHTML =
     '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Conectando...';
   loginButton.disabled = true;
   loginButton.style.opacity = "0.8";
 
-  // Feedback tátil de início
   if (isMobileDevice() && navigator.vibrate) {
     navigator.vibrate(100);
   }
 
-  // Mostrar loading overlay
   showLoading(true);
 
   try {
-    // console.log("🌐 Enviando requisição para login mobile...");
-
-    // Preservar foto de perfil existente se Auth módulo estiver disponível
+    // Preservar foto de perfil
     let existingProfilePhoto = null;
     if (typeof Auth !== "undefined" && Auth.getUserData) {
       const existingUserData = Auth.getUserData();
       if (existingUserData && existingUserData.profilePhotoUrl) {
         existingProfilePhoto = existingUserData.profilePhotoUrl;
-        // console.log(
-        //   "📸 Foto de perfil existente preservada:",
-        //   existingProfilePhoto
-        // );
       }
     }
 
-    // Fazer login usando o módulo Auth se disponível
+    // Fazer login
     let result;
     if (typeof Auth !== "undefined" && Auth.login) {
       result = await Auth.login(email, password, rememberMe.checked);
@@ -682,21 +659,15 @@ async function handleLogin(e) {
       // Simular login para demonstração
       await new Promise((resolve) => setTimeout(resolve, 2000));
       result = { success: true };
-      // console.log(
-      //   "⚠️ Módulo Auth não encontrado, simulando login bem-sucedido"
-      // );
     }
 
     if (result.success) {
-      // console.log("✅ Login mobile bem-sucedido!");
-
-      // Restaurar foto de perfil após login se ela existir e Auth estiver disponível
+      // Restaurar foto de perfil
       if (
         existingProfilePhoto &&
         typeof Auth !== "undefined" &&
         Auth.updateProfilePhoto
       ) {
-        // console.log("🔄 Restaurando foto de perfil após login...");
         Auth.updateProfilePhoto(existingProfilePhoto);
       }
 
@@ -706,23 +677,10 @@ async function handleLogin(e) {
       loginButton.style.background =
         "linear-gradient(135deg, #51cf66, #69db7c)";
 
-      // Mostrar feedback com saldo
-      let userBalance = 0;
-      if (typeof Auth !== "undefined" && Auth.getUserData) {
-        const userData = Auth.getUserData();
-        userBalance = userData?.balance || userData?.coins || 0;
-      } else {
-        // Simular saldo para demonstração
-        userBalance = Math.floor(Math.random() * 1000) + 100;
-      }
-
-      showSuccessFeedback(userBalance);
-
-      // Redirecionar para o dashboard
-      // console.log("🔄 Mostrando loader pós-login mobile...");
+      // Mostrar loader pós-login
       showPostLoginLoader();
 
-      // Usar delay e página do CONFIG se disponíveis
+      // Redirecionar
       let redirectDelay = 2000;
       let dashboardPage = "/dashboard";
 
@@ -739,16 +697,9 @@ async function handleLogin(e) {
       throw new Error(result.message || "Erro inesperado no login");
     }
   } catch (err) {
-    console.error("❌ Erro no login mobile:", err);
+    console.error("Erro no login:", err);
 
-    // Identificar tipo de erro usando função auxiliar
     const errorInfo = identifyAuthError(err);
-
-    // console.log(
-    //   `📋 Erro identificado - Campo: ${errorInfo.field}, Mensagem: ${errorInfo.message}`
-    // );
-
-    // Mostrar erro no campo apropriado
     showError(errorInfo.field, errorInfo.message);
 
     // Resetar botão
@@ -758,17 +709,14 @@ async function handleLogin(e) {
       "linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)";
     loginButton.style.opacity = "1";
   } finally {
-    // Esconder loading
     showLoading(false);
   }
 }
 
 // Interceptar eventos de conectividade
 window.addEventListener("online", () => {
-  // console.log("📱 Conexão mobile restaurada");
   clearError("password");
 
-  // Feedback visual de conexão restaurada
   if (isMobileDevice()) {
     const screen = document.querySelector(".screen");
     if (screen) {
@@ -781,10 +729,8 @@ window.addEventListener("online", () => {
 });
 
 window.addEventListener("offline", () => {
-  // console.log("📱 Conexão mobile perdida");
   showError("password", "Sem conexão com a internet");
 
-  // Feedback visual de perda de conexão
   if (isMobileDevice()) {
     const screen = document.querySelector(".screen");
     if (screen) {
@@ -793,7 +739,7 @@ window.addEventListener("offline", () => {
   }
 });
 
-// Prevenir zoom em duplo toque (iOS Safari)
+// Prevenir zoom em duplo toque
 let lastTouchEnd = 0;
 document.addEventListener(
   "touchend",
@@ -807,7 +753,7 @@ document.addEventListener(
   false
 );
 
-// Loader inicial - esconde após carregar a página
+// Loader inicial
 window.addEventListener("load", () => {
   const initialLoader = document.getElementById("initialLoader");
   if (initialLoader) {
@@ -818,7 +764,3 @@ window.addEventListener("load", () => {
     }, 400);
   }
 });
-
-// console.log(
-//   "✅ Login mobile.js carregado - versão otimizada com tratamento de erro aprimorado"
-// );

@@ -1,4 +1,4 @@
-/* CSS para Login Mobile - Altrum */
+/* CSS Responsivo - Altrum Login */
 * {
   margin: 0;
   padding: 0;
@@ -8,27 +8,31 @@
 body {
   font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
     system-ui, sans-serif;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
+  background: #000;
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
-  margin: 0;
-  padding: 0;
 }
 
+/* ========== LAYOUT PRINCIPAL ========== */
 .screen {
   width: 100%;
   min-height: 100vh;
-  background: black;
-  position: relative;
-  overflow-x: hidden;
   display: flex;
-  flex-direction: column;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  flex-direction: row;
 }
 
-/* Partículas Flutuantes */
+/* ========== SEÇÃO DA IMAGEM (Desktop) ========== */
+.image-section {
+  flex: 1;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .floating-particles {
   position: absolute;
   width: 100%;
@@ -99,25 +103,96 @@ body {
   }
 }
 
-.login-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 40px 24px 24px;
-  position: relative;
+.image-content {
+  text-align: center;
   z-index: 10;
+  padding: 40px;
+}
+
+.logo-display {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 40px;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  max-width: 440px;
-  margin: 0 auto;
+  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.4);
+  position: relative;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.logo-display::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 44px;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  z-index: -1;
+  opacity: 0.3;
+}
+
+.logo-image-large {
   width: 100%;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-  border-radius: 20px;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 36px;
+  border: 3px solid #00d4ff;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 20px 60px rgba(0, 212, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 25px 80px rgba(0, 212, 255, 0.6);
+  }
+}
+
+.welcome-title {
+  color: #fff;
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.welcome-subtitle {
+  color: #888;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* ========== SEÇÃO DE LOGIN ========== */
+.login-section {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 440px;
 }
 
 /* Header Section */
 .header-section {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
 .logo-container {
@@ -156,23 +231,6 @@ body {
   border: 2px solid #00d4ff;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-.logo-icon {
-  font-size: 32px;
-  color: #ffffff;
-}
-
 .app-title {
   color: #fff;
   font-size: 32px;
@@ -185,18 +243,13 @@ body {
   color: #888;
   font-size: 16px;
   font-weight: 400;
-  line-height: 1.4;
-  max-width: 280px;
-  margin: 0 auto;
 }
 
-/* Form Section */
+/* ========== FORMULÁRIO ========== */
 .form-section {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  min-height: 0;
 }
 
 .input-group {
@@ -250,6 +303,7 @@ body {
   color: #666;
   font-size: 18px;
   transition: color 0.3s ease;
+  pointer-events: none;
 }
 
 .input-field:focus + .input-icon {
@@ -272,7 +326,7 @@ body {
   color: #00d4ff;
 }
 
-/* Estados de Erro e Sucesso - CORRIGIDO */
+/* Estados de Erro */
 .error-message {
   color: #ff6b6b;
   font-size: 13px;
@@ -289,17 +343,6 @@ body {
   opacity: 1;
   max-height: 50px;
   margin-top: 8px;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .error-border {
@@ -335,19 +378,6 @@ body {
   gap: 12px;
 }
 
-.forgot-password a {
-  color: #00d4ff;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: opacity 0.2s ease;
-}
-
-.forgot-password a:hover {
-  opacity: 0.8;
-}
-
-/* Checkbox Customizado */
 .remember-me-container {
   display: flex;
   align-items: center;
@@ -411,6 +441,18 @@ body {
 
 .checkbox-label:hover {
   color: #ffffff;
+}
+
+.forgot-password a {
+  color: #00d4ff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.forgot-password a:hover {
+  opacity: 0.8;
 }
 
 /* Botão de Login */
@@ -495,8 +537,6 @@ body {
   border-radius: 12px;
   background: rgba(0, 212, 255, 0.08);
   border: 1px solid rgba(0, 212, 255, 0.2);
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
 .register-link:hover {
@@ -505,30 +545,20 @@ body {
   box-shadow: 0 4px 16px rgba(0, 212, 255, 0.25);
 }
 
-.register-link i {
-  font-size: 12px;
-  transition: transform 0.3s ease;
-}
-
-.register-link:hover i {
-  transform: translateX(2px);
-}
-
-/* Badge de Moedas */
-.coin-balance {
-  display: inline-flex;
+/* ========== LOADERS ========== */
+.initial-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #24f847ff 0%, #3df824ff 100%);
-  color: #000;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  margin-left: 8px;
+  z-index: 10000;
 }
 
-/* Loading Overlay */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -561,89 +591,6 @@ body {
   }
 }
 
-/* Feedback de Sucesso */
-.success-feedback {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 212, 255, 0.95),
-    rgba(0, 153, 204, 0.95)
-  );
-  padding: 24px 32px;
-  border-radius: 16px;
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
-  z-index: 10000;
-  display: none;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.5);
-  backdrop-filter: blur(20px);
-  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  max-width: 90%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -60%) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-.loading-content {
-  text-align: center;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #333;
-}
-
-.loader-version-text {
-  font-size: 0.9em;
-  color: #666;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 20px;
-  margin-bottom: 5px;
-}
-
-.loader-developer-text {
-  font-size: 0.8em;
-  color: #999;
-  font-weight: 400;
-  margin-top: 5px;
-  margin-bottom: 0;
-}
-
-.loader-developer-text:hover {
-  color: #666;
-  text-decoration: underline;
-  cursor: default;
-}
-
-/* Loader Inicial */
-.initial-loader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
-/* Loader Pós-Login */
 .post-login-loader {
   position: fixed;
   top: 0;
@@ -690,31 +637,69 @@ body {
   }
 }
 
-/* Animação de Shake para erros */
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
+.loader-version-text {
+  font-size: 0.9em;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+.loader-developer-text {
+  font-size: 0.8em;
+  color: #999;
+  font-weight: 400;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+/* ========== RESPONSIVIDADE ========== */
+
+/* Tablets e telas médias */
+@media (max-width: 1024px) {
+  .image-section {
+    display: none;
   }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: translateX(-5px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    transform: translateX(5px);
+
+  .login-section {
+    flex: 1;
   }
 }
 
-/* Media Queries para Responsividade */
+/* Mobile */
+@media (max-width: 768px) {
+  .screen {
+    flex-direction: column;
+  }
+
+  .image-section {
+    display: none;
+  }
+
+  .login-section {
+    padding: 40px 24px;
+  }
+
+  .welcome-title {
+    font-size: 32px;
+  }
+
+  .welcome-subtitle {
+    font-size: 16px;
+  }
+
+  .logo-display {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 32px;
+  }
+}
+
 @media (max-width: 480px) {
-  .login-container {
-    padding: 24px 20px 20px;
+  .login-section {
+    padding: 24px 20px;
   }
 
   .app-title {
@@ -731,37 +716,20 @@ body {
     border-radius: 16px;
   }
 
-  .logo-icon {
-    font-size: 28px;
-  }
-
   .form-options {
+    flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-  }
-
-  .register-link {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .coin-balance {
-    margin-left: 0;
   }
 
   .post-login-loader .loader-logo {
     width: 160px;
     height: 160px;
   }
-
-  .error-message {
-    font-size: 12px;
-  }
 }
 
 @media (max-width: 360px) {
-  .login-container {
+  .login-section {
     padding: 20px 16px;
   }
 
@@ -783,40 +751,21 @@ body {
     width: 60px;
     height: 60px;
   }
-
-  .logo-icon {
-    font-size: 24px;
-  }
 }
 
-/* Melhorias para dispositivos com notch */
-@supports (padding: env(safe-area-inset-top)) {
-  .screen {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-/* Orientação landscape em mobile */
+/* Landscape em mobile */
 @media (orientation: landscape) and (max-height: 600px) {
-  .login-container {
-    height: auto;
-    min-height: 100vh;
-    justify-content: flex-start;
+  .login-section {
     padding: 20px 24px;
   }
 
   .header-section {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
   }
 
   .logo-container {
     width: 60px;
     height: 60px;
-  }
-
-  .logo-icon {
-    font-size: 24px;
   }
 
   .app-title {
@@ -828,30 +777,9 @@ body {
   }
 }
 
-/* Otimizações para teclado virtual */
-.keyboard-open .login-container {
-  height: auto;
-  min-height: auto;
-  padding-top: 20px;
-}
-
-.keyboard-open .header-section {
-  margin-bottom: 24px;
-}
-
-.keyboard-open .logo-container {
-  width: 50px;
-  height: 50px;
-}
-
-.keyboard-open .logo-icon {
-  font-size: 20px;
-}
-
-.keyboard-open .app-title {
-  font-size: 22px;
-}
-
-.keyboard-open .app-subtitle {
-  font-size: 13px;
+/* Desktop grande - mostra a seção de imagem */
+@media (min-width: 1025px) {
+  .logo-container {
+    display: none;
+  }
 }
