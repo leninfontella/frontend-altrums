@@ -1418,6 +1418,217 @@ if (typeof module !== "undefined" && module.exports) {
     checkGoalNow,
   };
 }
+// ========== HEADER & FOOTER FUNCTIONALITY ==========
+
+class HeaderFooterManager {
+  constructor() {
+    this.header = document.getElementById("app-header");
+    this.navLinks = document.querySelectorAll(".header-nav-link");
+    this.notificationBtn = document.getElementById("header-notification-btn");
+    this.notificationBadge = document.getElementById("notification-badge");
+    this.footerLinks = document.querySelectorAll(".footer-link");
+    this.lastScrollY = window.scrollY;
+
+    this.init();
+  }
+
+  init() {
+    this.setupScrollBehavior();
+    this.setupActiveNavigation();
+    this.setupNotifications();
+    this.setupFooterLinks();
+    this.setupSocialLinks();
+  }
+
+  // ========== SCROLL BEHAVIOR ==========
+  setupScrollBehavior() {
+    let ticking = false;
+
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          this.handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  }
+
+  handleScroll() {
+    const currentScrollY = window.scrollY;
+
+    // Adicionar classe 'scrolled' quando rolar para baixo
+    if (currentScrollY > 10) {
+      this.header?.classList.add("scrolled");
+    } else {
+      this.header?.classList.remove("scrolled");
+    }
+
+    this.lastScrollY = currentScrollY;
+  }
+
+  // ========== ACTIVE NAVIGATION ==========
+  setupActiveNavigation() {
+    const currentPath = window.location.pathname;
+
+    this.navLinks.forEach((link) => {
+      const href = link.getAttribute("href");
+
+      // Remove active de todos
+      link.classList.remove("active");
+
+      // Adiciona active ao link atual
+      if (href && currentPath.includes(href)) {
+        link.classList.add("active");
+      }
+    });
+
+    // Adicionar evento de clique para links placeholder
+    this.navLinks.forEach((link) => {
+      if (link.getAttribute("href") === "#") {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const linkText = link.textContent.trim();
+
+          if (typeof showNotification === "function") {
+            showNotification(`Página de ${linkText} em breve!`, "info");
+          } else {
+            console.log(`Página de ${linkText} em desenvolvimento`);
+          }
+        });
+      }
+    });
+  }
+
+  // ========== NOTIFICAÇÕES ==========
+  setupNotifications() {
+    this.notificationBtn?.addEventListener("click", () => {
+      this.handleNotificationClick();
+    });
+
+    // Inicializar contador em 0
+    this.updateNotificationCount(0);
+  }
+
+  handleNotificationClick() {
+    console.log("Abrindo notificações...");
+
+    if (typeof showNotification === "function") {
+      showNotification("Você não tem novas notificações", "info");
+    }
+
+    // Zerar contador
+    this.updateNotificationCount(0);
+  }
+
+  updateNotificationCount(count) {
+    if (!this.notificationBadge) return;
+
+    if (count > 0) {
+      this.notificationBadge.textContent = count > 99 ? "99+" : count;
+      this.notificationBadge.style.display = "flex";
+    } else {
+      this.notificationBadge.style.display = "none";
+    }
+  }
+
+  // Método público para adicionar notificação
+  addNotification() {
+    const currentCount = parseInt(this.notificationBadge?.textContent || "0");
+    this.updateNotificationCount(currentCount + 1);
+  }
+
+  // Método público para limpar notificações
+  clearNotifications() {
+    this.updateNotificationCount(0);
+  }
+
+  // ========== FOOTER LINKS ==========
+  setupFooterLinks() {
+    this.footerLinks.forEach((link) => {
+      if (link.getAttribute("href") === "#") {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const linkText = link.textContent.trim();
+
+          if (typeof showNotification === "function") {
+            showNotification(`${linkText} em breve!`, "info");
+          } else {
+            console.log(`${linkText} em desenvolvimento`);
+          }
+        });
+      }
+    });
+  }
+
+  // ========== SOCIAL LINKS ==========
+  setupSocialLinks() {
+    const socialLinks = document.querySelectorAll(".footer-social-link");
+
+    socialLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        // Se o href for '#', prevenir navegação
+        if (link.getAttribute("href") === "#") {
+          e.preventDefault();
+          const platform = link.getAttribute("title");
+
+          // Usar showNotification se disponível
+          if (typeof showNotification === "function") {
+            showNotification(`Link para ${platform} em breve!`, "info");
+          } else {
+            console.log(`Link para ${platform} em desenvolvimento`);
+          }
+        }
+      });
+    });
+  }
+}
+
+// ========== INICIALIZAÇÃO ==========
+
+// Inicializar quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", () => {
+  // Inicializar gerenciador
+  window.headerFooterManager = new HeaderFooterManager();
+
+  console.log("✅ Header & Footer inicializados com notificações");
+});
+
+// ========== INTEGRAÇÃO COM WEBSOCKET (OPCIONAL) ==========
+
+// Se o WebSocket estiver disponível, conectar notificações em tempo real
+if (typeof wsClient !== "undefined") {
+  wsClient.on("notification", (data) => {
+    if (window.headerFooterManager) {
+      window.headerFooterManager.addNotification();
+      if (typeof showNotification === "function") {
+        showNotification(data.message || "Nova notificação", "info");
+      }
+    }
+  });
+}
+
+// ========== HELPERS PÚBLICOS ==========
+
+// Adicionar uma notificação ao contador
+function addHeaderNotification() {
+  if (window.headerFooterManager) {
+    window.headerFooterManager.addNotification();
+  }
+}
+
+// Limpar notificações
+function clearHeaderNotifications() {
+  if (window.headerFooterManager) {
+    window.headerFooterManager.clearNotifications();
+  }
+}
+
+// Exportar para uso global
+window.HeaderFooterManager = HeaderFooterManager;
+window.addHeaderNotification = addHeaderNotification;
+window.clearHeaderNotifications = clearHeaderNotifications;
 
 // console.log(`
 // 🎯 Modal de Meta Atingida v2.0 Carregado!

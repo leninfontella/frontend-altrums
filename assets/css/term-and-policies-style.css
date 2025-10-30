@@ -422,21 +422,6 @@ body {
   }
 }
 
-.close-button {
-  color: #aaa;
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.close-button:hover {
-  color: #00d4ff;
-}
-
 .modal-text {
   color: #fff;
   font-size: 18px;
