@@ -21,15 +21,17 @@ body {
 /* Container principal (substitui .phone-container e .screen) */
 .main-container {
   width: 100%;
-  max-width: 450px;
-  padding: 20px;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 40px 20px;
   position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 24px;
   animation: fadeIn 0.8s ease-out;
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .design-label {

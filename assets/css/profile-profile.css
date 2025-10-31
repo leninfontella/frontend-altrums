@@ -106,7 +106,7 @@ body {
   position: relative;
   z-index: 10;
   padding: 24px;
-  max-width: 440px;
+  max-width: 720px;
   margin: 0 auto;
   box-shadow: 0 0 10px rgba(97, 100, 100, 0.57);
 }
@@ -699,11 +699,11 @@ body {
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   padding: 5px 20px;
   border-top: 1px solid #333;
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 440px; /* Define a largura máxima, alinhando com o container */
+  max-width: 720px; /* Define a largura máxima, alinhando com o container */
   margin: 0 auto; /* Centraliza a barra de navegação */
   z-index: 10;
 }
