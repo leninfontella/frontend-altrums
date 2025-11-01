@@ -365,6 +365,75 @@
     <script src="../../../assets/js/config-edit-userService.js"></script>
     <script src="../../../assets/js/config-edit-globalInit.js"></script>
     <script src="../../../assets/js/home-script.js"></script>
+
+    <script>
+      // Script para esconder bottom-nav quando rolar até o footer
+      (function () {
+        // Aguarda o DOM estar completamente carregado
+        function initBottomNavHide() {
+          const bottomNav = document.querySelector(".bottom-nav");
+          const footer = document.querySelector(".app-footer");
+          const mainContent = document.querySelector(".main-content");
+
+          if (!bottomNav || !footer) {
+            console.log("Bottom nav ou footer não encontrados");
+            return;
+          }
+
+          // Adiciona transition CSS e visibility
+          bottomNav.style.transition =
+            "opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s";
+
+          function handleScroll() {
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const bottomNavHeight = bottomNav.offsetHeight;
+
+            // Calcula quando o footer está próximo ao bottom-nav
+            const footerDistanceFromBottom = windowHeight - footerRect.top;
+
+            // Se o footer está próximo ou tocando o bottom-nav (com margem maior)
+            if (footerDistanceFromBottom > bottomNavHeight - 20) {
+              // Esconde completamente e imediatamente
+              bottomNav.style.opacity = "0";
+              bottomNav.style.transform = `translateY(${
+                bottomNavHeight * 2
+              }px)`;
+              bottomNav.style.visibility = "hidden";
+              bottomNav.style.pointerEvents = "none";
+              bottomNav.style.display = "none"; // Remove completamente
+            } else {
+              // Footer longe, mostra o nav normalmente
+              bottomNav.style.opacity = "1";
+              bottomNav.style.transform = "translateY(0)";
+              bottomNav.style.visibility = "visible";
+              bottomNav.style.pointerEvents = "auto";
+              bottomNav.style.display = "flex";
+              bottomNav.style.transition =
+                "opacity 0.2s ease, transform 0.2s ease";
+            }
+          }
+
+          // Escuta scroll na janela e no main-content
+          window.addEventListener("scroll", handleScroll, { passive: true });
+          if (mainContent) {
+            mainContent.addEventListener("scroll", handleScroll, {
+              passive: true,
+            });
+          }
+
+          // Executa no carregamento
+          setTimeout(handleScroll, 100);
+        }
+
+        // Inicia quando o DOM estiver pronto
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initBottomNavHide);
+        } else {
+          initBottomNavHide();
+        }
+      })();
+    </script>
     <!-- ========== FOOTER ========== -->
     <footer class="app-footer">
       <div class="footer-container">

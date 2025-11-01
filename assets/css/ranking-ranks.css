@@ -106,7 +106,7 @@ body {
   position: relative;
   z-index: 10;
   padding: 24px;
-  max-width: 440px;
+  max-width: 580px;
   margin: 0 auto;
   box-shadow: 0 0 10px rgba(97, 100, 100, 0.57);
 }
@@ -478,7 +478,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 440px; /* Define a largura máxima, alinhando com o container */
+  max-width: 580px; /* Define a largura máxima, alinhando com o container */
   margin: 0 auto; /* Centraliza a barra de navegação */
   z-index: 10;
 }
