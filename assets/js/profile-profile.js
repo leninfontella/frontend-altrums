@@ -1116,8 +1116,6 @@ class GoalAchievementModal {
         this.close();
       }
     });
-
-    // console.log("✅ Modal de meta atingida inicializado");
   }
 
   loadLastState() {
