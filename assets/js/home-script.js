@@ -547,10 +547,10 @@ const LevelUpNotification = {
         sessionStorage.setItem("userCurrentLevel", this.currentLevel);
         sessionStorage.setItem("lastCheckedDonated", this.lastCheckedDonated);
 
-        console.log("🎯 Sistema de Level Up inicializado:", {
-          level: this.currentLevel,
-          donated: this.lastCheckedDonated,
-        });
+        // console.log("🎯 Sistema de Level Up inicializado:", {
+        //   level: this.currentLevel,
+        //   donated: this.lastCheckedDonated,
+        // });
       }
     } catch (error) {
       console.error("❌ Erro ao inicializar sistema de Level Up:", error);
