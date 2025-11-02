@@ -1159,7 +1159,7 @@ class GoalAchievementModal {
     this.modal.classList.add("show");
     document.body.style.overflow = "hidden";
 
-    console.log(`🎉 Meta de ${goalAmount} moedas atingida! Modal exibido!`);
+    // console.log(`🎉 Meta de ${goalAmount} moedas atingida! Modal exibido!`);
   }
 
   close() {
@@ -1213,19 +1213,19 @@ class GoalAchievementModal {
 
     // Mostrar modal se acabou de atingir a meta
     if (justAchieved) {
-      console.log(
-        "🎯 META ATINGIDA! Progresso passou de",
-        this.lastCheckedProgress,
-        "para",
-        goalData.progress
-      );
+      // console.log(
+      //   "🎯 META ATINGIDA! Progresso passou de",
+      //   this.lastCheckedProgress,
+      //   "para",
+      //   goalData.progress
+      // );
       this.show(goalData.goal);
       return true;
     }
 
     // Se é a primeira verificação e já está na meta, mostrar também
     if (firstCheck && goalData.progress >= 100) {
-      console.log("🎯 Primeira verificação - meta já atingida!");
+      // console.log("🎯 Primeira verificação - meta já atingida!");
       this.show(goalData.goal);
       return true;
     }
