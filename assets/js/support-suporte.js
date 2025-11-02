@@ -571,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Inicializar gerenciador
   window.headerFooterManager = new HeaderFooterManager();
 
-  console.log("✅ Header & Footer inicializados com notificações");
+  // console.log("✅ Header & Footer inicializados com notificações");
 });
 
 // ========== INTEGRAÇÃO COM WEBSOCKET (OPCIONAL) ==========
