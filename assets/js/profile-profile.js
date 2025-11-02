@@ -1174,7 +1174,7 @@ class GoalAchievementModal {
       document.body.style.overflow = "";
     }, 300);
 
-    console.log("✅ Modal de meta atingida fechado");
+    // console.log("✅ Modal de meta atingida fechado");
   }
 
   checkGoalAchievement() {
