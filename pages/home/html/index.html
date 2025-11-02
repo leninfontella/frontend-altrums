@@ -365,66 +365,72 @@
     <script src="../../../assets/js/config-edit-userService.js"></script>
     <script src="../../../assets/js/config-edit-globalInit.js"></script>
     <script src="../../../assets/js/home-script.js"></script>
-
     <script>
-      // Cole aqui o código do artefato "Script: Bottom Nav Auto-Hide no Footer"
+      // Script para esconder bottom-nav quando rolar até o footer
       (function () {
-        "use strict";
+        // Aguarda o DOM estar completamente carregado
+        function initBottomNavHide() {
+          const bottomNav = document.querySelector(".bottom-nav");
+          const footer = document.querySelector(".app-footer");
+          const mainContent = document.querySelector(".main-content");
 
-        const bottomNav = document.querySelector(".bottom-nav");
-        const footer = document.querySelector(".app-footer");
+          if (!bottomNav || !footer) {
+            console.log("Bottom nav ou footer não encontrados");
+            return;
+          }
 
-        if (!bottomNav || !footer) {
-          console.warn("Bottom nav ou footer não encontrado");
-          return;
-        }
+          // Adiciona transition CSS e visibility
+          bottomNav.style.transition =
+            "opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s";
 
-        const observerOptions = {
-          root: null,
-          rootMargin: "0px 0px -50px 0px",
-          threshold: 0,
-        };
+          function handleScroll() {
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const bottomNavHeight = bottomNav.offsetHeight;
 
-        const observerCallback = (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              bottomNav.classList.add("hidden");
+            // Calcula quando o footer está próximo ao bottom-nav
+            const footerDistanceFromBottom = windowHeight - footerRect.top;
+
+            // Se o footer está próximo ou tocando o bottom-nav (com margem maior)
+            if (footerDistanceFromBottom > bottomNavHeight - 20) {
+              // Esconde completamente e imediatamente
+              bottomNav.style.opacity = "0";
+              bottomNav.style.transform = `translateY(${
+                bottomNavHeight * 2
+              }px)`;
+              bottomNav.style.visibility = "hidden";
+              bottomNav.style.pointerEvents = "none";
+              bottomNav.style.display = "none"; // Remove completamente
             } else {
-              bottomNav.classList.remove("hidden");
+              // Footer longe, mostra o nav normalmente
+              bottomNav.style.opacity = "1";
+              bottomNav.style.transform = "translateY(0)";
+              bottomNav.style.visibility = "visible";
+              bottomNav.style.pointerEvents = "auto";
+              bottomNav.style.display = "flex";
+              bottomNav.style.transition =
+                "opacity 0.2s ease, transform 0.2s ease";
             }
-          });
-        };
-
-        const observer = new IntersectionObserver(
-          observerCallback,
-          observerOptions
-        );
-        observer.observe(footer);
-
-        let ticking = false;
-
-        function checkFooterVisibility() {
-          const footerRect = footer.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-
-          if (footerRect.top < windowHeight) {
-            bottomNav.classList.add("hidden");
-          } else {
-            bottomNav.classList.remove("hidden");
           }
 
-          ticking = false;
+          // Escuta scroll na janela e no main-content
+          window.addEventListener("scroll", handleScroll, { passive: true });
+          if (mainContent) {
+            mainContent.addEventListener("scroll", handleScroll, {
+              passive: true,
+            });
+          }
+
+          // Executa no carregamento
+          setTimeout(handleScroll, 100);
         }
 
-        window.addEventListener("scroll", function () {
-          if (!ticking) {
-            window.requestAnimationFrame(checkFooterVisibility);
-            ticking = true;
-          }
-        });
-
-        checkFooterVisibility();
-        console.log("✅ Bottom nav auto-hide inicializado");
+        // Inicia quando o DOM estiver pronto
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initBottomNavHide);
+        } else {
+          initBottomNavHide();
+        }
       })();
     </script>
     <!-- ========== FOOTER ========== -->
