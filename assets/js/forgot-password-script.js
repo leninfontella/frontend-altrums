@@ -119,10 +119,7 @@ async function sendVerificationCode() {
       startResendTimer();
     } else {
       if (response.status === 404) {
-        showNotification(
-          "Se o endereço de email estiver registrado em nosso sistema, enviaremos o código de recuperação de senha.",
-          "error"
-        );
+        showNotification("Verifique o e-mail cadastrado!", "error");
         emailInput.focus();
         emailInput.select();
       } else if (response.status === 403) {
