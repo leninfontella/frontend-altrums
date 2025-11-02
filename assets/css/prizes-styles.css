@@ -35,7 +35,7 @@ body {
 /* Container principal (substitui .phone-container) */
 .main-container {
   width: 100%;
-  max-width: 450px;
+  max-width: 580px;
   padding: 20px;
   position: relative;
   min-height: 100vh;
