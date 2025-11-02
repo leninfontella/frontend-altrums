@@ -1180,13 +1180,13 @@ class GoalAchievementModal {
   checkGoalAchievement() {
     const goalData = GoalManager.getGoalData();
 
-    console.log("🔍 Verificando meta:", {
-      current: goalData.current,
-      goal: goalData.goal,
-      progress: goalData.progress,
-      lastGoal: this.lastCheckedGoal,
-      lastProgress: this.lastCheckedProgress,
-    });
+    // console.log("🔍 Verificando meta:", {
+    //   current: goalData.current,
+    //   goal: goalData.goal,
+    //   progress: goalData.progress,
+    //   lastGoal: this.lastCheckedGoal,
+    //   lastProgress: this.lastCheckedProgress,
+    // });
 
     // Verificar se a meta mudou (usuário definiu nova meta)
     const goalChanged =
