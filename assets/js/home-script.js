@@ -365,6 +365,26 @@ const LevelSystem = {
         }
 
         levelBadge.innerHTML = `
+        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+          <span class="level-text" style="
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 21px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 212, 255, 0.05) 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.4px;
+            border: 1.5px solid rgba(0, 212, 255, 0.5);
+            border-radius: 9px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+          ">
+            <span style="font-size: 15px;">🎯</span>
+            Seu nível atual
+          </span>
+        </div>
           <div class="level-info" style="
             background: linear-gradient(135deg, ${levelInfo.color}12, ${
           levelInfo.color
@@ -382,8 +402,12 @@ const LevelSystem = {
             overflow: hidden;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: default;
-          " onmouseover="this.style.transform='translateY(-1px)'" 
-             onmouseout="this.style.transform='translateY(0)'">
+          " onmouseover="this.style.transform='translateY(-1px)'; this.style.borderColor='${
+            levelInfo.color
+          }50'" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='${
+               levelInfo.color
+             }35'">
             
             <div style="
               display: flex;

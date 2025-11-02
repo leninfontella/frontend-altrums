@@ -305,26 +305,26 @@ function showPrizeDetails(prizeType) {
   switch (prizeType) {
     case "ps5":
       prizeInfo = {
-        name: "PlayStation 5",
-        icon: "🎮",
+        name: "R$ 500,00",
+        icon: "💰",
         details:
-          "Console PlayStation 5 novo, na caixa, com 1 ano de garantia + 2 jogos à sua escolha!",
+          "Quinhentos reais em dinheiro via PIX, transferência instantânea após verificação!",
       };
       break;
     case "iphone":
       prizeInfo = {
-        name: "iPhone",
-        icon: "📱",
+        name: "R$ 300,00",
+        icon: "💰",
         details:
-          "iPhone mais recente, desbloqueado, com todos os acessórios originais + capinha premium!",
+          "Trezentos reais em dinheiro via PIX, transferência instantânea após verificação!",
       };
       break;
     case "money":
       prizeInfo = {
-        name: "R$ 1.000,00",
+        name: "R$ 100,00",
         icon: "💰",
         details:
-          "Mil reais em dinheiro via PIX, transferência instantânea após verificação!",
+          "Cem reais em dinheiro via PIX, transferência instantânea após verificação!",
       };
       break;
   }
@@ -474,51 +474,51 @@ function startRankingUpdates() {
 }
 
 // Função para mostrar notificação de doação
-function showDonationNotification(user, coins) {
-  const notification = document.createElement("div");
-  notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: rgba(40,40,40,0.95);
-        border: 1px solid rgba(120,119,198,0.3);
-        border-radius: 12px;
-        padding: 12px 16px;
-        font-size: 12px;
-        color: #ffffff;
-        z-index: 10000;
-        backdrop-filter: blur(20px);
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.3s ease;
-        max-width: 250px;
-    `;
+// function showDonationNotification(user, coins) {
+//   const notification = document.createElement("div");
+//   notification.style.cssText = `
+//         position: fixed;
+//         top: 100px;
+//         right: 20px;
+//         background: rgba(40,40,40,0.95);
+//         border: 1px solid rgba(120,119,198,0.3);
+//         border-radius: 12px;
+//         padding: 12px 16px;
+//         font-size: 12px;
+//         color: #ffffff;
+//         z-index: 10000;
+//         backdrop-filter: blur(20px);
+//         opacity: 0;
+//         transform: translateX(100%);
+//         transition: all 0.3s ease;
+//         max-width: 250px;
+//     `;
 
-  notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="color: #7877C6;">🪙</div>
-            <div>
-                <div style="font-weight: 600;">Usuário ${user}</div>
-                <div style="color: #888888; font-size: 11px;">Doou ${coins.toLocaleString(
-                  "pt-BR"
-                )} moedas</div>
-            </div>
-        </div>
-    `;
+//   notification.innerHTML = `
+//         <div style="display: flex; align-items: center; gap: 8px;">
+//             <div style="color: #7877C6;">🪙</div>
+//             <div>
+//                 <div style="font-weight: 600;">Usuário ${user}</div>
+//                 <div style="color: #888888; font-size: 11px;">Doou ${coins.toLocaleString(
+//                   "pt-BR"
+//                 )} moedas</div>
+//             </div>
+//         </div>
+//     `;
 
-  document.body.appendChild(notification);
+//   document.body.appendChild(notification);
 
-  setTimeout(() => {
-    notification.style.opacity = "1";
-    notification.style.transform = "translateX(0%)";
-  }, 100);
+//   setTimeout(() => {
+//     notification.style.opacity = "1";
+//     notification.style.transform = "translateX(0%)";
+//   }, 100);
 
-  setTimeout(() => {
-    notification.style.opacity = "0";
-    notification.style.transform = "translateX(100%)";
-    setTimeout(() => notification.remove(), 300);
-  }, 4000);
-}
+//   setTimeout(() => {
+//     notification.style.opacity = "0";
+//     notification.style.transform = "translateX(100%)";
+//     setTimeout(() => notification.remove(), 300);
+//   }, 4000);
+// }
 
 // Easter egg: sequência especial de toques
 let tapSequence = [];
