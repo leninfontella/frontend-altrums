@@ -582,12 +582,12 @@ const LevelUpNotification = {
 
     // Verificar se realmente subiu de nível
     if (newLevel > oldLevel && oldLevel !== null) {
-      console.log("🎉 LEVEL UP detectado!", {
-        oldLevel,
-        newLevel,
-        oldDonated: this.lastCheckedDonated,
-        newDonated: newTotalDonated,
-      });
+      // console.log("🎉 LEVEL UP detectado!", {
+      //   oldLevel,
+      //   newLevel,
+      //   oldDonated: this.lastCheckedDonated,
+      //   newDonated: newTotalDonated,
+      // });
 
       // Atualizar estado
       this.currentLevel = newLevel;
