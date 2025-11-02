@@ -739,7 +739,7 @@ document.addEventListener("DOMContentLoaded", function () {
           logoutText.style.display = "none";
           logoutLoading.style.display = "block";
 
-          console.log("🚪 Iniciando processo de logout...");
+          // console.log("🚪 Iniciando processo de logout...");
 
           try {
             // 1. Tentar fazer logout via API se disponível
