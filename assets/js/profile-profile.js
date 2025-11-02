@@ -1193,9 +1193,9 @@ class GoalAchievementModal {
       this.lastCheckedGoal !== null && this.lastCheckedGoal !== goalData.goal;
 
     if (goalChanged) {
-      console.log(
-        `🔄 Meta alterada de ${this.lastCheckedGoal} para ${goalData.goal}`
-      );
+      // console.log(
+      //   `🔄 Meta alterada de ${this.lastCheckedGoal} para ${goalData.goal}`
+      // );
       // Resetar estado quando meta muda
       this.saveLastState(goalData.goal, goalData.progress);
       return false;
