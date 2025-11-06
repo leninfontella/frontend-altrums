@@ -2390,6 +2390,36 @@ navItems.forEach((item) => {
   });
 });
 
+// ========== LOJA - EVENT LISTENER ==========
+
+const viewStoreBtn = document.getElementById("view-store");
+
+if (viewStoreBtn) {
+  viewStoreBtn.addEventListener("click", () => {
+    // Aqui você pode adicionar a navegação para a página da loja quando ela existir
+    // window.location.href = "../../store/html/store.html";
+
+    // Por enquanto, mostra uma notificação
+    showNotification("Loja completa em breve!", "info");
+  });
+}
+
+// Event listeners para itens da loja
+const storeItems = document.querySelectorAll(".store-item");
+storeItems.forEach((item) => {
+  addTouchFeedback(item);
+  item.addEventListener("click", () => {
+    const itemName = item.querySelector(".award-name").textContent;
+    const itemPrice = item.querySelector(".store-price").textContent;
+
+    // Aqui você pode adicionar a lógica de compra
+    showNotification(`${itemName} selecionado! Preço: ${itemPrice}`, "info");
+
+    // Quando implementar a funcionalidade de compra, pode abrir um modal
+    // openPurchaseModal(itemName, itemPrice);
+  });
+});
+
 // Feedback tátil para dispositivos móveis
 function addTouchFeedback(element) {
   if (!element) return;

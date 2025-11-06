@@ -2389,3 +2389,89 @@ body {
   );
   margin: 20px 0;
 }
+
+/* ========== SEÇÃO DA LOJA ========== */
+
+.store-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.store-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+}
+
+.store-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #00d4ff;
+  text-align: right;
+  white-space: nowrap;
+  padding: 8px 16px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.store-item:hover .store-price {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: rgba(0, 212, 255, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+}
+
+/* Ícones personalizados para cada item da loja */
+.award-icon.store-monitor {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.award-icon.store-watch {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.award-icon.store-alexa {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Animação adicional para itens da loja */
+.store-item .award-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.store-item:hover .award-icon {
+  transform: scale(1.15) rotate(-5deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsividade para a seção da loja */
+@media (max-width: 480px) {
+  .store-item {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .store-price {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .award-icon.store-monitor,
+  .award-icon.store-watch,
+  .award-icon.store-alexa {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+}
