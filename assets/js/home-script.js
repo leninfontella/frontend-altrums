@@ -2396,11 +2396,7 @@ const viewStoreBtn = document.getElementById("view-store");
 
 if (viewStoreBtn) {
   viewStoreBtn.addEventListener("click", () => {
-    // Aqui você pode adicionar a navegação para a página da loja quando ela existir
-    // window.location.href = "../../store/html/store.html";
-
-    // Por enquanto, mostra uma notificação
-    showNotification("Loja completa em breve!", "info");
+    window.location.href = "/pages/store/store.html";
   });
 }
 

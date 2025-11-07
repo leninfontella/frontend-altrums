@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loja - Living Coins</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../assets/css/store.css" />
+    <link rel="stylesheet" href="../../../assets/css/header-footer.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="app-header" id="app-header">
+      <div class="header-container">
+        <div class="header-left-section">
+          <button class="back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="header-page-title">
+            <h1>Loja de Prêmios</h1>
+          </div>
+        </div>
+
+        <div class="header-right-section">
+          <div class="header-balance">
+            <div class="balance-icon">💰</div>
+            <span id="header-balance">0</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="screen">
+      <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <div class="store-container">
+        <!-- Informativo -->
+        <div class="store-info-banner">
+          <div class="info-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="info-text">
+            <h3>Como funciona?</h3>
+            <p>
+              Troque suas moedas por prêmios incríveis! Os valores serão
+              descontados do seu saldo após a confirmação da compra.
+            </p>
+          </div>
+        </div>
+
+        <!-- Grid de Produtos -->
+        <div class="products-grid">
+          <!-- Monitor Full HD -->
+          <div
+            class="product-card"
+            data-product-id="monitor"
+            data-price="18000"
+          >
+            <div class="product-badge premium">Premium</div>
+            <div class="product-image monitor-bg">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Monitor Full HD</h3>
+              <p class="product-description">24 polegadas, 144Hz, IPS</p>
+              <div class="product-price">
+                <span class="price-value">18.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Monitor Full HD', 18000, 'monitor')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Smart Watch -->
+          <div
+            class="product-card"
+            data-product-id="smartwatch"
+            data-price="10000"
+          >
+            <div class="product-badge premium">Premium</div>
+            <div class="product-image watch-bg">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Smart Watch</h3>
+              <p class="product-description">Monitor cardíaco e GPS</p>
+              <div class="product-price">
+                <span class="price-value">10.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Smart Watch', 10000, 'smartwatch')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Alexa -->
+          <div class="product-card" data-product-id="alexa" data-price="8000">
+            <div class="product-image alexa-bg">
+              <i class="fas fa-volume-up"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Alexa</h3>
+              <p class="product-description">Assistente virtual inteligente</p>
+              <div class="product-price">
+                <span class="price-value">8.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Alexa', 8000, 'alexa')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Fone JBL -->
+          <div class="product-card" data-product-id="fone" data-price="7000">
+            <div class="product-image fone-bg">
+              <i class="fas fa-headphones"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Fone JBL</h3>
+              <p class="product-description">Cancelamento de ruído ativo</p>
+              <div class="product-price">
+                <span class="price-value">7.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Fone JBL', 7000, 'fone')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Tênis Centauro -->
+          <div class="product-card" data-product-id="tenis" data-price="6000">
+            <div class="product-image tenis-bg">
+              <i class="fas fa-running"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Tênis Centauro</h3>
+              <p class="product-description">Vale-compra de R$ 300</p>
+              <div class="product-price">
+                <span class="price-value">6.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Tênis em Centauro', 6000, 'tenis')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Camiseta Netshoes -->
+          <div
+            class="product-card"
+            data-product-id="camiseta"
+            data-price="5000"
+          >
+            <div class="product-image camiseta-bg">
+              <i class="fas fa-tshirt"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Camiseta Netshoes</h3>
+              <p class="product-description">Vale-compra de R$ 250</p>
+              <div class="product-price">
+                <span class="price-value">5.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Camiseta em Netshoes', 5000, 'camiseta')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Teclado Redragon -->
+          <div class="product-card" data-product-id="teclado" data-price="4000">
+            <div class="product-image teclado-bg">
+              <i class="fas fa-keyboard"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Teclado Redragon</h3>
+              <p class="product-description">Mecânico, RGB, Switch Blue</p>
+              <div class="product-price">
+                <span class="price-value">4.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Teclado Redragon', 4000, 'teclado')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Mouse Gamer -->
+          <div class="product-card" data-product-id="mouse" data-price="3000">
+            <div class="product-image mouse-bg">
+              <i class="fas fa-mouse"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Mouse Gamer</h3>
+              <p class="product-description">12.000 DPI, RGB programável</p>
+              <div class="product-price">
+                <span class="price-value">3.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Mouse Gamer', 3000, 'mouse')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Óculos de Sol -->
+          <div class="product-card" data-product-id="oculos" data-price="2000">
+            <div class="product-image oculos-bg">
+              <i class="fas fa-glasses"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Óculos de Sol</h3>
+              <p class="product-description">Proteção UV400, polarizado</p>
+              <div class="product-price">
+                <span class="price-value">2.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Óculos de Sol', 2000, 'oculos')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <!-- Livros Saraiva -->
+          <div class="product-card" data-product-id="livros" data-price="1000">
+            <div class="product-image livros-bg">
+              <i class="fas fa-book"></i>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Livros Saraiva</h3>
+              <p class="product-description">Vale-compra de R$ 50</p>
+              <div class="product-price">
+                <span class="price-value">1.000</span>
+                <span class="price-coin">🪙</span>
+              </div>
+              <button
+                class="buy-button"
+                onclick="openPurchaseModal('Livros em Saraiva', 1000, 'livros')"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Comprar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+ 
+
+ <!-- ========== FOOTER ========== -->
+    <footer class="app-footer">
+      <div class="footer-container">
+        <div class="footer-content">
+          <!-- Left: Info -->
+          <div class="footer-left">
+            <div class="footer-copyright">
+              © 2025 Altrum. Todos os direitos reservados.
+            </div>
+            <div class="footer-tagline">
+              Impactando o futuro através da generosidade
+            </div>
+          </div>
+
+          <!-- Right: Social & Legal -->
+          <div class="footer-right">
+            <!-- Social -->
+            <div class="footer-social">
+              <a
+                href="#"
+                class="footer-social-link"
+                title="Instagram"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="footer-social-link"
+                title="Facebook"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="footer-social-link"
+                title="YouTube"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fab fa-youtube"></i>
+              </a>
+              <a
+                href="#"
+                class="footer-social-link"
+                title="LinkedIn"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+              <a
+                href="#"
+                class="footer-social-link"
+                title="X (Twitter)"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="footer-social-link"
+                title="Discord"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fab fa-discord"></i>
+              </a>
+            </div>
+
+            <!-- Legal Links -->
+            <div class="footer-legal">
+              <a
+                href="/pages/terms-of-use/html/terms-of-use.html"
+                class="footer-link"
+                >Termos de Uso</a
+              >
+              <span style="color: rgba(255, 255, 255, 0.3)">|</span>
+              <a
+                href="/pages/help-center/html/help-center.html"
+                class="footer-link"
+                >Política de Privacidade</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/store.js"></script>
+  </body>
+</html>
