@@ -171,24 +171,23 @@ const StoreSystem = {
         throw new Error("Saldo insuficiente");
       }
 
-      // Atualizar saldo usando a rota existente
+      // Registrar compra usando nova rota
       const token = Auth.getToken();
       const response = await fetch(
-        "https://api-backend-coins.onrender.com/api/users/balance",
+        "https://api-backend-coins.onrender.com/api/users/purchase",
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            amount: price,
-            operation: "subtract",
-            description: `Compra na loja: ${productName}`,
+            productId: productId,
+            productName: productName,
+            price: price,
             metadata: {
-              type: "purchase",
-              productId: productId,
-              productName: productName,
+              category: this.getProductCategory(productId),
+              icon: this.getProductIcon(productId),
             },
           }),
         }
@@ -203,7 +202,7 @@ const StoreSystem = {
 
       if (result && result.success) {
         // Atualizar saldo local
-        this.currentBalance = result.data.balance || result.balance;
+        this.currentBalance = result.data.balance;
 
         // Atualizar no Auth.js também
         if (typeof Auth.updateLocalBalance === "function") {
@@ -226,6 +225,40 @@ const StoreSystem = {
       showNotification(error.message || "Erro ao processar compra", "error");
       return false;
     }
+  },
+
+  // Obter categoria do produto
+  getProductCategory(productId) {
+    const categories = {
+      monitor: "Eletrônicos",
+      smartwatch: "Eletrônicos",
+      alexa: "Eletrônicos",
+      fone: "Eletrônicos",
+      teclado: "Periféricos",
+      mouse: "Periféricos",
+      tenis: "Vale-Compra",
+      camiseta: "Vale-Compra",
+      oculos: "Acessórios",
+      livros: "Vale-Compra",
+    };
+    return categories[productId] || "Geral";
+  },
+
+  // Obter ícone do produto
+  getProductIcon(productId) {
+    const icons = {
+      monitor: "fa-desktop",
+      smartwatch: "fa-clock",
+      alexa: "fa-volume-up",
+      fone: "fa-headphones",
+      teclado: "fa-keyboard",
+      mouse: "fa-mouse",
+      tenis: "fa-running",
+      camiseta: "fa-tshirt",
+      oculos: "fa-glasses",
+      livros: "fa-book",
+    };
+    return icons[productId] || "fa-gift";
   },
 
   // Modal de sucesso
@@ -268,11 +301,14 @@ const StoreSystem = {
             <i class="fas fa-info-circle"></i> Entraremos em contato em breve para entregar seu prêmio!
           </div>
           
-          <div class="modal-actions">
-            <button class="modal-button confirm" onclick="closeSuccessModal()">
-              Continuar Comprando
-            </button>
-          </div>
+<div class="modal-actions">
+  <button class="modal-button secondary" onclick="window.location.href='/pages/purchase/html/purchase-history.html'">
+    Ver Histórico
+  </button>
+  <button class="modal-button confirm" onclick="closeSuccessModal()">
+    Continuar Comprando
+  </button>
+</div>
         </div>
       </div>
     `;
