@@ -18,10 +18,55 @@ const PurchaseHistory = {
       return;
     }
 
+    // ✅ TESTE: Verificar se a rota existe
+    await this.testApiConnection();
+
     await this.loadPurchases();
     this.setupEventListeners();
 
     console.log("✅ Histórico inicializado!");
+  },
+
+  // ✅ NOVO: Testar conexão com API
+  async testApiConnection() {
+    try {
+      const token = Auth.getToken();
+      console.log("🔐 Token:", token ? "Presente" : "Ausente");
+
+      // Tentar rota de purchases
+      const testUrl =
+        "https://api-backend-coins.onrender.com/api/users/purchases?page=1&limit=1";
+      console.log("🧪 Testando rota:", testUrl);
+
+      const response = await fetch(testUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("📊 Status do teste:", response.status);
+
+      if (response.status === 404) {
+        console.error("❌ Rota /api/users/purchases não existe no backend!");
+        console.log(
+          "💡 Solução: Você precisa adicionar as rotas de purchase no backend"
+        );
+        this.showNotification(
+          "Funcionalidade de histórico ainda não disponível no servidor",
+          "error"
+        );
+        return false;
+      }
+
+      const data = await response.json();
+      console.log("✅ Teste da API:", data);
+      return true;
+    } catch (error) {
+      console.error("❌ Erro no teste de conexão:", error);
+      return false;
+    }
   },
 
   async loadPurchases(append = false) {
@@ -40,31 +85,42 @@ const PurchaseHistory = {
       }
 
       const token = Auth.getToken();
-      const response = await fetch(
-        `https://api-backend-coins.onrender.com/api/users/purchases?page=${this.currentPage}&limit=20`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+
+      // ✅ CORREÇÃO: URL correta da API
+      const apiUrl = `https://api-backend-coins.onrender.com/api/users/purchases?page=${this.currentPage}&limit=20`;
+
+      console.log("📡 Carregando compras:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("📊 Status da resposta:", response.status);
 
       if (!response.ok) {
-        throw new Error("Erro ao carregar histórico");
+        const errorText = await response.text();
+        console.error("❌ Erro na resposta:", errorText);
+        throw new Error(`Erro ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log("✅ Dados recebidos:", data);
 
       if (data.success) {
         const { purchases, stats, pagination } = data.data;
+
+        console.log(`📦 ${purchases.length} compras encontradas`);
 
         // Atualizar estatísticas
         this.updateStats(stats);
 
         // Renderizar compras
         if (purchases.length === 0 && this.currentPage === 1) {
+          console.log("📭 Nenhuma compra encontrada");
           loadingState.style.display = "none";
           emptyState.style.display = "block";
         } else {
@@ -81,10 +137,35 @@ const PurchaseHistory = {
           this.hasMore = pagination.hasNext;
           this.updateLoadMoreButton();
         }
+      } else {
+        throw new Error(data.message || "Erro ao carregar histórico");
       }
     } catch (error) {
       console.error("❌ Erro ao carregar compras:", error);
-      this.showNotification("Erro ao carregar histórico", "error");
+
+      // Mostrar mensagem de erro mais detalhada
+      const loadingState = document.getElementById("loading-state");
+      const emptyState = document.getElementById("empty-state");
+
+      loadingState.style.display = "none";
+      emptyState.style.display = "block";
+
+      // Atualizar mensagem de erro
+      const emptyStateIcon = emptyState.querySelector("i");
+      const emptyStateTitle = emptyState.querySelector("h3");
+      const emptyStateText = emptyState.querySelector("p");
+
+      if (emptyStateIcon)
+        emptyStateIcon.className = "fas fa-exclamation-triangle";
+      if (emptyStateTitle) emptyStateTitle.textContent = "Erro ao carregar";
+      if (emptyStateText)
+        emptyStateText.textContent =
+          error.message || "Tente novamente mais tarde";
+
+      this.showNotification(
+        "Erro ao carregar histórico: " + error.message,
+        "error"
+      );
     } finally {
       this.isLoading = false;
     }
@@ -484,8 +565,106 @@ const PurchaseHistory = {
   },
 
   showNotification(message, type = "info") {
+    // Remover notificações existentes
+    const existingNotifications = document.querySelectorAll(
+      ".notification-toast"
+    );
+    existingNotifications.forEach((notif) => notif.remove());
+
+    const notification = document.createElement("div");
+    notification.className = `notification-toast ${type}`;
+
+    const icon =
+      type === "error"
+        ? "fas fa-exclamation-circle"
+        : type === "success"
+        ? "fas fa-check-circle"
+        : "fas fa-info-circle";
+
+    notification.innerHTML = `
+      <div class="notification-content">
+        <i class="${icon}"></i>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()">✕</button>
+      </div>
+    `;
+
+    // Estilos inline para garantir que apareça
+    notification.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 10000;
+      max-width: 90%;
+      background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+      animation: slideInRight 0.4s ease;
+    `;
+
+    const content = notification.querySelector(".notification-content");
+    content.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+    `;
+
+    const iconEl = notification.querySelector("i");
+    iconEl.style.cssText = `
+      font-size: 18px;
+      color: ${
+        type === "error"
+          ? "#ef4444"
+          : type === "success"
+          ? "#10b981"
+          : "#00d4ff"
+      };
+    `;
+
+    const span = notification.querySelector("span");
+    span.style.cssText = `
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+    `;
+
+    const button = notification.querySelector("button");
+    button.style.cssText = `
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      color: #ffffff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    `;
+
+    // Borda colorida baseada no tipo
+    if (type === "error") {
+      notification.style.borderLeft = "4px solid #ef4444";
+    } else if (type === "success") {
+      notification.style.borderLeft = "4px solid #10b981";
+    } else {
+      notification.style.borderLeft = "4px solid #00d4ff";
+    }
+
+    document.body.appendChild(notification);
+
     console.log(`${type.toUpperCase()}: ${message}`);
-    // Implementar sistema de notificação visual se necessário
+
+    // Auto-remover após 5 segundos
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.style.animation = "slideOutRight 0.4s ease";
+        setTimeout(() => notification.remove(), 400);
+      }
+    }, 5000);
   },
 };
 
