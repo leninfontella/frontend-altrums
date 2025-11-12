@@ -171,16 +171,45 @@ const StoreSystem = {
         throw new Error("Saldo insuficiente");
       }
 
-      // Atualizar saldo via Auth.js
-      const result = await Auth.updateBalance(
-        price,
-        "subtract",
-        `Compra: ${productName}`
+      // Atualizar saldo usando a rota existente
+      const token = Auth.getToken();
+      const response = await fetch(
+        "https://api-backend-coins.onrender.com/api/users/balance",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            amount: price,
+            operation: "subtract",
+            description: `Compra na loja: ${productName}`,
+            metadata: {
+              type: "purchase",
+              productId: productId,
+              productName: productName,
+            },
+          }),
+        }
       );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erro ao processar compra");
+      }
+
+      const result = await response.json();
 
       if (result && result.success) {
         // Atualizar saldo local
-        this.currentBalance = result.balance;
+        this.currentBalance = result.data.balance || result.balance;
+
+        // Atualizar no Auth.js também
+        if (typeof Auth.updateLocalBalance === "function") {
+          Auth.updateLocalBalance(this.currentBalance);
+        }
+
         this.updateBalanceDisplay();
         this.updateProductAvailability();
 
