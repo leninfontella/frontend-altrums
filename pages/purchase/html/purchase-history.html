@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Histórico de Compras - Altrum</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="../../../assets/css/purchase-history-styles.css"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-container">
+        <div class="header-left">
+          <button class="back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <h1>Histórico de Compras</h1>
+        </div>
+      </div>
+    </header>
+
+    <div class="screen">
+      <div class="history-container">
+        <!-- Stats Cards -->
+        <div class="stats-section">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total de Compras</span>
+              <span class="stat-value" id="total-purchases">0</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total Gasto</span>
+              <span class="stat-value" id="total-spent">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none">
+          <i class="fas fa-shopping-cart"></i>
+          <h3>Nenhuma compra realizada</h3>
+          <p>Suas compras aparecerão aqui</p>
+          <button
+            class="primary-button"
+            onclick="window.location.href='/pages/store/html/store.html'"
+          >
+            Ir para Loja
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading-state" class="loading-state">
+          <div class="spinner"></div>
+          <p>Carregando histórico...</p>
+        </div>
+
+        <!-- Purchases List -->
+        <div
+          id="purchases-list"
+          class="purchases-list"
+          style="display: none"
+        ></div>
+
+        <!-- Load More -->
+        <div
+          id="load-more-container"
+          style="display: none; text-align: center; margin: 20px 0"
+        >
+          <button id="load-more-btn" class="load-more-btn">
+            Carregar Mais
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="bottom-nav">
+        <div
+          class="nav-item"
+          onclick="window.location.href='/pages/home/html/home.html'"
+        >
+          <i class="fas fa-home"></i>
+          <span>Início</span>
+        </div>
+        <div
+          class="nav-item"
+          onclick="window.location.href='/pages/timeline/html/timeline.html'"
+        >
+          <i class="fas fa-history"></i>
+          <span>Timeline</span>
+        </div>
+        <div
+          class="nav-item"
+          onclick="window.location.href='/pages/ranking/html/ranks.html'"
+        >
+          <i class="fas fa-trophy"></i>
+          <span>Ranking</span>
+        </div>
+        <div
+          class="nav-item"
+          onclick="window.location.href='/pages/profile/pages/profile.html'"
+        >
+          <i class="fas fa-user-circle"></i>
+          <span>Perfil</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../assets/js/auth.js"></script>
+    <script src="../../../assets/js/purchase-history-script.js"></script>
+  </body>
+</html>
