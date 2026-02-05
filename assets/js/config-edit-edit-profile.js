@@ -414,7 +414,7 @@ async function saveProfile() {
       }
 
       const photoFormData = new FormData();
-      photoFormData.append("photo", file);
+      photoFormData.append("profilePhoto", file);
 
       // console.log("📤 Iniciando upload da nova foto...");
 
