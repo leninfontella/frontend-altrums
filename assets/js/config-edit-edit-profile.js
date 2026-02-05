@@ -64,7 +64,7 @@ function applyCpfMask(cpf) {
 function getInitialsPlaceholderUrl(userName) {
   const nameToPass = userName && typeof userName === "string" ? userName : "";
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    nameToPass
+    nameToPass,
   )}&background=00d4ff&color=fff&size=120`;
 }
 
@@ -262,7 +262,7 @@ async function loadUserDataFromAPI() {
     loadUserProfileFromLocalStorage();
     showMessage(
       "Carregado do cache local. Algumas informações podem estar desatualizadas.",
-      "error"
+      "error",
     );
   }
 }
@@ -308,7 +308,7 @@ function populateFormWithData(userData) {
       updateProfilePhotoDisplayFixed(photoUrl, false);
     } else {
       profileImage.src = getInitialsPlaceholderUrl(
-        userData.name || userData.fullName
+        userData.name || userData.fullName,
       );
     }
   }
@@ -350,7 +350,7 @@ async function saveProfile() {
     }
 
     const saveButtons = document.querySelectorAll(
-      ".save-button, .save-content-btn"
+      ".save-button, .save-content-btn",
     );
     saveButtons.forEach((btn) => {
       btn.disabled = true;
@@ -414,20 +414,20 @@ async function saveProfile() {
       }
 
       const photoFormData = new FormData();
-      photoFormData.append("profilePhoto", file);
+      photoFormData.append("photo", file);
 
       // console.log("📤 Iniciando upload da nova foto...");
 
       const uploadResponse = await window.apiConfig.post(
         "/api/profile/upload-photo",
-        photoFormData
+        photoFormData,
       );
       const uploadResult = await uploadResponse.json();
 
       if (!uploadResponse.ok || !uploadResult.success) {
         throw new Error(
           uploadResult.message ||
-            "Erro ao fazer upload para o servidor de armazenamento"
+            "Erro ao fazer upload para o servidor de armazenamento",
         );
       }
 
@@ -441,7 +441,7 @@ async function saveProfile() {
       if (updateResult.success) {
         photoInput.value = "";
         await handleSuccessfulUpdate(
-          uploadResult.user || updateResult.user || updateResult.data
+          uploadResult.user || updateResult.user || updateResult.data,
         );
 
         setOriginalFormData({
@@ -452,7 +452,7 @@ async function saveProfile() {
         });
       } else {
         throw new Error(
-          updateResult.message || "Erro ao salvar dados do perfil"
+          updateResult.message || "Erro ao salvar dados do perfil",
         );
       }
     } else {
@@ -484,7 +484,7 @@ async function saveProfile() {
     if (error.message.includes("upload para o servidor de armazenamento")) {
       showMessage(
         "Erro ao fazer upload para o servidor de armazenamento. Verifique os logs do Backend.",
-        "error"
+        "error",
       );
     } else if (
       error.message.includes("401") ||
@@ -503,12 +503,12 @@ async function saveProfile() {
     } else {
       showMessage(
         error.message || "Erro inesperado. Tente novamente.",
-        "error"
+        "error",
       );
     }
   } finally {
     const saveButtons = document.querySelectorAll(
-      ".save-button, .save-content-btn"
+      ".save-button, .save-content-btn",
     );
     saveButtons.forEach((btn) => {
       btn.disabled = false;
@@ -560,7 +560,7 @@ async function handleSuccessfulUpdate(updatedUserData) {
             forceRefresh: true,
             timestamp: Date.now(),
           },
-        })
+        }),
       );
 
       if (typeof BroadcastChannel !== "undefined") {
@@ -625,7 +625,7 @@ async function uploadPhotoOnly() {
 
     const response = await window.apiConfig.post(
       "/api/profile/upload-photo",
-      formData
+      formData,
     );
     const result = await response.json();
 
@@ -647,7 +647,7 @@ async function uploadPhotoOnly() {
       window.dispatchEvent(
         new CustomEvent("profilePhotoUpdated", {
           detail: { photoUrl: result.profilePhoto.url },
-        })
+        }),
       );
 
       photoInput.value = "";
@@ -790,7 +790,7 @@ function getCurrentFormData() {
     name: document.getElementById("name")?.value.trim() || "",
     email: document.getElementById("email")?.value.trim() || "",
     phone: cleanPhoneNumber(
-      document.getElementById("phone")?.value.trim() || ""
+      document.getElementById("phone")?.value.trim() || "",
     ),
     hasNewPhoto: document.getElementById("photo-input")?.files.length > 0,
   };
@@ -1067,7 +1067,7 @@ window.addEventListener("offline", () => {
   // console.log("📡 Desconectado da internet");
   showMessage(
     "Modo offline. Algumas funcionalidades podem estar limitadas.",
-    "error"
+    "error",
   );
 });
 
