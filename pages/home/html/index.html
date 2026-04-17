@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -132,7 +132,7 @@
             userData = JSON.parse(
               localStorage.getItem("userData") ||
                 sessionStorage.getItem("userData") ||
-                "{}"
+                "{}",
             );
           } catch (e) {
             console.warn("Erro ao carregar userData:", e);
@@ -452,7 +452,7 @@
           <!-- Left: Info -->
           <div class="footer-left">
             <div class="footer-copyright">
-              © 2025 Altrum. Todos os direitos reservados.
+              © 2026 Altrum. Todos os direitos reservados.
             </div>
             <div class="footer-tagline">
               Impactando o futuro através da generosidade

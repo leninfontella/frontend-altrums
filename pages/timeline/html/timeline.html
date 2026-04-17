@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -383,7 +383,7 @@
                     await window.timelineAPI.DonationService.searchUsers(
                       query,
                       1,
-                      5
+                      5,
                     );
                   displaySearchResults(results);
                 }
@@ -441,7 +441,7 @@
               ${user.coins} Ã†
             </div>
           </div>
-        `
+        `,
           )
           .join("");
       }
@@ -460,7 +460,7 @@
         }
 
         const amount = parseInt(
-          document.getElementById("donationAmount").value
+          document.getElementById("donationAmount").value,
         );
         const message = document.getElementById("donationMessage").value;
 
@@ -480,7 +480,7 @@
               await window.timelineAPI.DonationService.createDonation(
                 selectedRecipientId,
                 amount,
-                message
+                message,
               );
 
             if (result && result.success) {
@@ -491,7 +491,7 @@
               if (window.showNotification) {
                 window.showNotification(
                   "DoaÃ§Ã£o realizada com sucesso!",
-                  "success"
+                  "success",
                 );
               }
             }
@@ -817,7 +817,7 @@
           <!-- Left: Info -->
           <div class="footer-left">
             <div class="footer-copyright">
-              © 2025 Altrum. Todos os direitos reservados.
+              © 2026 Altrum. Todos os direitos reservados.
             </div>
             <div class="footer-tagline">
               Impactando o futuro através da generosidade
