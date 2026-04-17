@@ -1,4 +1,4 @@
-// Configuração global da API - Living Coins
+// Configuração global da API - Altrum
 const CONFIG = {
   // URL base da API - altere conforme seu ambiente
   API_BASE: "http://localhost:5000/api",

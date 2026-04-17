@@ -1,5 +1,5 @@
-// Configuração unificada da API - Living Coins
-// Configuração unificada da API - Living Coins
+// Configuração unificada da API - Altrum
+// Configuração unificada da API - Altrum
 class ApiConfig {
   constructor() {
     this.baseURL = this.detectApiBaseURL();
@@ -65,7 +65,7 @@ class ApiConfig {
         const cookieValue = document.cookie
           .split("; ")
           .find(
-            (row) => row.startsWith("authToken=") || row.startsWith("token=")
+            (row) => row.startsWith("authToken=") || row.startsWith("token="),
           );
         return cookieValue ? cookieValue.split("=")[1] : null;
       },
@@ -170,7 +170,7 @@ class ApiConfig {
         .catch(() => ({ message: "Muitas requisições" }));
       throw new Error(
         errorData.message ||
-          "Muitas requisições. Tente novamente em alguns minutos."
+          "Muitas requisições. Tente novamente em alguns minutos.",
       );
     }
 
@@ -341,7 +341,7 @@ class ApiConfig {
           try {
             const errorResponse = JSON.parse(xhr.responseText);
             reject(
-              new Error(errorResponse.message || `Erro HTTP ${xhr.status}`)
+              new Error(errorResponse.message || `Erro HTTP ${xhr.status}`),
             );
           } catch (e) {
             reject(new Error(`Erro HTTP ${xhr.status}`));

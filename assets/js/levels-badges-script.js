@@ -1,4 +1,4 @@
-// Sistema de Badges Integrado com Auth e API Unificados - Living Coins
+// Sistema de Badges Integrado com Auth e API Unificados - Altrum
 
 // Aguardar carregamento dos módulos de dependência
 function waitForDependencies() {
@@ -156,7 +156,7 @@ async function fetchBadgeProgressFromAPI() {
   } catch (error) {
     console.warn(
       "Endpoint de badges não disponível, usando dados do Auth:",
-      error.message
+      error.message,
     );
     return null;
   }
@@ -210,7 +210,7 @@ function renderCurrentLevelCard() {
   const progress = calculateProgress(
     currentPoints,
     currentLevel.level,
-    nextLevel
+    nextLevel,
   );
 
   // Atualizar elementos do card atual
@@ -234,8 +234,8 @@ function renderCurrentLevelCard() {
       userInfoEl.innerHTML = `
         <div style="font-size: 14px; color: #888; margin-top: 8px;">
           ${currentUserData.name || "Usuário"} • ${formatNumber(
-        currentUserData.coins || 0
-      )} moedas
+            currentUserData.coins || 0,
+          )} moedas
         </div>
       `;
     }
@@ -256,7 +256,7 @@ function renderCurrentLevelCard() {
   if (nextLevel) {
     if (progressText) {
       progressText.textContent = `${formatNumber(
-        currentPoints
+        currentPoints,
       )} / ${formatNumber(nextLevel.min)}`;
     }
     if (nextLevelInfo) {
@@ -264,7 +264,7 @@ function renderCurrentLevelCard() {
       nextLevelInfo.innerHTML = `Próximo: <span id="nextLevelName">${
         nextLevel.name
       }</span> - <span id="pointsNeeded">${formatNumber(
-        pointsNeeded
+        pointsNeeded,
       )} pontos restantes</span>`;
     }
   } else {
@@ -318,7 +318,7 @@ function renderBadgesGrid() {
       rangeText = `${formatNumber(level.min)}+ pontos`;
     } else {
       rangeText = `${formatNumber(level.min)} - ${formatNumber(
-        level.max
+        level.max,
       )} pontos`;
     }
 
@@ -571,8 +571,8 @@ function showBadgeDetails(levelNumber) {
   modalContent.innerHTML = `
     <div style="font-size: 60px; margin-bottom: 16px;">${level.icon}</div>
     <h2 style="color: ${level.color}; font-size: 24px; margin-bottom: 8px;">${
-    level.name
-  }</h2>
+      level.name
+    }</h2>
     <p style="color: #888; font-size: 14px; margin-bottom: 16px;">
       ${
         level.max === Infinity
@@ -581,8 +581,8 @@ function showBadgeDetails(levelNumber) {
       } pontos
     </p>
     <div style="background: ${level.color}20; border: 1px solid ${
-    level.color
-  }40; border-radius: 12px; padding: 12px; margin-bottom: 20px;">
+      level.color
+    }40; border-radius: 12px; padding: 12px; margin-bottom: 20px;">
       <div style="color: ${
         level.color
       }; font-weight: 600; font-size: 14px;">${statusText}</div>

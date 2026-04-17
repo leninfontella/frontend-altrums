@@ -1,4 +1,4 @@
-// Módulo de Autenticação Unificado - Living Coins
+// Módulo de Autenticação Unificado - Altrum
 const Auth = {
   // ========== CONFIGURAÇÃO DA API ==========
   API_BASE: "https://api-backend-coins.onrender.com/api",
@@ -68,7 +68,7 @@ const Auth = {
           // Se falhar ao ler JSON, usa uma mensagem genérica de erro
           console.error(
             "Falha ao ler corpo da resposta de erro (JSON inválido):",
-            e
+            e,
           );
         }
 
@@ -107,7 +107,7 @@ const Auth = {
         error.message.includes("Failed to fetch")
       ) {
         throw new Error(
-          "Erro de conexão. Verifique sua internet e se o servidor está rodando."
+          "Erro de conexão. Verifique sua internet e se o servidor está rodando.",
         );
       }
 
@@ -205,7 +205,7 @@ const Auth = {
 
           if (hasInvalidChars) {
             console.warn(
-              "⚠️ Caractere inválido detectado na foto, resetando para null"
+              "⚠️ Caractere inválido detectado na foto, resetando para null",
             );
             profilePhotoUrl = null;
           } else if (!profilePhotoUrl.startsWith("http")) {
@@ -249,7 +249,7 @@ const Auth = {
 
         // 🔧 CORREÇÃO: Salvar foto separadamente APENAS se válida e diferente
         const currentSavedPhoto = localStorage.getItem(
-          this.STORAGE_KEYS.profilePhoto
+          this.STORAGE_KEYS.profilePhoto,
         );
 
         if (userInfo.profilePhotoUrl) {
@@ -257,7 +257,7 @@ const Auth = {
           if (currentSavedPhoto !== userInfo.profilePhotoUrl) {
             localStorage.setItem(
               this.STORAGE_KEYS.profilePhoto,
-              userInfo.profilePhotoUrl
+              userInfo.profilePhotoUrl,
             );
             // console.log("✅ Foto de perfil salva:", userInfo.profilePhotoUrl);
           } else {
@@ -283,20 +283,20 @@ const Auth = {
         sessionStorage.setItem("userId", userInfo.id || "");
         sessionStorage.setItem(
           this.STORAGE_KEYS.userBalance,
-          userInfo.balance.toString()
+          userInfo.balance.toString(),
         );
         sessionStorage.setItem("userLevel", userInfo.level.toString());
 
         // Salvar no localStorage para persistência (dados completos)
         localStorage.setItem(
           this.STORAGE_KEYS.userData,
-          JSON.stringify(userInfo)
+          JSON.stringify(userInfo),
         );
 
         // Manter no sessionStorage também (compatibilidade)
         sessionStorage.setItem(
           this.STORAGE_KEYS.userData,
-          JSON.stringify(userInfo)
+          JSON.stringify(userInfo),
         );
 
         // COMPATIBILIDADE: Salvar também em formatos que ranks.js espera
@@ -310,7 +310,7 @@ const Auth = {
       sessionStorage.setItem(this.STORAGE_KEYS.loginStatus, "true");
       sessionStorage.setItem(
         this.STORAGE_KEYS.loginTimestamp,
-        Date.now().toString()
+        Date.now().toString(),
       );
 
       // Reset da flag de novo usuário
@@ -336,7 +336,7 @@ const Auth = {
 
         // 🔧 SEMPRE verificar se existe foto salva separadamente
         const separatePhotoUrl = localStorage.getItem(
-          this.STORAGE_KEYS.profilePhoto
+          this.STORAGE_KEYS.profilePhoto,
         );
 
         if (separatePhotoUrl && separatePhotoUrl.startsWith("http")) {
@@ -364,14 +364,14 @@ const Auth = {
 
   getUserBalance() {
     return parseInt(
-      sessionStorage.getItem(this.STORAGE_KEYS.userBalance) || "0"
+      sessionStorage.getItem(this.STORAGE_KEYS.userBalance) || "0",
     );
   },
 
   updateUserBalance(newBalance) {
     sessionStorage.setItem(
       this.STORAGE_KEYS.userBalance,
-      newBalance.toString()
+      newBalance.toString(),
     );
 
     // Atualizar também no objeto userData (tanto localStorage quanto sessionStorage)
@@ -383,11 +383,11 @@ const Auth = {
       // Atualizar em ambos os storages
       localStorage.setItem(
         this.STORAGE_KEYS.userData,
-        JSON.stringify(userData)
+        JSON.stringify(userData),
       );
       sessionStorage.setItem(
         this.STORAGE_KEYS.userData,
-        JSON.stringify(userData)
+        JSON.stringify(userData),
       );
 
       // COMPATIBILIDADE: Atualizar também currentUser
@@ -427,11 +427,11 @@ const Auth = {
         // Salvar em todos os formatos
         localStorage.setItem(
           this.STORAGE_KEYS.userData,
-          JSON.stringify(userData)
+          JSON.stringify(userData),
         );
         sessionStorage.setItem(
           this.STORAGE_KEYS.userData,
-          JSON.stringify(userData)
+          JSON.stringify(userData),
         );
         localStorage.setItem("currentUser", JSON.stringify(userData));
         sessionStorage.setItem("currentUser", JSON.stringify(userData));
@@ -443,7 +443,7 @@ const Auth = {
           window.dispatchEvent(
             new CustomEvent("profilePhotoUpdated", {
               detail: { photoUrl },
-            })
+            }),
           );
         }
       }
@@ -480,7 +480,7 @@ const Auth = {
 
     // Verificar expiração da sessão (24 horas)
     const loginTimestamp = sessionStorage.getItem(
-      this.STORAGE_KEYS.loginTimestamp
+      this.STORAGE_KEYS.loginTimestamp,
     );
     if (loginTimestamp) {
       const now = Date.now();
@@ -905,7 +905,7 @@ const Auth = {
 
       if (!data.success || !data.data) {
         throw new Error(
-          data.message || "Erro ao buscar dados do usuário na API"
+          data.message || "Erro ao buscar dados do usuário na API",
         );
       }
 
@@ -1062,7 +1062,7 @@ window.addEventListener("storage", function (event) {
           newValue: event.newValue,
           oldValue: event.oldValue,
         },
-      })
+      }),
     );
   }
 });
